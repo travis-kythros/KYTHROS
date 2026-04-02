@@ -528,7 +528,7 @@ function loadState(){
     if(!db){res();return;}
     const req=db.transaction('state','readonly').objectStore('state').get('main');
     req.onsuccess=e=>{
-      if(e.target.result){try{const s=JSON.parse(e.target.result);state={...state,...s,gcalToken:null,gcalEvents:[]};}catch(e){}}
+      if(e.target.result){try{const s=JSON.parse(e.target.result);state={...state,...s,gcalToken:null,gcalEvents:[]};state.notes = state.notes || [];}catch(e){}}
       res();
     };
     req.onerror=()=>res();
