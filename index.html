@@ -223,11 +223,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:0.5px solid var(--border2);border-radius:22px;padding:7px 16px;font-size:11px;color:var(--text2);opacity:0;transition:all .3s;pointer-events:none;z-index:2000;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* NEW EVENT MODAL extras */
-.gcal-indicator{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:6px 0}
-.gcal-indicator-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-
-/* ── NOTES PANEL ── */
+/* ── NOTES PANEL UPGRADES ── */
 .notes-panel{flex:1;display:flex;overflow:hidden}
 .notes-sidebar{width:260px;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .notes-sidebar-header{padding:12px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -253,7 +249,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .note-del-btn{position:absolute;top:6px;right:6px;display:none;width:18px;height:18px;border-radius:3px;border:0.5px solid var(--border2);background:var(--surface);color:var(--muted);font-size:9px;cursor:pointer;align-items:center;justify-content:center}
 .note-item:hover .note-del-btn{display:flex}
 .note-del-btn:hover{color:var(--red)}
-.notes-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;flex:1;padding:30px;color:var(--muted);font-size:12px;opacity:.5;text-align:center}
+
 .note-editor{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 .note-editor-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;color:var(--muted);opacity:.4}
 .editor-topbar{padding:10px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--surface)}
@@ -270,21 +266,23 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .pen-color-btn.selected{border-color:white}
 .pen-size{width:70px;flex-shrink:0}
 .note-content{flex:1;overflow-y:auto;position:relative;display:flex;flex-direction:column}
-.note-text-area{width:100%;padding:16px 20px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:transparent;border:none;outline:none;resize:none;line-height:1.7;min-height:120px}
+.note-text-area{width:100%;padding:16px 20px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:transparent;border:none;outline:none;resize:none;line-height:1.7;min-height:120px;z-index:2}
 .note-text-area::placeholder{color:var(--muted)}
-.note-canvas-wrap{position:relative;width:100%;flex-shrink:0}
-.note-canvas{display:block;width:100%;touch-action:none;background:rgba(255,255,255,.02);border-top:0.5px solid var(--border);cursor:crosshair}
+
+/* CANVAS & PAPER TEMPLATES */
+.note-canvas-wrap{position:relative;width:100%;flex-shrink:0;min-height:1000px}
+.note-canvas{display:block;width:100%;touch-action:none;background:rgba(255,255,255,.01);cursor:crosshair;position:absolute;top:0;left:0;z-index:3}
+
+/* PAPER PATTERNS */
+.paper-plain{background:transparent}
+.paper-ruled{background-image:linear-gradient(var(--border) 1px, transparent 1px);background-size:100% 28px}
+.paper-grid{background-image:linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);background-size:28px 28px}
+.paper-dots{background-image:radial-gradient(var(--border) 1px, transparent 1px);background-size:28px 28px}
+
 .note-images-area{padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;border-top:0.5px solid var(--border)}
 .note-image-thumb{position:relative;width:100px;height:80px;border-radius:6px;overflow:hidden;border:0.5px solid var(--border2);flex-shrink:0}
 .note-image-thumb img{width:100%;height:100%;object-fit:cover}
 .note-image-del{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:white;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.note-editor-footer{padding:6px 16px;border-top:0.5px solid var(--border);display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);flex-shrink:0;background:var(--surface)}
-.location-suggestion{padding:8px 12px;font-size:11px;color:var(--text);cursor:pointer;border-bottom:0.5px solid var(--border);transition:background .15s}
-.location-suggestion:hover{background:rgba(99,157,255,.1)}
-.location-suggestion:last-child{border-bottom:none}
-.location-suggestion-name{font-weight:500}
-.location-suggestion-addr{font-size:10px;color:var(--muted);margin-top:1px}
-
 </style>
 </head>
 <body>
@@ -312,15 +310,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     </button>
   </div>
 
-  <div class="panel active" id="panel-kanban">
-    <div class="board" id="board"></div>
-  </div>
-
-  <div class="panel" id="panel-calendar">
-    <div class="cal-panel" id="calPanel">
-      </div>
-  </div>
-
+  <div class="panel active" id="panel-kanban"><div class="board" id="board"></div></div>
+  <div class="panel" id="panel-calendar"><div class="cal-panel" id="calPanel"></div></div>
   <div class="panel" id="panel-budget">
     <div class="board" style="padding: 16px;">
         <div class="column" style="max-width: 100%; min-width: 100%;">
@@ -331,22 +322,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
             </div>
             <div class="cards-area" style="padding: 0;">
                 <table class="budget-table">
-                    <thead>
-                        <tr>
-                            <th>PROJECT</th>
-                            <th>ESTIMATED</th>
-                            <th>ACTUAL</th>
-                            <th>REMAINING</th>
-                        </tr>
-                    </thead>
-                    <tbody id="budgetTableBody">
-                        </tbody>
+                    <thead><tr><th>PROJECT</th><th>ESTIMATED</th><th>ACTUAL</th><th>REMAINING</th></tr></thead>
+                    <tbody id="budgetTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
   </div>
-
 
   <div class="panel" id="panel-notes">
     <div class="notes-panel">
@@ -359,10 +341,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
         <div class="notes-list" id="notesList"></div>
       </div>
       <div class="note-editor" id="noteEditor">
-        <div class="note-editor-empty">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <div style="font-size:13px">Select a note or tap + to create one</div>
-        </div>
+        <div class="note-editor-empty">Select a note or tap + to create one</div>
       </div>
     </div>
   </div>
@@ -380,11 +359,56 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     <button class="kythy-close" onclick="toggleKythy()">✕</button>
   </div>
   <div class="kythy-messages" id="kythyMessages">
-    <div class="msg kythy">Hello. I'm KYTHY. I'm powered by Gemini now. How can I help you manage KYTHROS today?</div>
+    <div class="msg kythy">Hello. I'm KYTHY. I'm powered by Gemini now. How can I help you today?</div>
   </div>
   <div class="kythy-input-row">
     <input class="kythy-input" id="kythyInput" placeholder="Ask KYTHY…" onkeydown="if(event.key==='Enter')sendKythy()" />
     <button class="kythy-send" onclick="sendKythy()">↑</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="eventModal">
+  <div class="modal">
+    <div class="modal-title">NEW EVENT</div>
+    <div class="modal-field">
+      <div class="modal-label">EVENT TITLE</div>
+      <input class="modal-input" id="eventTitle" placeholder="Event name…" />
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">DATE</div>
+        <input class="modal-input" id="eventDate" type="date" />
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">TIME</div>
+        <input class="modal-input" id="eventTime" type="time" oninput="autoSetEndTime(this.value)" />
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">END TIME</div>
+        <input class="modal-input" id="eventEndTime" type="time" />
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">RECURRENCE</div>
+        <select class="modal-select" id="eventRecur">
+          <option value="">No Repeat</option>
+          <option value="DAILY">Daily</option>
+          <option value="WEEKLY">Weekly</option>
+          <option value="MONTHLY">Monthly</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">LOCATION</div>
+      <input class="modal-input" id="eventLocation" placeholder="Search location…" oninput="searchLocation(this.value)" />
+      <div id="locationSuggestions"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('eventModal')">Cancel</button>
+      <button class="btn-create" id="saveEventBtn" onclick="saveNewEvent()">CREATE EVENT</button>
+    </div>
+    <input type="hidden" id="editingEventId" value="" />
   </div>
 </div>
 
@@ -431,56 +455,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   </div>
 </div>
 
-<div class="modal-backdrop" id="eventModal">
-  <div class="modal">
-    <div class="modal-title">NEW EVENT</div>
-    <div class="modal-field">
-      <div class="modal-label">EVENT TITLE</div>
-      <input class="modal-input" id="eventTitle" placeholder="Event name…" />
-    </div>
-    <div class="modal-row">
-      <div class="modal-field">
-        <div class="modal-label">DATE</div>
-        <input class="modal-input" id="eventDate" type="date" />
-      </div>
-      <div class="modal-field">
-        <div class="modal-label">TIME</div>
-        <input class="modal-input" id="eventTime" type="time" oninput="autoSetEndTime(this.value)" />
-      </div>
-    </div>
-    <div class="modal-row">
-      <div class="modal-field">
-        <div class="modal-label">END TIME</div>
-        <input class="modal-input" id="eventEndTime" type="time" />
-      </div>
-      <div class="modal-field">
-        <div class="modal-label">TYPE</div>
-        <select class="modal-select" id="eventType">
-          <option value="work">Work</option>
-          <option value="family">Family</option>
-          <option value="personal">Personal</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">LOCATION</div>
-      <input class="modal-input" id="eventLocation" placeholder="Search for a place…" autocomplete="off" oninput="searchLocation(this.value)" />
-      <div id="locationSuggestions" style="background:var(--surface2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
-    </div>
-    <div class="gcal-indicator" id="gcalIndicator" style="display:none">
-      <div class="gcal-indicator-dot"></div>
-      <span>This event will sync to Google Calendar</span>
-    </div>
-    <input type="hidden" id="eventDateHidden" />
-    <input type="hidden" id="editingEventId" value="" />
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('eventModal')">Cancel</button>
-      <button id="deleteEventBtn" class="btn-cancel" style="color:var(--red);border-color:rgba(255,107,107,.4);display:none" onclick="deleteCurrentEvent()">Delete</button>
-      <button class="btn-create" id="saveEventBtn" onclick="saveNewEvent()">CREATE EVENT</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-backdrop" id="projectModal">
   <div class="modal">
     <div class="modal-title">NEW PROJECT</div>
@@ -522,7 +496,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   </div>
 
 <div class="toast" id="toast"></div>
-
 <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)" />
 
 <script>
@@ -533,42 +506,22 @@ const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar';
 // ── STATE ──
 const PROJ_COLORS = ['#639dff','#c9a84c','#4ee4a8','#f0a35a','#ff6b6b','#b97ef0','#59c4e0'];
 let state = {
-  projects: [
-    { id:'p1', name:'Q2 Product Launch', color:'#639dff' },
-    { id:'p2', name:'Office Renovation', color:'#f0a35a' },
-  ],
+  projects: [{ id:'p1', name:'Q2 Product Launch', color:'#639dff' }, { id:'p2', name:'Office Renovation', color:'#f0a35a' }],
   activeProject: 'p1',
-  tasks: {
-    p1: {
-      todo:[
-        {id:'t1',title:'Finalize landing page copy',tag:'design',priority:'high',due:'2026-04-10',notes:''},
-        {id:'t2',title:'QA testing round 2',tag:'review',priority:'medium',due:'2026-04-12',notes:''},
-        {id:'t3',title:'Stakeholder sign-off deck',tag:'plan',priority:'high',due:'2026-04-08',notes:''},
-      ],
-      inprog:[
-        {id:'t4',title:'API integration docs',tag:'work',priority:'medium',due:'2026-04-15',notes:''},
-        {id:'t5',title:'Design system update',tag:'design',priority:'low',due:'2026-04-18',notes:''},
-      ],
-      done:[
-        {id:'t6',title:'Kickoff meeting notes',tag:'plan',priority:'low',due:'',notes:''},
-        {id:'t7',title:'Competitor analysis',tag:'review',priority:'medium',due:'',notes:''},
-      ]
-    },
-    p2:{todo:[{id:'t8',title:'Get contractor bids',tag:'work',priority:'high',due:'2026-04-05',notes:''}],inprog:[{id:'t9',title:'Permits & approvals',tag:'plan',priority:'high',due:'2026-04-20',notes:''}],done:[]}
-  },
+  tasks: { p1: { todo:[], inprog:[], done:[] }, p2: { todo:[], inprog:[], done:[] } },
   notes: [],
   localEvents: [],
-  budgets: [], // New Budget Store
+  budgets: [],
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
   gcalEvents: [],
   gcalToken: null,
-  gcalExpiresAt: null, // New Expiry Tracking
+  gcalExpiresAt: null,
 };
 
 // ── INDEXEDDB ──
 let db;
-function openDB(){
+async function openDB(){
   return new Promise((res,rej)=>{
     const req=indexedDB.open('kythros_db',3);
     req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('state'))d.createObjectStore('state');if(!d.objectStoreNames.contains('drawings'))d.createObjectStore('drawings');};
@@ -576,22 +529,14 @@ function openDB(){
     req.onerror=rej;
   });
 }
-function saveState(){
-  if(!db)return;
-  // Persist gcalToken and ExpiresAt for Safari ITP fix
-  const save={...state, gcalEvents:[]}; 
-  db.transaction('state','readwrite').objectStore('state').put(JSON.stringify(save),'main');
-}
-function loadState(){
+function saveState(){ if(!db)return; const save={...state, gcalEvents:[]}; db.transaction('state','readwrite').objectStore('state').put(JSON.stringify(save),'main'); }
+async function loadState(){
   return new Promise(res=>{
     if(!db){res();return;}
     const req=db.transaction('state','readonly').objectStore('state').get('main');
     req.onsuccess=e=>{
       if(e.target.result){try{const s=JSON.parse(e.target.result);state={...state,...s,gcalEvents:[]};}catch(e){}}
-      if(!state.notes)state.notes=[];
-      if(!state.localEvents)state.localEvents=[];
-      if(!state.budgets)state.budgets=[];
-      res();
+      if(!state.notes)state.notes=[]; if(!state.localEvents)state.localEvents=[]; if(!state.budgets)state.budgets=[]; res();
     };
     req.onerror=()=>res();
   });
@@ -612,715 +557,149 @@ function switchPanel(name, btn){
   if(name==='notes'){renderNotesSidebar();renderNotesFilter();}
 }
 
-// ── COLUMNS ──
-const COLS=[
-  {id:'todo',label:'TO DO',dot:'#639dff',countBg:'rgba(99,157,255,.15)',countClr:'#639dff'},
-  {id:'inprog',label:'IN PROGRESS',dot:'#f0a35a',countBg:'rgba(240,163,90,.15)',countClr:'#f0a35a'},
-  {id:'done',label:'DONE',dot:'#4ee4a8',countBg:'rgba(78,228,168,.15)',countClr:'#4ee4a8'},
-];
-
-// ── RENDER ──
+// ── KANBAN & TASKS ──
+const COLS=[{id:'todo',label:'TO DO',dot:'#639dff'},{id:'inprog',label:'IN PROGRESS',dot:'#f0a35a'},{id:'done',label:'DONE',dot:'#4ee4a8'}];
 function render(){renderProjectChips();renderBoard();saveState();}
-
 function renderProjectChips(){
   const sel=document.getElementById('projectSelector');
-  sel.innerHTML=state.projects.map(p=>`
-    <button class="proj-chip ${p.id===state.activeProject?'active':''}"
-      style="${p.id===state.activeProject?`border-color:${p.color}40;color:${p.color};background:${p.color}18`:''}"
-      onclick="switchProject('${p.id}')">${p.name}</button>
-  `).join('');
+  sel.innerHTML=state.projects.map(p=>`<button class="proj-chip ${p.id===state.activeProject?'active':''}" style="${p.id===state.activeProject?`border-color:${p.color}40;color:${p.color};background:${p.color}18`:''}" onclick="switchProject('${p.id}')">${p.name}</button>`).join('');
 }
-
 function renderBoard(){
   const board=document.getElementById('board');
   const pt=state.tasks[state.activeProject]||{todo:[],inprog:[],done:[]};
   board.innerHTML=COLS.map(col=>{
     const tasks=pt[col.id]||[];
-    return `<div class="column" id="col-${col.id}" ondragover="onDragOver(event,'${col.id}')" ondrop="onDrop(event,'${col.id}')" ondragleave="onDragLeave(event)">
-      <div class="col-header">
-        <div class="col-dot" style="background:${col.dot}"></div>
-        <span class="col-title">${col.label}</span>
-        <span class="col-count" style="background:${col.countBg};color:${col.countClr}">${tasks.length}</span>
-        <button class="col-add-btn" onclick="openTaskModal('${col.id}')">+</button>
-      </div>
-      <div class="cards-area" id="cards-${col.id}">
-        ${tasks.length?tasks.map(t=>renderCard(t)).join(''):`<div class="empty-col"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg><span>Drop tasks here</span></div>`}
-        <div class="drop-zone" id="dz-${col.id}">Drop here</div>
-      </div>
+    return `<div class="column" id="col-${col.id}" ondragover="onDragOver(event,'${col.id}')" ondrop="onDrop(event,'${col.id}')">
+      <div class="col-header"><div class="col-dot" style="background:${col.dot}"></div><span class="col-title">${col.label}</span><button class="col-add-btn" onclick="openTaskModal('${col.id}')">+</button></div>
+      <div class="cards-area">${tasks.map(t=>renderCard(t)).join('')}</div>
     </div>`;
   }).join('');
-  document.querySelectorAll('.card').forEach(c=>{
-    c.addEventListener('dragstart',onDragStart);
-    c.addEventListener('dragend',onDragEnd);
-    c.addEventListener('touchstart',touchStart,{passive:true});
-    c.addEventListener('touchmove',touchMove,{passive:false});
-    c.addEventListener('touchend',touchEnd);
-  });
 }
-
-function renderCard(t){
-  const ds=formatDue(t.due),dc=getDueClass(t.due);
-  return `<div class="card" id="card-${t.id}" draggable="true" data-id="${t.id}">
-    <div class="card-priority pri-${t.priority}"></div>
-    <div style="padding-left:5px">
-      <div class="card-title">${escHtml(t.title)}</div>
-      <div class="card-meta">
-        <span class="card-tag tag-${t.tag}">${t.tag.toUpperCase()}</span>
-        ${ds?`<span class="card-due ${dc}"><svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="10" height="9" rx="1.5"/><path d="M4 1v2M8 1v2M1 5h10"/></svg>${ds}</span>`:''}
-      </div>
-    </div>
-    <div class="card-actions"><button class="card-action-btn del" onclick="deleteTask('${t.id}',event)">✕</button></div>
-  </div>`;
-}
-
-function formatDue(due){
-  if(!due)return'';
-  const d=new Date(due+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);
-  const diff=Math.round((d-now)/86400000);
-  if(diff<0)return`${Math.abs(diff)}d overdue`;
-  if(diff===0)return'Today';if(diff===1)return'Tomorrow';
-  if(diff<=7)return`${diff}d`;
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-}
-function getDueClass(due){
-  if(!due)return'';
-  const d=new Date(due+'T00:00:00'),now=new Date();now.setHours(0,0,0,0);
-  const diff=Math.round((d-now)/86400000);
-  return diff<0?'overdue':diff<=2?'soon':'';
-}
-
-// ── DRAG & DROP ──
-let dragId=null,dragFromCol=null;
-function onDragStart(e){dragId=e.currentTarget.dataset.id;dragFromCol=findCol(dragId);e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
-function onDragEnd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drop-zone').forEach(d=>d.classList.remove('active'));}
-function onDragOver(e,c){e.preventDefault();document.getElementById('dz-'+c).classList.add('active');}
-function onDragLeave(){document.querySelectorAll('.drop-zone').forEach(d=>d.classList.remove('active'));}
-function onDrop(e,c){e.preventDefault();document.querySelectorAll('.drop-zone').forEach(d=>d.classList.remove('active'));if(!dragId||dragFromCol===c)return;moveTask(dragId,dragFromCol,c);toast(`Moved to ${COLS.find(x=>x.id===c).label}`);}
-
-let touchCard=null,touchClone=null,touchFromCol=null,touchOffX=0,touchOffY=0;
-function touchStart(e){const c=e.currentTarget,t=e.touches[0],r=c.getBoundingClientRect();touchOffX=t.clientX-r.left;touchOffY=t.clientY-r.top;touchCard=c;touchFromCol=findCol(c.dataset.id);touchClone=c.cloneNode(true);touchClone.style.cssText=`position:fixed;width:${r.width}px;opacity:.85;pointer-events:none;z-index:9999;border-radius:6px;top:${r.top}px;left:${r.left}px;`;document.body.appendChild(touchClone);}
-function touchMove(e){e.preventDefault();if(!touchClone)return;const t=e.touches[0];touchClone.style.top=(t.clientY-touchOffY)+'px';touchClone.style.left=(t.clientX-touchOffX)+'px';document.querySelectorAll('.drop-zone').forEach(dz=>{const r=dz.getBoundingClientRect();dz.classList.toggle('active',t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom);});}
-function touchEnd(e){if(!touchCard||!touchClone)return;const t=e.changedTouches[0];let dropped=false;document.querySelectorAll('.drop-zone').forEach(dz=>{const r=dz.getBoundingClientRect();if(!dropped&&t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){const c=dz.id.replace('dz-','');if(c!==touchFromCol){moveTask(touchCard.dataset.id,touchFromCol,c);toast(`Moved to ${COLS.find(x=>x.id===c).label}`);}dropped=true;}});touchClone.remove();touchClone=null;touchCard=null;document.querySelectorAll('.drop-zone').forEach(d=>d.classList.remove('active'));}
-
-function findCol(id){const pt=state.tasks[state.activeProject];for(const c of['todo','inprog','done']){if(pt[c].find(t=>t.id===id))return c;}return'todo';}
-function moveTask(id,from,to){const pt=state.tasks[state.activeProject];const i=pt[from].findIndex(t=>t.id===id);if(i===-1)return;const[t]=pt[from].splice(i,1);pt[to].push(t);render();}
-function deleteTask(id,e){e.stopPropagation();const pt=state.tasks[state.activeProject];for(const c of['todo','inprog','done']){const i=pt[c].findIndex(t=>t.id===id);if(i!==-1){pt[c].splice(i,1);break;}}render();toast('Task deleted');}
-
-// ── MODALS ──
-function openTaskModal(c){document.getElementById('taskColumn').value=c;document.getElementById('taskTitle').value='';document.getElementById('taskNotes').value='';document.getElementById('taskDue').value='';document.getElementById('taskModal').classList.add('open');setTimeout(()=>document.getElementById('taskTitle').focus(),50);}
-function openProjectModal(){document.getElementById('projName').value='';renderColorSwatches();document.getElementById('projectModal').classList.add('open');setTimeout(()=>document.getElementById('projName').focus(),50);}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function renderColorSwatches(){document.getElementById('colorSwatches').innerHTML=PROJ_COLORS.map((c,i)=>`<div class="swatch ${i===0?'selected':''}" style="background:${c}" data-color="${c}" onclick="selectSwatch(this)"></div>`).join('');}
-function selectSwatch(el){document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));el.classList.add('selected');}
-
+function renderCard(t){ return `<div class="card" id="card-${t.id}" draggable="true" ondragstart="onDragStart(event)"> <div class="card-priority pri-${t.priority}"></div> <div class="card-title">${escHtml(t.title)}</div> <div class="card-meta"><span class="card-tag tag-${t.tag}">${t.tag.toUpperCase()}</span></div> <div class="card-actions"><button onclick="deleteTask('${t.id}',event)">✕</button></div> </div>`; }
+function deleteTask(id,e){ e.stopPropagation(); const pt=state.tasks[state.activeProject]; for(const c in pt){ const i=pt[c].findIndex(t=>t.id===id); if(i!==-1){pt[c].splice(i,1); break;} } render(); }
 function createTask(){
-  const title=document.getElementById('taskTitle').value.trim();if(!title)return;
-  const c=document.getElementById('taskColumn').value;
-  const t={id:'t'+Date.now(),title,tag:document.getElementById('taskTag').value,priority:document.getElementById('taskPriority').value,due:document.getElementById('taskDue').value,notes:document.getElementById('taskNotes').value};
-  if(!state.tasks[state.activeProject])state.tasks[state.activeProject]={todo:[],inprog:[],done:[]};
-  state.tasks[state.activeProject][c].push(t);closeModal('taskModal');render();toast('Task created');
+  const title=document.getElementById('taskTitle').value; if(!title)return;
+  const col=document.getElementById('taskColumn').value;
+  const t={id:'t'+Date.now(), title, tag:document.getElementById('taskTag').value, priority:document.getElementById('taskPriority').value, due:document.getElementById('taskDue').value, notes:document.getElementById('taskNotes').value};
+  state.tasks[state.activeProject][col].push(t); closeModal('taskModal'); render();
 }
-function createProject(){
-  const name=document.getElementById('projName').value.trim();if(!name)return;
-  const sel=document.querySelector('.swatch.selected');const color=sel?sel.dataset.color:PROJ_COLORS[0];
-  const id='p'+Date.now();state.projects.push({id,name,color});state.tasks[id]={todo:[],inprog:[],done:[]};state.activeProject=id;
-  closeModal('projectModal');render();renderNotesFilter();toast(`Project "${name}" created`);
-}
-function switchProject(id){state.activeProject=id;render();if(currentPanel==='budget')renderBudgets();}
 
-// ── GOOGLE CALENDAR OAUTH (Safari ITP Persistence Fix) ──
-let tokenClient=null,gapiInited=false,gisInited=false;
-
-function initGapi(){
-  gapi.load('client',async()=>{
-    await gapi.client.init({discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']});
-    gapiInited=true;
-  });
-}
-function initGis(){
-  tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:GCAL_CLIENT_ID,
-    scope:GCAL_SCOPES,
-    callback:(resp)=>{
-      if(resp.error){
-        updateGcalBtn(false);
-        return;
-      }
-      state.gcalToken=resp.access_token;
-      state.gcalExpiresAt=Date.now()+(resp.expires_in*1000);
-      localStorage.setItem('kythros_gcal_connected','1');
-      saveState();
-      updateGcalBtn(true);
-      fetchGcalEvents();
-      if(currentPanel==='calendar')renderCalendar();
-    }
-  });
-  gisInited=true;
+// ── CALENDAR & RECURRENCE ──
+async function saveNewEvent(){
+  const title=document.getElementById('eventTitle').value.trim(); if(!title)return;
+  const date=document.getElementById('eventDate').value;
+  const time=document.getElementById('eventTime').value;
+  const endTime=document.getElementById('eventEndTime').value;
+  const recur=document.getElementById('eventRecur').value; // DAILY, WEEKLY, MONTHLY
+  const loc=document.getElementById('eventLocation').value;
   
-  // Aggressive Silent Re-auth for Safari ITP
-  if(localStorage.getItem('kythros_gcal_connected')==='1'){
-    setTimeout(()=>{
-        if(state.gcalToken && state.gcalExpiresAt > (Date.now() + 300000)){
-            updateGcalBtn(true);
-            fetchGcalEvents();
-        } else {
-            try{ tokenClient.requestAccessToken({prompt:''}); }catch(e){}
-        }
-    },1000);
-  }
-}
-
-function handleGcalBtn(){
-  if(state.gcalToken){disconnectGcal();return;}
-  if(!gapiInited||!gisInited){toast('Loading Google libraries…');return;}
-  tokenClient.requestAccessToken({prompt:'select_account'});
-}
-function disconnectGcal(){
-  state.gcalToken=null;state.gcalExpiresAt=null;state.gcalEvents=[];
-  localStorage.removeItem('kythros_gcal_connected');
-  saveState();
-  updateGcalBtn(false);
-  if(currentPanel==='calendar')renderCalendar();
-  toast('Calendar disconnected');
-}
-function updateGcalBtn(connected){
-  const btn=document.getElementById('gcalBtn');
-  const lbl=document.getElementById('gcalBtnLabel');
-  if(connected){btn.classList.add('connected');lbl.textContent='Calendar Synced';}
-  else{btn.classList.remove('connected');lbl.textContent='Connect Calendar';}
-  const ind=document.getElementById('gcalIndicator');
-  if(ind)ind.style.display=connected?'flex':'none';
-}
-
-async function fetchGcalEvents(){
-  if(!state.gcalToken||!gapiInited)return;
-  try{
-    const now=new Date();
-    const timeMin=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString();
-    const timeMax=new Date(now.getFullYear(),now.getMonth()+3,0).toISOString();
-    const resp=await gapi.client.calendar.events.list({calendarId:'primary',timeMin,timeMax,singleEvents:true,orderBy:'startTime',maxResults:200});
-    state.gcalEvents=(resp.result.items||[]).map(e=>({
-      id:e.id,title:e.summary||'(No title)',
-      start:e.start.dateTime||e.start.date,
-      end:e.end.dateTime||e.end.date,
-      allDay:!e.start.dateTime,source:'gcal'
-    }));
-    if(currentPanel==='calendar')renderCalendar();
-  }catch(err){console.error('GCal fetch error',err);}
-}
-
-async function createGcalEvent(title,date,time,endTime,evtLoc){
-  if(!state.gcalToken)return null;
-  try{
-    const startDt=time?`${date}T${time}:00`:`${date}`;
-    const endDt=endTime?`${date}T${endTime}:00`:startDt;
-    const event={summary:title,location:evtLoc,start:time?{dateTime:startDt,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}:{date:startDt},end:endTime?{dateTime:endDt,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}:{date:endDt}};
-    const resp=await gapi.client.calendar.events.insert({calendarId:'primary',resource:event});
-    return resp.result;
-  }catch(err){console.error('GCal create error',err);return null;}
-}
-
-// ── BUDGET LOGIC (Module 4) ──
-function openBudgetModal(){
-    const sel = document.getElementById('budgetProjId');
-    sel.innerHTML = state.projects.map(p => `<option value="${p.id}" ${p.id===state.activeProject?'selected':''}>${p.name}</option>`).join('');
-    document.getElementById('budgetEst').value = '';
-    document.getElementById('budgetAct').value = '';
-    document.getElementById('budgetModal').classList.add('open');
-}
-function createBudget(){
-    const pid = document.getElementById('budgetProjId').value;
-    const est = parseFloat(document.getElementById('budgetEst').value) || 0;
-    const act = parseFloat(document.getElementById('budgetAct').value) || 0;
-    
-    const idx = state.budgets.findIndex(b => b.projectId === pid);
-    if(idx !== -1) {
-        state.budgets[idx].estimated = est;
-        state.budgets[idx].actual = act;
-    } else {
-        state.budgets.push({ projectId: pid, estimated: est, actual: act });
-    }
-    closeModal('budgetModal');
-    renderBudgets();
-    saveState();
-    toast('Budget updated');
-}
-function renderBudgets(){
-    const tbody = document.getElementById('budgetTableBody');
-    if(!tbody) return;
-    
-    tbody.innerHTML = state.projects.map(p => {
-        const b = state.budgets.find(x => x.projectId === p.id) || { estimated: 0, actual: 0 };
-        const remaining = b.estimated - b.actual;
-        const remClass = remaining < 0 ? 'amt-negative' : 'amt-positive';
-        return `
-            <tr class="budget-row">
-                <td style="font-weight: 500; color:${p.color}">${p.name}</td>
-                <td>$${b.estimated.toLocaleString()}</td>
-                <td>$${b.actual.toLocaleString()}</td>
-                <td class="${remClass}">$${remaining.toLocaleString()}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-// ── CALENDAR RENDER ──
-function renderCalendar(){
-  const panel=document.getElementById('calPanel');
-  if(!state.gcalToken){
-    panel.innerHTML=`<div class="gcal-connect-overlay">
-      <div class="gcal-connect-box">
-        <div class="gcal-icon">📅</div>
-        <div class="gcal-connect-title">CONNECT GOOGLE CALENDAR</div>
-        <div class="gcal-connect-desc">Sign in with Google to sync your calendar events two-way inside KYTHROS.</div>
-        <button class="gcal-connect-cta" onclick="handleGcalBtn()">Sign in with Google</button>
-        <div style="font-size:10px;color:var(--muted)">Or <span style="cursor:pointer;text-decoration:underline" onclick="renderCalendarWithLocal()">view local events only</span></div>
-      </div>
-    </div>`;
-    return;
-  }
-  renderCalendarFull();
-}
-
-function renderCalendarWithLocal(){
-  state.gcalToken='_local';renderCalendarFull();
-}
-
-function renderCalendarFull(){
-  const panel=document.getElementById('calPanel');
-  const year=state.calYear,month=state.calMonth;
-  const monthName=new Date(year,month,1).toLocaleString('default',{month:'long'});
-  panel.innerHTML=`
-    <div class="cal-sidebar">
-      <div class="mini-cal">
-        <div class="mini-cal-title"><span>${monthName}</span></div>
-        <div class="mini-grid" id="miniGrid"></div>
-      </div>
-      <div class="upcoming-events">
-        <div class="section-lbl">UPCOMING</div>
-        <div id="upcomingList"></div>
-      </div>
-    </div>
-    <div class="cal-main">
-      <div class="cal-header">
-        <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
-        <div class="cal-month-title">${monthName.toUpperCase()} ${year}</div>
-        <button class="cal-nav-btn" onclick="calNav(1)">›</button>
-        <div class="cal-view-btns">
-          <button class="cal-view-btn active">Month</button>
-        </div>
-        <button class="btn-create" style="padding:5px 12px;font-size:10px" onclick="openEventModal()">+ EVENT</button>
-      </div>
-      <div class="cal-weekdays">${['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d=>`<div class="cal-weekday">${d}</div>`).join('')}</div>
-      <div class="cal-days" id="calDays"></div>
-    </div>`;
-  populateCalDays(year,month);
-  populateMiniCal(year,month);
-  populateUpcoming();
-}
-
-function calNav(dir){state.calMonth+=dir;if(state.calMonth>11){state.calMonth=0;state.calYear++;}if(state.calMonth<0){state.calMonth=11;state.calYear--;}renderCalendarFull();}
-
-function getAllEvents(){
-  var syncedGcalIds=state.localEvents.filter(function(e){return e.gcalId;}).map(function(e){return e.gcalId;});
-  var filteredGcal=state.gcalEvents.filter(function(e){return syncedGcalIds.indexOf(e.id)===-1;});
-  return state.localEvents.concat(filteredGcal);
-}
-
-function getEventsForDate(dateStr){return getAllEvents().filter(e=>(e.start||'').startsWith(dateStr));}
-
-function populateCalDays(year,month){
-  const grid=document.getElementById('calDays');if(!grid)return;
-  const first=new Date(year,month,1);
-  let startDow=first.getDay()-1;if(startDow<0)startDow=6;
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const prevDays=new Date(year,month,0).getDate();
-  const today=new Date();today.setHours(0,0,0,0);
-  let html='';
-  for(let i=0;i<startDow;i++){
-    const d=prevDays-startDow+1+i;
-    html+=`<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
-  }
-  for(let d=1;d<=daysInMonth;d++){
-    const dt=new Date(year,month,d);
-    const isToday=dt.getTime()===today.getTime();
-    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const evs=getEventsForDate(ds);
-    const evsHtml=evs.slice(0,3).map(e=>{
-      var cls=e.source==='gcal'?'gcal':(e.gcalId?'synced':'local');
-      return`<div class="cal-event ${cls}" title="${escHtml(e.title)}" onclick="event.stopPropagation();openEventDetail('${e.id}')">${escHtml(e.title)}</div>`;
-    }).join('');
-    const more=evs.length>3?`<div style="font-size:8px;color:var(--muted)">+${evs.length-3} more</div>`:'';
-    html+=`<div class="cal-day ${isToday?'today':''}" onclick="openEventModal('${ds}')">
-      <div class="cal-day-num">${d}</div>${evsHtml}${more}
-    </div>`;
-  }
-  const remaining=(7-((startDow+daysInMonth)%7))%7;
-  for(let i=1;i<=remaining;i++)html+=`<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
-  grid.innerHTML=html;
-}
-
-function populateMiniCal(year,month){
-  const grid=document.getElementById('miniGrid');if(!grid)return;
-  const labels=['M','T','W','T','F','S','S'].map(d=>`<div class="mini-day-lbl">${d}</div>`).join('');
-  const first=new Date(year,month,1);
-  let startDow=first.getDay()-1;if(startDow<0)startDow=6;
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const today=new Date().getDate();const todayM=new Date().getMonth();const todayY=new Date().getFullYear();
-  let html=labels;
-  for(let i=0;i<startDow;i++)html+=`<div class="mini-day"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const isT=d===today&&month===todayM&&year===todayY;
-    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const hasEv=getEventsForDate(ds).length>0;
-    html+=`<div class="mini-day ${isT?'today':''} ${hasEv?'has-event':''}">${d}</div>`;
-  }
-  grid.innerHTML=html;
-}
-
-function populateUpcoming(){
-  const list=document.getElementById('upcomingList');if(!list)return;
-  const now=new Date();
-  const upcoming=getAllEvents().filter(e=>{try{return new Date(e.start)>=now;}catch{return false;}})
-    .sort((a,b)=>new Date(a.start)-new Date(b.start)).slice(0,8);
-  if(!upcoming.length){list.innerHTML=`<div style="font-size:11px;color:var(--muted);opacity:.6">No upcoming events</div>`;return;}
-  list.innerHTML=upcoming.map(e=>{
-    const d=new Date(e.start);
-    const timeStr=e.allDay?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
-    return`<div class="upcoming-event">
-      <span class="ue-time">${timeStr}</span>
-      <div class="ue-dot" style="background:${e.source==='gcal'?'#639dff':(e.gcalId?'#639dff':'#ff6b6b')}"></div>
-      <div class="ue-info"><div class="ue-title">${escHtml(e.title)}</div></div>
-    </div>`;
-  }).join('');
-}
-
-// ── EVENT MODAL ──
-function openEventModal(dateStr){
-  const d=dateStr||new Date().toISOString().split('T')[0];
-  document.getElementById('eventTitle').value='';
-  document.getElementById('eventDate').value=d;
-  document.getElementById('eventTime').value='09:00';
-  document.getElementById('eventEndTime').value='10:00';
-  document.getElementById('eventLocation').value='';
-  document.getElementById('editingEventId').value='';
-  document.getElementById('deleteEventBtn').style.display='none';
-  document.getElementById('saveEventBtn').textContent='CREATE EVENT';
-  document.querySelector('#eventModal .modal-title').textContent='NEW EVENT';
-  const ind=document.getElementById('gcalIndicator');
-  if(ind)ind.style.display=state.gcalToken&&state.gcalToken!=='_local'?'flex':'none';
-  document.getElementById('eventModal').classList.add('open');
-  setTimeout(()=>document.getElementById('eventTitle').focus(),50);
-}
-
-function openEventDetail(eventId){
-  const ev=getAllEvents().find(e=>e.id===eventId);
-  if(!ev)return;
-  const startStr=ev.start||'';
-  const datePart=startStr.includes('T')?startStr.split('T')[0]:startStr;
-  const timePart=startStr.includes('T')?startStr.split('T')[1]?.slice(0,5):'';
-  const endStr=ev.end||'';
-  const endTimePart=endStr.includes('T')?endStr.split('T')[1]?.slice(0,5):'';
-  document.getElementById('eventTitle').value=ev.title||'';
-  document.getElementById('eventDate').value=datePart;
-  document.getElementById('eventTime').value=timePart;
-  document.getElementById('eventEndTime').value=endTimePart;
-  document.getElementById('eventLocation').value=ev.location||'';
-  document.getElementById('editingEventId').value=eventId;
-  const delBtn=document.getElementById('deleteEventBtn');
-  delBtn.style.display=ev.source==='local'?'inline-flex':'none';
-  document.getElementById('saveEventBtn').textContent=ev.source==='local'?'SAVE CHANGES':'VIEW ONLY';
-  document.querySelector('#eventModal .modal-title').textContent='EVENT DETAILS';
-  const ind=document.getElementById('gcalIndicator');
-  if(ind)ind.style.display='none';
-  document.getElementById('eventModal').classList.add('open');
-}
-
-function deleteCurrentEvent(){
-  const id=document.getElementById('editingEventId').value;
-  if(!id)return;
-  state.localEvents=state.localEvents.filter(e=>e.id!==id);
-  saveState();
-  closeModal('eventModal');
-  toast('Event deleted');
-  if(currentPanel==='calendar')renderCalendarFull();
-}
-
-function saveNewEvent(){
-  var title=document.getElementById('eventTitle').value.trim();if(!title)return;
-  var date=document.getElementById('eventDate').value;
-  var time=document.getElementById('eventTime').value;
-  var endTime=document.getElementById('eventEndTime').value;
-  var evtLoc=document.getElementById('eventLocation').value;
-  var editingId=document.getElementById('editingEventId').value;
-  if(editingId){
-    var idx=state.localEvents.findIndex(function(e){return e.id===editingId;});
-    if(idx!==-1){
-      state.localEvents[idx].title=title;
-      state.localEvents[idx].start=time?(date+'T'+time):date;
-      state.localEvents[idx].end=endTime?(date+'T'+endTime):date;
-      state.localEvents[idx].location=evtLoc;
-    }
-    saveState();
-    closeModal('eventModal');
-    toast('Event updated');
-    if(currentPanel==='calendar')renderCalendarFull();
-    return;
-  }
-  var localEvent={id:'ev'+Date.now(),title:title,start:time?(date+'T'+time):date,end:endTime?(date+'T'+endTime):date,allDay:!time,source:'local',location:evtLoc};
+  const localEvent={id:'ev'+Date.now(),title,start:time?`${date}T${time}`:date,end:endTime?`${date}T${endTime}`:date,source:'local',location:loc,recurrence:recur};
   state.localEvents.push(localEvent);
-  saveState();
-  closeModal('eventModal');
-  toast('Event created');
-  if(currentPanel==='calendar')renderCalendarFull();
-  setTimeout(function(){
-    if(state.gcalToken&&state.gcalToken!=='_local'){
-      syncNewEventToGcal(title,date,time,endTime,evtLoc,0,localEvent.id);
-    }
-  },300);
-}
-
-function syncNewEventToGcal(title,date,time,endTime,evtLoc,retries,localId){
-  retries=retries||0;
-  if(!state.gcalToken||state.gcalToken==='_local')return;
-  if(!gapiInited){
-    if(retries<10){setTimeout(function(){syncNewEventToGcal(title,date,time,endTime,evtLoc,retries+1,localId);},500);}
-    return;
-  }
-  createGcalEvent(title,date,time,endTime,evtLoc)
-    .then(function(created){
-      if(created && localId){
-          var ev=state.localEvents.find(function(e){return e.id===localId;});
-          if(ev){ev.gcalId=created.id;}
-          saveState();
-          toast('Synced to Google Calendar ✓');
-          fetchGcalEvents();
-      }
-    });
-}
-
-function autoSetEndTime(startVal){
-  if(!startVal)return;
-  var parts=startVal.split(':');
-  var h=parseInt(parts[0]),m=parseInt(parts[1]);
-  h=(h+1)%24;
-  document.getElementById('eventEndTime').value=(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
-}
-
-// ── LOCATION AUTOCOMPLETE ──
-var locTimer=null;
-function searchLocation(val){
-  var box=document.getElementById('locationSuggestions');
-  if(!val||val.length<3){box.style.display='none';return;}
-  clearTimeout(locTimer);
-  locTimer=setTimeout(function(){
-    fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(val)+'&limit=5&addressdetails=1',{headers:{'Accept-Language':'en'}})
-      .then(function(r){return r.json();})
-      .then(function(results){
-        if(!results.length){box.style.display='none';return;}
-        box.innerHTML=results.map(function(r){
-          var name=r.namedetails&&r.namedetails.name?r.namedetails.name:(r.display_name.split(',')[0]);
-          var addr=r.display_name.split(',').slice(1,3).join(',').trim();
-          return'<div class="location-suggestion" onclick="selectLocation(\''+escHtml(r.display_name.replace(/'/g,"\\'"))+'\')"><div class="location-suggestion-name">'+escHtml(name)+'</div><div class="location-suggestion-addr">'+escHtml(addr)+'</div></div>';
-        }).join('');
-        box.style.display='block';
-      }).catch(function(){box.style.display='none';});
-  },400);
-}
-function selectLocation(val){
-  document.getElementById('eventLocation').value=val;
-  document.getElementById('locationSuggestions').style.display='none';
-}
-document.addEventListener('click',function(e){
-  var locInput=document.getElementById('eventLocation');
-  var locBox=document.getElementById('locationSuggestions');
-  if(locBox&&locInput&&!locInput.contains(e.target)&&!locBox.contains(e.target)){
-    locBox.style.display='none';
-  }
-});
-
-function handleCmd(){
-  const val=document.getElementById('cmdInput').value.trim();if(!val)return;
-  document.getElementById('cmdInput').value='';
-  if(val.length<80&&!val.startsWith('/')){
-    const t={id:'t'+Date.now(),title:val,tag:'work',priority:'medium',due:'',notes:''};
-    if(!state.tasks[state.activeProject])state.tasks[state.activeProject]={todo:[],inprog:[],done:[]};
-    state.tasks[state.activeProject].todo.push(t);render();toast('Task added to To Do');
-  } else {
-    document.getElementById('kythyInput').value=val;
-    kythyOpen=true;document.getElementById('kythyDrawer').classList.add('open');sendKythy();
+  saveState(); closeModal('eventModal'); renderCalendar();
+  
+  if(state.gcalToken && state.gcalToken!=='_local'){
+      syncNewEventToGcal(title,date,time,endTime,loc,recur,localEvent.id);
   }
 }
-document.getElementById('cmdInput').addEventListener('keydown',e=>{if(e.key==='Enter')handleCmd();});
 
-// ── KYTHY AI (Gemini 1.5 Integration) ──
-let kythyOpen=false;
-function toggleKythy(){kythyOpen=!kythyOpen;document.getElementById('kythyDrawer').classList.toggle('open',kythyOpen);if(kythyOpen)setTimeout(()=>document.getElementById('kythyInput').focus(),300);}
-
-async function sendKythy(){
-  const input=document.getElementById('kythyInput');
-  const msg=input.value.trim();if(!msg)return;input.value='';
-  addMsg(msg,'user');
-  const thinking=addMsg('Thinking…','thinking');
-
-  let apiKey = localStorage.getItem('kythros_gemini_key');
-  if (!apiKey) {
-    apiKey = prompt("Please enter your Gemini API Key (saved locally on this device only):");
-    if (apiKey) localStorage.setItem('kythros_gemini_key', apiKey);
-    else { thinking.textContent = "Error: No API key provided."; return; }
-  }
-
-  const proj=state.projects.find(p=>p.id===state.activeProject);
-  const pt=state.tasks[state.activeProject]||{todo:[],inprog:[],done:[]};
-  const upcomingEvs=getAllEvents().slice(0,5);
-
-  const systemPrompt=`You are KYTHY, the AI agent inside KYTHROS — a personal life OS for Travis Durbin. 
-  Current project: "${proj?proj.name:'None'}"
-  Tasks — To Do: ${pt.todo.map(t=>t.title).join(', ')||'none'}
-  Upcoming events: ${upcomingEvs.map(e=>e.title).join(', ')||'none'}
-  Be concise, direct, and proactive. Use KYTHROS/KYTHY identity.`;
-
+async function syncNewEventToGcal(title,date,time,endTime,loc,recur,localId){
+  if(!state.gcalToken)return;
+  const startDt=time?`${date}T${time}:00`:`${date}`;
+  const endDt=endTime?`${date}T${endTime}:00`:startDt;
+  const eventObj={ summary:title, location:loc, start:time?{dateTime:startDt,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}:{date:startDt}, end:endTime?{dateTime:endDt,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}:{date:endDt} };
+  if(recur) eventObj.recurrence = [`RRULE:FREQ=${recur}`];
+  
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          role: "user",
-          parts: [{ text: systemPrompt + "\n\nUser Question: " + msg }]
-        }]
-      })
-    });
-
-    const data = await response.json();
-    const reply = data.candidates[0].content.parts[0].text;
-    thinking.textContent = reply;
-    thinking.className = 'msg kythy';
-  } catch (err) {
-    thinking.textContent = 'Connection interrupted. Check API key.';
-  }
-  document.getElementById('kythyMessages').scrollTop=9999;
+    const resp=await gapi.client.calendar.events.insert({calendarId:'primary',resource:eventObj});
+    if(resp.result && localId){
+      const ev=state.localEvents.find(e=>e.id===localId); if(ev)ev.gcalId=resp.result.id;
+      saveState(); fetchGcalEvents();
+    }
+  } catch(e){ console.error("GCal Sync Error", e); }
 }
-function addMsg(text,type){const msgs=document.getElementById('kythyMessages');const el=document.createElement('div');el.className=`msg ${type}`;el.textContent=text;msgs.appendChild(el);msgs.scrollTop=9999;return el;}
 
-// ── TOAST & UTILS ──
-let toastTimer;
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400);}
-function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-document.querySelectorAll('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');}));
-
-// ── NOTES STATE & LOGIC ──
-let activeNoteId=null,drawingMode=false,penColor='#d8e2f8',penSize=3,isEraser=false,isDrawing=false,lastX=0,lastY=0,activeCanvas=null,activeCtx=null,saveTimer=null,noteFilterProj='all';
-const PEN_COLORS=['#d8e2f8','#639dff','#4ee4a8','#f0a35a','#ff6b6b','#c9a84c','#b97ef0'];
-
-function saveDrawing(noteId,dataUrl){if(!db)return;db.transaction('drawings','readwrite').objectStore('drawings').put(dataUrl,noteId);}
-function loadDrawing(noteId){return new Promise(res=>{if(!db){res(null);return;}const req=db.transaction('drawings','readonly').objectStore('drawings').get(noteId);req.onsuccess=e=>res(e.target.result||null);req.onerror=()=>res(null);});}
-function deleteDrawing(noteId){if(!db)return;db.transaction('drawings','readwrite').objectStore('drawings').delete(noteId);}
+// ── NOTES & PAPER TEMPLATES (Notability Style) ──
+let activeNoteId=null, drawingMode=false, penColor='#d8e2f8', penSize=3, isDrawing=false, activeCanvas=null, activeCtx=null;
 
 function createNewNote(){
-  const note={id:'n'+Date.now(),title:'Untitled Note',text:'',projectId:state.activeProject,images:[],hasDrawing:false,created:Date.now(),updated:Date.now()};
-  state.notes.unshift(note);saveState();renderNotesSidebar();openNote(note.id);
+  const note={id:'n'+Date.now(), title:'Untitled Note', text:'', projectId:state.activeProject, paperType:'plain', updated:Date.now()};
+  state.notes.unshift(note); saveState(); renderNotesSidebar(); openNote(note.id);
 }
-function renderNotesFilter(){
-  const f=document.getElementById('notesFilter');if(!f)return;
-  const chips=[{id:'all',label:'All'},...state.projects.map(p=>({id:p.id,label:p.name,color:p.color}))];
-  f.innerHTML=chips.map(c=>`<button class="filter-chip ${noteFilterProj===c.id?'active':''}" onclick="setNoteFilter('${c.id}')">${c.label}</button>`).join('');
-}
-function setNoteFilter(projId){noteFilterProj=projId;renderNotesFilter();renderNotesSidebar();}
-function filterNotes(){renderNotesSidebar();}
-function renderNotesSidebar(){
-  const list=document.getElementById('notesList');if(!list)return;
-  const q=(document.getElementById('notesSearch')||{}).value||'';
-  const ql=q.toLowerCase();
-  const notes=state.notes.filter(n=>{
-    const mProj=noteFilterProj==='all'||n.projectId===noteFilterProj;
-    const mQ=!ql||n.title.toLowerCase().includes(ql)||n.text.toLowerCase().includes(ql);
-    return mProj&&mQ;
-  });
-  if(!notes.length){list.innerHTML=`<div class="notes-empty"><span>No notes found.</span></div>`;return;}
-  list.innerHTML=notes.map(n=>{
-    const proj=state.projects.find(p=>p.id===n.projectId);
-    const date=new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return`<div class="note-item ${n.id===activeNoteId?'active':''}" onclick="openNote('${n.id}')">
-      <div class="note-item-title">${escHtml(n.title||'Untitled')}</div>
-      <div class="note-item-preview">${escHtml((n.text||'').slice(0,60))}</div>
-      <div class="note-item-meta">
-        <span>${date}</span>
-        ${proj?`<span class="note-proj-badge" style="background:${proj.color}22;color:${proj.color}">${proj.name}</span>`:''}
-      </div>
-      <button class="note-del-btn" onclick="deleteNote('${n.id}',event)">x</button>
-    </div>`;
-  }).join('');
-}
+
 async function openNote(noteId){
-  activeNoteId=noteId;
-  const note=state.notes.find(n=>n.id===noteId);if(!note)return;
+  activeNoteId=noteId; const note=state.notes.find(n=>n.id===noteId); if(!note)return;
   renderNotesSidebar();
   const editor=document.getElementById('noteEditor');
-  const projOpts=state.projects.map(p=>`<option value="${p.id}" ${p.id===note.projectId?'selected':''}>${p.name}</option>`).join('');
-  const imgs=(note.images||[]).map((img,i)=>`<div class="note-image-thumb"><img src="${img}" /><button class="note-image-del" onclick="deleteNoteImage('${noteId}',${i})">x</button></div>`).join('');
   editor.innerHTML=`
     <div class="editor-topbar">
-      <input class="editor-title-input" id="editorTitle" value="${escHtml(note.title)}" placeholder="Note title..." />
-      <select class="editor-proj-select" id="editorProj">${projOpts}</select>
+      <input class="editor-title-input" id="editorTitle" value="${escHtml(note.title)}" oninput="scheduleNoteSave()" />
+      <select class="editor-proj-select" id="editorPaper" onchange="setPaperType(this.value)">
+        <option value="plain" ${note.paperType==='plain'?'selected':''}>Plain Paper</option>
+        <option value="ruled" ${note.paperType==='ruled'?'selected':''}>Ruled Paper</option>
+        <option value="grid" ${note.paperType==='grid'?'selected':''}>Grid Paper</option>
+        <option value="dots" ${note.paperType==='dots'?'selected':''}>Dot Paper</option>
+      </select>
     </div>
     <div class="editor-toolbar">
-      <button class="tool-btn" id="drawToggle" onclick="toggleDrawMode()">&#9998; Draw</button>
-      <div class="tool-separator"></div>
-      ${PEN_COLORS.map((c,i)=>`<div class="pen-color-btn ${i===0?'selected':''}" style="background:${c}" data-color="${c}" onclick="setPenColor(this,'${c}')"></div>`).join('')}
-      <div class="tool-separator"></div>
-      <input type="range" class="pen-size" id="penSizeSlider" min="1" max="20" value="3" oninput="penSize=parseInt(this.value)" />
-      <button class="tool-btn" onclick="clearCanvas()">Clear</button>
-      <button class="tool-btn gold" onclick="document.getElementById('imageInput').click()">&#128247; Photo</button>
+      <button class="tool-btn ${drawingMode?'active':''}" onclick="toggleDrawMode()">✎ Apple Pencil</button>
+      <input type="range" min="1" max="15" value="${penSize}" oninput="penSize=this.value" />
+      <button class="tool-btn" onclick="clearCanvas()">Clear Page</button>
     </div>
-    <div class="note-content" id="noteContent">
-      <textarea class="note-text-area" id="noteText" placeholder="Type here...">${escHtml(note.text)}</textarea>
-      <div class="note-canvas-wrap" id="canvasWrap"><canvas class="note-canvas" id="noteCanvas" height="400"></canvas></div>
-      <div class="note-images-area" id="imagesArea">${imgs}</div>
+    <div class="note-content">
+      <textarea class="note-text-area" id="noteText" oninput="scheduleNoteSave()">${escHtml(note.text)}</textarea>
+      <div class="note-canvas-wrap paper-${note.paperType}" id="canvasWrap">
+        <canvas class="note-canvas" id="noteCanvas"></canvas>
+      </div>
     </div>`;
-  activeCanvas=document.getElementById('noteCanvas');
-  activeCtx=activeCanvas.getContext('2d');
+  activeCanvas=document.getElementById('noteCanvas'); activeCtx=activeCanvas.getContext('2d');
   resizeCanvas();
-  document.getElementById('noteText').addEventListener('input',scheduleNoteSave);
-  document.getElementById('editorTitle').addEventListener('input',scheduleNoteSave);
-  document.getElementById('editorProj').addEventListener('change',scheduleNoteSave);
-  const drawing=await loadDrawing(noteId);
-  if(drawing){const img=new Image();img.onload=()=>activeCtx.drawImage(img,0,0);img.src=drawing;}
-  activeCanvas.addEventListener('pointerdown',canvasDown);
-  activeCanvas.addEventListener('pointermove',canvasMove);
-  activeCanvas.addEventListener('pointerup',canvasUp);
+  const drawing=await loadDrawing(noteId); if(drawing){ const img=new Image(); img.onload=()=>activeCtx.drawImage(img,0,0); img.src=drawing; }
+  activeCanvas.addEventListener('pointerdown', canvasDown); activeCanvas.addEventListener('pointermove', canvasMove); activeCanvas.addEventListener('pointerup', canvasUp);
 }
-function resizeCanvas(){
-  if(!activeCanvas)return;
-  const wrap=document.getElementById('canvasWrap');
-  activeCanvas.width=wrap.offsetWidth||800;activeCanvas.height=400;
-  activeCtx.lineCap='round';activeCtx.lineJoin='round';
-}
-function toggleDrawMode(){drawingMode=!drawingMode;document.getElementById('drawToggle').classList.toggle('active',drawingMode);}
-function setPenColor(el,color){penColor=color;isEraser=false;document.querySelectorAll('.pen-color-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
-function clearCanvas(){if(!activeCtx)return;activeCtx.clearRect(0,0,activeCanvas.width,activeCanvas.height);saveDrawingNow();}
-function canvasDown(e){if(!drawingMode)return;isDrawing=true;const r=activeCanvas.getBoundingClientRect();lastX=e.clientX-r.left;lastY=e.clientY-r.top;activeCtx.beginPath();activeCtx.moveTo(lastX,lastY);}
-function canvasMove(e){if(!isDrawing||!drawingMode)return;const r=activeCanvas.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const pressure=e.pressure||0.5;activeCtx.lineWidth=penSize*(pressure*1.5+0.5);activeCtx.strokeStyle=penColor;activeCtx.lineTo(x,y);activeCtx.stroke();activeCtx.beginPath();activeCtx.moveTo(x,y);lastX=x;lastY=y;}
-function canvasUp(){if(!isDrawing)return;isDrawing=false;saveDrawingNow();}
-function saveDrawingNow(){if(!activeCanvas||!activeNoteId)return;saveDrawing(activeNoteId,activeCanvas.toDataURL('image/png'));}
-function scheduleNoteSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveCurrentNote,1500);}
-function saveCurrentNote(){
-  const note=state.notes.find(n=>n.id===activeNoteId);if(!note)return;
-  note.title=document.getElementById('editorTitle').value;
-  note.text=document.getElementById('noteText').value;
-  note.projectId=document.getElementById('editorProj').value;
-  note.updated=Date.now();
-  saveState();renderNotesSidebar();
-}
-function handleImageUpload(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const note=state.notes.find(n=>n.id===activeNoteId);note.images.push(ev.target.result);saveState();openNote(activeNoteId);};reader.readAsDataURL(file);}
-function deleteNote(noteId,e){e.stopPropagation();state.notes=state.notes.filter(n=>n.id!==noteId);deleteDrawing(noteId);saveState();renderNotesSidebar();toast('Note deleted');}
 
-// ── INIT ──
+function setPaperType(type){
+  const wrap=document.getElementById('canvasWrap');
+  wrap.className=`note-canvas-wrap paper-${type}`;
+  const note=state.notes.find(n=>n.id===activeNoteId); if(note){note.paperType=type; saveState();}
+}
+
+function toggleDrawMode(){ drawingMode=!drawingMode; document.querySelector('.tool-btn').classList.toggle('active', drawingMode); }
+function resizeCanvas(){ const wrap=document.getElementById('canvasWrap'); activeCanvas.width=wrap.offsetWidth; activeCanvas.height=1000; activeCtx.lineCap='round'; activeCtx.lineJoin='round'; }
+function canvasDown(e){ if(!drawingMode)return; isDrawing=true; const r=activeCanvas.getBoundingClientRect(); activeCtx.beginPath(); activeCtx.moveTo(e.clientX-r.left, e.clientY-r.top); }
+function canvasMove(e){
+  if(!isDrawing || !drawingMode)return; const r=activeCanvas.getBoundingClientRect();
+  const pressure = e.pressure || 0.5; activeCtx.lineWidth = penSize * (pressure * 2);
+  activeCtx.strokeStyle=penColor; activeCtx.lineTo(e.clientX-r.left, e.clientY-r.top); activeCtx.stroke();
+}
+function canvasUp(){ if(isDrawing){isDrawing=false; saveDrawingNow();} }
+function saveDrawingNow(){ if(activeCanvas && activeNoteId) saveDrawing(activeNoteId, activeCanvas.toDataURL()); }
+function saveDrawing(noteId,data){ db.transaction('drawings','readwrite').objectStore('drawings').put(data,noteId); }
+function loadDrawing(noteId){ return new Promise(res=>{ const req=db.transaction('drawings','readonly').objectStore('drawings').get(noteId); req.onsuccess=e=>res(e.target.result); }); }
+
+// ── KYTHY AI ──
+async function sendKythy(){
+  const input=document.getElementById('kythyInput'); const msg=input.value.trim(); if(!msg)return; input.value='';
+  addMsg(msg,'user'); const thinking=addMsg('Thinking…','thinking');
+  let apiKey=localStorage.getItem('kythros_gemini_key') || prompt("Enter Gemini API Key:");
+  if(apiKey) localStorage.setItem('kythros_gemini_key', apiKey);
+  try {
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method:'POST', body: JSON.stringify({ contents: [{ parts: [{ text: "Context: KYTHROS Life OS. User: Travis. Msg: "+msg }] }] })
+    });
+    const data=await resp.json(); thinking.textContent=data.candidates[0].content.parts[0].text;
+  } catch(e){ thinking.textContent="Error connecting to Gemini."; }
+}
+
+// ── UTILS & INIT ──
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function switchProject(id){ state.activeProject=id; render(); }
+
 openDB().then(loadState).then(()=>{
   render();
-  renderNotesFilter();
-  const s1=document.createElement('script');s1.src='https://apis.google.com/js/api.js';s1.onload=initGapi;document.head.appendChild(s1);
-  const s2=document.createElement('script');s2.src='https://accounts.google.com/gsi/client';s2.onload=initGis;document.head.appendChild(s2);
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js'; s1.onload=initGapi; document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client'; s2.onload=initGis; document.head.appendChild(s2);
 });
 </script>
 </body>
