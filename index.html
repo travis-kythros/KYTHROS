@@ -3,178 +3,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Professional Workspace | Calendar & Notes</title>
+  <title>Enterprise Workspace | Calendar & Sync</title>
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   
   <style>
     :root {
-      --primary-color: #0d6efd;
-      --sidebar-width: 380px;
-      --bg-light: #f4f7f9;
+      --primary: #2563eb;
+      --sidebar-width: 400px;
+      --glass-bg: rgba(255, 255, 255, 0.95);
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     }
 
-    body {
-      background-color: var(--bg-light);
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      height: 100vh;
+    /* Reset & Base */
+    body, html {
+      height: 100%;
       margin: 0;
-      overflow: hidden; /* Prevents double scrollbars */
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg-gradient);
+      overflow: hidden;
     }
 
-    #wrapper {
+    #app-container {
       display: flex;
       height: 100vh;
       width: 100vw;
     }
 
-    /* Sidebar / Notes Section */
+    /* Sidebar Styling */
     #sidebar {
       width: var(--sidebar-width);
-      background: white;
-      border-right: 1px solid #dee2e6;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
       display: flex;
       flex-direction: column;
-      z-index: 10;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      box-shadow: 10px 0 15px -3px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+      transition: transform 0.3s ease;
     }
 
-    .sidebar-header {
+    .sidebar-brand {
       padding: 1.5rem;
-      background: var(--primary-color);
+      background: var(--primary);
       color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .notes-area-container {
+    .notes-section {
       flex-grow: 1;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
+      gap: 1rem;
+      overflow-y: auto;
     }
 
     #notes-area {
       flex-grow: 1;
       width: 100%;
-      border: 1px solid #ced4da;
-      border-radius: 8px;
-      padding: 1rem;
-      font-size: 16px; /* Critical for iPad: prevents auto-zoom on focus */
-      line-height: 1.5;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-size: 16px; /* Prevents iPad Auto-Zoom */
+      line-height: 1.6;
+      background: #fffcf0;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
       resize: none;
-      background-color: #fffdf5;
     }
 
     #notes-area:focus {
       outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    /* Main Content / Calendar */
-    #main-content {
+    /* Main Content Styling */
+    #main-view {
       flex-grow: 1;
       padding: 1.5rem;
       position: relative;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
-    .calendar-card {
+    .calendar-container {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       height: 100%;
+      border: 1px solid #e2e8f0;
     }
 
-    /* Status Indicators */
-    .sync-badge {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 20px;
-      font-weight: bold;
+    /* Calendar Overrides */
+    .fc { --fc-button-bg-color: #2563eb; --fc-button-border-color: #2563eb; height: 100%; }
+    .fc .fc-toolbar-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+    .fc-event { cursor: pointer; padding: 2px 5px; border-radius: 4px; }
+
+    /* Custom Status UI */
+    .sync-status-pill {
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
+    .status-synced { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef9c3; color: #854d0e; }
+    .status-error { background: #fee2e2; color: #991b1b; }
 
-    .status-saving { background: #fff3cd; color: #856404; }
-    .status-saved { background: #d4edda; color: #155724; }
-    .status-syncing { background: #cce5ff; color: #004085; }
-
-    /* Loading Overlay */
-    #loading-overlay {
+    /* Loader Overlay */
+    #global-loader {
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
+      inset: 0;
       background: rgba(255,255,255,0.8);
+      z-index: 1000;
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 100;
-      border-radius: 12px;
+      backdrop-filter: blur(4px);
       display: none;
     }
 
-    /* Mobile / iPad Optimization */
-    @media (max-width: 991px) {
-      #wrapper { flex-direction: column; }
-      #sidebar { width: 100%; height: 35vh; border-right: none; border-bottom: 1px solid #ddd; }
-      #main-content { height: 65vh; padding: 1rem; }
+    /* Mobile / Tablet Adjustments */
+    @media (max-width: 1024px) {
+      #app-container { flex-direction: column; }
+      #sidebar { width: 100%; height: 35vh; border-right: none; border-bottom: 1px solid #e2e8f0; }
+      #main-view { height: 65vh; padding: 1rem; }
     }
   </style>
 </head>
 <body>
 
-<div id="wrapper">
+<div id="app-container">
   <aside id="sidebar">
-    <div class="sidebar-header">
-      <h5 class="mb-1">Workspace Notes</h5>
-      <div class="d-flex align-items-center gap-2">
-        <span id="sync-indicator" class="sync-badge status-saved">Synced</span>
-        <small id="last-save-time" style="opacity: 0.8; font-size: 0.7rem;">Last update: Just now</small>
+    <div class="sidebar-brand">
+      <div>
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-calendar-check me-2"></i>Workspace</h5>
+        <div id="sync-status" class="sync-status-pill status-synced mt-1">System Online</div>
       </div>
+      <button class="btn btn-sm btn-light" onclick="forceSync()">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
     </div>
-    
-    <div class="notes-area-container">
-      <textarea id="notes-area" placeholder="Type notes here... they sync automatically to the cloud."></textarea>
-      <div class="mt-3 d-grid">
-        <button class="btn btn-outline-primary btn-sm" onclick="fetchCalendarData()">
-          Force Refresh Calendar
+
+    <div class="notes-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <label class="fw-bold text-secondary small">INTERNAL NOTES</label>
+        <small id="last-saved" class="text-muted" style="font-size: 0.7rem;">Saved: Just now</small>
+      </div>
+      <textarea id="notes-area" placeholder="Type here... iPad edits save when you tap away or close the keyboard."></textarea>
+      
+      <div class="mt-auto pt-3">
+        <button class="btn btn-primary w-100 fw-bold py-2" data-bs-toggle="modal" data-bs-target="#addEventModal">
+          <i class="fa-solid fa-plus me-2"></i>Create New Event
         </button>
       </div>
     </div>
   </aside>
 
-  <main id="main-content">
-    <div id="loading-overlay">
-      <div class="spinner-border text-primary" role="status"></div>
+  <main id="main-view">
+    <div id="global-loader">
+      <div class="text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 fw-bold text-primary">Refreshing Data...</p>
+      </div>
     </div>
-    
-    <div class="calendar-card">
+
+    <div class="calendar-container">
       <div id="calendar"></div>
     </div>
   </main>
 </div>
 
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="viewEventModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalTitle">Event</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold" id="viewTitle">Event Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <p id="modalDescription" class="text-muted"></p>
-        <div class="d-flex align-items-center mt-3 text-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-2" viewBox="0 0 16 16">
-            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-          </svg>
-          <span id="modalTime"></span>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="small text-uppercase fw-bold text-muted">Description</label>
+          <p id="viewDescription" class="lead"></p>
+        </div>
+        <div class="d-flex gap-4">
+          <div>
+            <label class="small text-uppercase fw-bold text-muted">Start</label>
+            <p id="viewStart" class="mb-0"></p>
+          </div>
+          <div>
+            <label class="small text-uppercase fw-bold text-muted">End</label>
+            <p id="viewEnd" class="mb-0"></p>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="handleDelete()">Delete Event</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addEventModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="addEventForm">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold">New Schedule Entry</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Event Title</label>
+            <input type="text" class="form-control" id="eventTitle" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Date & Time</label>
+            <input type="datetime-local" class="form-control" id="eventDateTime" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Description (Optional)</label>
+            <textarea class="form-control" id="eventDesc" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary fw-bold">Create Event</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -185,32 +250,34 @@
 
 <script>
   let calendar;
+  let currentEventId = null;
   const notesArea = document.getElementById('notes-area');
-  const syncIndicator = document.getElementById('sync-indicator');
-  const lastSaveTime = document.getElementById('last-save-time');
-  const loader = document.getElementById('loading-overlay');
-  const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+  const syncStatus = document.getElementById('sync-status');
+  const lastSavedText = document.getElementById('last-saved');
+  const loader = document.getElementById('global-loader');
 
-  // Initialize App on Load
+  // 1. INITIALIZATION & REFRESH FIX
   document.addEventListener('DOMContentLoaded', function() {
     initCalendar();
     
-    // FIX: Trigger immediate data fetch so page isn't blank on refresh
-    fetchCalendarData();
+    // THE FIX: Immediately fetch data when page finishes loading (Chrome Refresh Fix)
+    forceSync();
     loadNotes();
-    
-    // iPad Optimization: Listen for 'input' (real-time) and 'blur' (switching apps/focus)
+
+    // IPAD OPTIMIZATION: 
+    // Listen for 'blur' (tapping away), 'input' (debounced typing), and 'visibilitychange' (closing app)
     let saveTimeout;
     notesArea.addEventListener('input', () => {
-      updateSyncStatus('saving');
+      setSyncStatus('pending', 'Drafting...');
       clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => {
-        saveNotes(notesArea.value);
-      }, 1500); // Debounce to prevent hitting GAS quotas
+      saveTimeout = setTimeout(() => saveNotes(notesArea.value), 2000);
     });
 
-    notesArea.addEventListener('blur', () => {
-      saveNotes(notesArea.value); // Force save when iPad keyboard is dismissed
+    notesArea.addEventListener('blur', () => saveNotes(notesArea.value));
+    
+    // Backup save for iPads when the browser tab is hidden/closed
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveNotes(notesArea.value);
     });
   });
 
@@ -223,43 +290,47 @@
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,listWeek'
       },
-      height: '100%',
       themeSystem: 'Bootstrap5',
+      height: '100%',
+      nowIndicator: true,
+      dayMaxEvents: true,
       eventClick: function(info) {
-        openModal(info.event);
+        showViewModal(info.event);
       }
     });
     calendar.render();
   }
 
-  // --- Data Fetching Logic ---
-
-  function fetchCalendarData() {
+  // 2. DATA SYNC (BACKEND COMMUNICATIONS)
+  
+  function forceSync() {
     toggleLoader(true);
-    updateSyncStatus('syncing');
+    setSyncStatus('pending', 'Syncing Calendar...');
     
     google.script.run
       .withSuccessHandler(function(events) {
         calendar.removeAllEvents();
         calendar.addEventSource(events);
-        updateSyncStatus('saved');
+        setSyncStatus('synced', 'System Online');
         toggleLoader(false);
       })
       .withFailureHandler(function(err) {
+        setSyncStatus('error', 'Sync Failed');
         toggleLoader(false);
-        Swal.fire('Fetch Failed', 'Could not sync calendar data: ' + err, 'error');
+        Swal.fire('Sync Error', err.message, 'error');
       })
-      .getCalendarEvents(); 
+      .getCalendarEvents(); // Must exist in Code.gs
   }
 
   function saveNotes(content) {
+    if (!content) return;
     google.script.run
       .withSuccessHandler(function() {
-        updateSyncStatus('saved');
         const now = new Date();
-        lastSaveTime.innerText = "Last update: " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        lastSavedText.innerText = "Saved: " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        setSyncStatus('synced', 'System Online');
       })
-      .saveUserNotes(content);
+      .saveUserNotes(content); // Must exist in Code.gs
   }
 
   function loadNotes() {
@@ -270,31 +341,68 @@
       .getUserNotes();
   }
 
-  // --- UI Helpers ---
+  // 3. EVENT CRUD OPERATIONS
 
-  function updateSyncStatus(state) {
-    syncIndicator.classList.remove('status-saving', 'status-saved', 'status-syncing');
-    if (state === 'saving') {
-      syncIndicator.innerText = "Saving...";
-      syncIndicator.classList.add('status-saving');
-    } else if (state === 'syncing') {
-      syncIndicator.innerText = "Syncing...";
-      syncIndicator.classList.add('status-syncing');
-    } else {
-      syncIndicator.innerText = "Synced";
-      syncIndicator.classList.add('status-saved');
-    }
+  document.getElementById('addEventForm').onsubmit = function(e) {
+    e.preventDefault();
+    const eventData = {
+      title: document.getElementById('eventTitle').value,
+      start: document.getElementById('eventDateTime').value,
+      description: document.getElementById('eventDesc').value
+    };
+
+    toggleLoader(true);
+    google.script.run
+      .withSuccessHandler(function() {
+        bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
+        document.getElementById('addEventForm').reset();
+        forceSync();
+        Swal.fire('Success', 'Event added to Google Calendar', 'success');
+      })
+      .addEventToGoogle(eventData); // Must exist in Code.gs
+  };
+
+  function handleDelete() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This will remove the event from your Google Calendar",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        toggleLoader(true);
+        google.script.run
+          .withSuccessHandler(function() {
+            bootstrap.Modal.getInstance(document.getElementById('viewEventModal')).hide();
+            forceSync();
+            Swal.fire('Deleted!', 'Event removed.', 'success');
+          })
+          .deleteEventFromGoogle(currentEventId); // Must exist in Code.gs
+      }
+    });
+  }
+
+  // 4. UI HELPERS
+
+  function setSyncStatus(type, text) {
+    syncStatus.innerText = text;
+    syncStatus.className = 'sync-status-pill ' + 
+      (type === 'synced' ? 'status-synced' : type === 'error' ? 'status-error' : 'status-pending');
   }
 
   function toggleLoader(show) {
     loader.style.display = show ? 'flex' : 'none';
   }
 
-  function openModal(event) {
-    document.getElementById('modalTitle').innerText = event.title;
-    document.getElementById('modalDescription').innerText = event.extendedProps.description || "No additional notes for this event.";
-    document.getElementById('modalTime').innerText = event.start.toLocaleString();
-    eventModal.show();
+  function showViewModal(event) {
+    currentEventId = event.id;
+    document.getElementById('viewTitle').innerText = event.title;
+    document.getElementById('viewDescription').innerText = event.extendedProps.description || "No description provided.";
+    document.getElementById('viewStart').innerText = event.start ? event.start.toLocaleString() : 'N/A';
+    document.getElementById('viewEnd').innerText = event.end ? event.end.toLocaleString() : 'N/A';
+    new bootstrap.Modal(document.getElementById('viewEventModal')).show();
   }
 </script>
 
