@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Task Manager</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --panel-3: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #3b82f6;
+      --accent-2: #60a5fa;
+      --good: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --todo: #64748b;
+      --inprogress: #2563eb;
+      --blocked: #dc2626;
+      --done: #059669;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: linear-gradient(180deg, #0b1020 0%, #111827 100%); color: var(--text); }
+    body { min-height: 100vh; }
+    button, input, select, textarea { font: inherit; }
+    .app { max-width: 1480px; margin: 0 auto; padding: 24px; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .title-block h1 { margin: 0 0 6px; font-size: 2rem; letter-spacing: -.03em; }
+    .title-block p { margin: 0; color: var(--muted); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: .18s ease;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover { transform: translateY(-1px); border-color: #4b5563; }
+    .btn.primary { background: linear-gradient(180deg, var(--accent), #1d4ed8); border-color: #1d4ed8; }
+    .btn.ghost { background: transparent; box-shadow: none; }
+    .btn.small { padding: 8px 11px; border-radius: 10px; box-shadow: none; }
+
+    .toolbar {
+      background: rgba(17,24,39,.9);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1.1fr auto auto auto auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(16px);
+      z-index: 5;
+    }
+    .search-wrap input, .filter, .modal-grid input, .modal-grid select, .modal-grid textarea {
+      width: 100%;
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    .search-wrap input:focus, .filter:focus, .modal-grid input:focus, .modal-grid select:focus, .modal-grid textarea:focus { border-color: var(--accent-2); }
+    .view-switch {
+      display: inline-flex;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .view-switch button {
+      background: transparent;
+      color: var(--muted);
+      border: 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      min-width: 88px;
+    }
+    .view-switch button.active { background: var(--accent); color: white; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      background: rgba(17,24,39,.88);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .stat .label { color: var(--muted); font-size: .85rem; margin-bottom: 8px; }
+    .stat .value { font-size: 1.7rem; font-weight: 700; }
+
+    .panel {
+      background: rgba(17,24,39,.88);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .panel-header h2 { margin: 0; font-size: 1.05rem; }
+    .panel-header .sub { color: var(--muted); font-size: .92rem; }
+
+    .kanban { display: grid; grid-template-columns: repeat(4, minmax(250px, 1fr)); gap: 16px; padding: 18px; }
+    .lane { background: #0b1220; border: 1px solid var(--border); border-radius: 18px; min-height: 520px; display: flex; flex-direction: column; }
+    .lane-header { padding: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .lane-title { font-weight: 700; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: .8rem; border: 1px solid transparent; }
+    .todo { background: rgba(100,116,139,.16); color: #cbd5e1; border-color: rgba(148,163,184,.25); }
+    .inprogress { background: rgba(37,99,235,.18); color: #bfdbfe; border-color: rgba(96,165,250,.35); }
+    .blocked { background: rgba(220,38,38,.16); color: #fecaca; border-color: rgba(252,165,165,.35); }
+    .done { background: rgba(5,150,105,.16); color: #bbf7d0; border-color: rgba(110,231,183,.35); }
+    .lane-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .card {
+      background: linear-gradient(180deg, rgba(31,41,55,.95), rgba(17,24,39,.95));
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 14px;
+      cursor: grab;
+    }
+    .card:hover { border-color: #60a5fa; }
+    .card.dragging { opacity: .45; }
+    .card-title { font-weight: 700; margin-bottom: 8px; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .pill { font-size: .78rem; color: var(--muted); border: 1px solid var(--border); padding: 4px 8px; border-radius: 999px; }
+    .desc { color: #cbd5e1; font-size: .92rem; line-height: 1.35; }
+    .progress-wrap { margin-top: 10px; }
+    .progress-label { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; margin-bottom: 6px; }
+    .progress { height: 8px; background: #0f172a; border-radius: 999px; overflow: hidden; }
+    .progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+    .gantt-wrap { padding: 0; overflow: auto; }
+    .gantt-header, .gantt-row {
+      display: grid;
+      grid-template-columns: 340px repeat(12, 1fr);
+      min-width: 1180px;
+    }
+    .gantt-header {
+      position: sticky;
+      top: 60px;
+      z-index: 3;
+      background: #0b1220;
+      border-bottom: 1px solid var(--border);
+    }
+    .gantt-header > div, .gantt-row > div { border-right: 1px solid rgba(51,65,85,.55); }
+    .gantt-header > div:last-child, .gantt-row > div:last-child { border-right: 0; }
+    .gantt-header .left-head, .gantt-cell-left {
+      padding: 14px 16px;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #0b1220;
+      border-right: 1px solid var(--border);
+    }
+    .month-head { padding: 14px 8px; text-align: center; color: var(--muted); font-size: .85rem; }
+    .gantt-row { min-height: 76px; border-bottom: 1px solid rgba(51,65,85,.45); }
+    .gantt-cell-left {
+      background: linear-gradient(180deg, rgba(17,24,39,.98), rgba(11,18,32,.98));
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .gantt-task-title { font-weight: 700; }
+    .gantt-task-meta { color: var(--muted); font-size: .82rem; margin-top: 3px; }
+    .gantt-time-grid { position: relative; grid-column: 2 / span 12; display: grid; grid-template-columns: repeat(12, 1fr); }
+    .gantt-time-grid div { border-right: 1px dashed rgba(71,85,105,.45); }
+    .gantt-time-grid div:last-child { border-right: 0; }
+    .bar-area { position: absolute; inset: 10px 8px; }
+    .task-bar {
+      position: absolute;
+      top: 14px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      font-size: .82rem;
+      font-weight: 700;
+      overflow: hidden;
+      white-space: nowrap;
+      gap: 8px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.07);
+      cursor: pointer;
+    }
+    .task-bar.todo { background: linear-gradient(90deg, #475569, #64748b); }
+    .task-bar.inprogress { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .task-bar.blocked { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+    .task-bar.done { background: linear-gradient(90deg, #047857, #10b981); }
+    .task-bar.overdue { outline: 2px solid #f59e0b; }
+    .milestone {
+      position: absolute;
+      top: 18px;
+      width: 22px;
+      height: 22px;
+      transform: rotate(45deg);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .milestone.todo { background: #64748b; }
+    .milestone.inprogress { background: #2563eb; }
+    .milestone.blocked { background: #dc2626; }
+    .milestone.done { background: #059669; }
+    .today-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(245,158,11,.95);
+      z-index: 2;
+    }
+
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1160px; }
+    th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid rgba(51,65,85,.55); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: .85rem; background: #0b1220; position: sticky; top: 0; }
+    tr:hover td { background: rgba(15,23,42,.45); }
+    .link-btn { background: none; border: 0; color: #93c5fd; cursor: pointer; padding: 0; text-align: left; }
+
+    .empty { padding: 48px 20px; text-align: center; color: var(--muted); }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(2,6,23,.72);
+      display: none; align-items: center; justify-content: center; padding: 18px; z-index: 20;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      width: min(980px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: linear-gradient(180deg, #111827, #0b1220);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .modal-header, .modal-footer { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .modal-footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .modal-body { padding: 20px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .modal-title { font-size: 1.15rem; font-weight: 700; }
+    .modal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .field-group { display: flex; flex-direction: column; gap: 8px; }
+    .field-group.full { grid-column: 1 / -1; }
+    label { font-size: .88rem; color: #cbd5e1; }
+    textarea { min-height: 100px; resize: vertical; }
+    .section-title { margin: 18px 0 6px; font-size: .98rem; color: #93c5fd; }
+    .inline-row { display: flex; gap: 8px; }
+    .danger-text { color: #fca5a5; font-size: .88rem; }
+
+    @media (max-width: 1100px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .kanban { grid-template-columns: 1fr; }
+      .modal-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .app { padding: 14px; }
+      .topbar { flex-direction: column; }
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-block">
+        <h1>Project Task Manager</h1>
+        <p>Gantt-first planning with Kanban secondary, Blocked workflow support, and metadata-rich task records.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="resetSampleBtn">Reset Sample Data</button>
+        <button class="btn primary" id="addTaskBtn">+ Add Task</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap"><input id="searchInput" type="text" placeholder="Search tasks, notes, or tags" /></div>
+      <select id="projectFilter" class="filter"></select>
+      <select id="statusFilter" class="filter"></select>
+      <select id="priorityFilter" class="filter"></select>
+      <div class="view-switch">
+        <button data-view="gantt" class="active">Gantt</button>
+        <button data-view="kanban">Kanban</button>
+        <button data-view="list">List</button>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 id="panelTitle">Gantt View</h2>
+          <div class="sub" id="panelSub">Primary planning view with timeline, dependencies, milestones, and overdue visibility.</div>
+        </div>
+        <button class="btn ghost small" id="exportBtn">Export JSON</button>
+      </div>
+      <div id="viewContainer"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="taskModalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Add Task</div>
+        <button class="btn small" id="closeModalBtn">Close</button>
+      </div>
+      <div class="modal-body">
+        <form id="taskForm">
+          <input type="hidden" id="taskId" />
+
+          <div class="section-title">Basic Info</div>
+          <div class="modal-grid">
+            <div class="field-group full">
+              <label for="title">Task Title</label>
+              <input id="title" required />
+            </div>
+            <div class="field-group full">
+              <label for="description">Description / Notes</label>
+              <textarea id="description"></textarea>
+            </div>
+            <div class="field-group">
+              <label for="project">Project</label>
+              <input id="project" placeholder="Website Redesign" />
+            </div>
+            <div class="field-group">
+              <label for="assignedTo">Assigned To</label>
+              <input id="assignedTo" placeholder="Travis" />
+            </div>
+            <div class="field-group">
+              <label for="status">Status</label>
+              <select id="status">
+                <option>To Do</option>
+                <option>In Progress</option>
+                <option>Blocked</option>
+                <option>Done</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="priority">Priority</label>
+              <select id="priority">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="section-title">Schedule & Progress</div>
+          <div class="modal-grid">
+            <div class="field-group">
+              <label for="startDate">Start Date</label>
+              <input id="startDate" type="date" />
+            </div>
+            <div class="field-group">
+              <label for="dueDate">Due / End Date</label>
+              <input id="dueDate" type="date" />
+            </div>
+            <div class="field-group">
+              <label for="percentComplete">Percent Complete</label>
+              <input id="percentComplete" type="number" min="0" max="100" value="0" />
+            </div>
+            <div class="field-group">
+              <label for="milestone">Milestone</label>
+              <select id="milestone">
+                <option value="false" selected>No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+            <div class="field-group full">
+              <label for="dependencies">Dependencies (comma-separated task IDs)</label>
+              <input id="dependencies" placeholder="task-1002, task-1005" />
+            </div>
+          </div>
+
+          <div class="section-title">Blocked Info</div>
+          <div class="modal-grid">
+            <div class="field-group full">
+              <label for="blockedReason">Blocked Reason</label>
+              <textarea id="blockedReason" placeholder="Required when status is Blocked"></textarea>
+            </div>
+            <div class="field-group">
+              <label for="blockedBy">Blocked By</label>
+              <input id="blockedBy" placeholder="Client approval" />
+            </div>
+            <div class="field-group">
+              <label for="followUpDate">Follow-Up Date</label>
+              <input id="followUpDate" type="date" />
+            </div>
+          </div>
+
+          <div class="section-title">Organization</div>
+          <div class="modal-grid">
+            <div class="field-group full">
+              <label for="tags">Tags (comma-separated)</label>
+              <input id="tags" placeholder="launch, review, finance" />
+            </div>
+          </div>
+          <p class="danger-text" id="modalError"></p>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div>
+          <button class="btn" id="deleteTaskBtn" type="button">Delete Task</button>
+        </div>
+        <div class="inline-row">
+          <button class="btn" id="cancelBtn" type="button">Cancel</button>
+          <button class="btn primary" id="saveTaskBtn" type="button">Save Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'task_manager_gantt_first_v1';
+    const today = new Date();
+
+    const sampleTasks = [
+      {
+        id: 'task-1001', title: 'Finalize product requirements', description: 'Lock the MVP scope for Gantt, Kanban, metadata, and shared task model.', project: 'Task Manager Build', status: 'Done', priority: 'High',
+        startDate: shiftDate(-20), dueDate: shiftDate(-14), percentComplete: 100, milestone: false, assignedTo: 'Travis', dependencyIds: [], blockedReason: '', blockedBy: '', blockedSince: '', followUpDate: '', tags: ['scope','mvp'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: isoNow(), sortOrder: 1
+      },
+      {
+        id: 'task-1002', title: 'Design shared task data model', description: 'Create the single source of truth used by Gantt, Kanban, and List.', project: 'Task Manager Build', status: 'In Progress', priority: 'Critical',
+        startDate: shiftDate(-10), dueDate: shiftDate(3), percentComplete: 65, milestone: false, assignedTo: 'Travis', dependencyIds: ['task-1001'], blockedReason: '', blockedBy: '', blockedSince: '', followUpDate: '', tags: ['architecture'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: '', sortOrder: 2
+      },
+      {
+        id: 'task-1003', title: 'Implement Blocked workflow logic', description: 'Require blocked reason and optional follow-up date when a task is stuck.', project: 'Task Manager Build', status: 'Blocked', priority: 'High',
+        startDate: shiftDate(-8), dueDate: shiftDate(1), percentComplete: 40, milestone: false, assignedTo: 'Travis', dependencyIds: ['task-1002'], blockedReason: 'Waiting on UI approval for final task-detail layout.', blockedBy: 'Design decision', blockedSince: shiftDate(-2), followUpDate: shiftDate(2), tags: ['workflow','blocked'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: '', sortOrder: 3
+      },
+      {
+        id: 'task-1004', title: 'Build Gantt timeline view', description: 'Primary planning view with timeline bars, milestones, and overdue visibility.', project: 'Task Manager Build', status: 'In Progress', priority: 'Critical',
+        startDate: shiftDate(-3), dueDate: shiftDate(9), percentComplete: 35, milestone: false, assignedTo: 'Travis', dependencyIds: ['task-1002'], blockedReason: '', blockedBy: '', blockedSince: '', followUpDate: '', tags: ['gantt','ui'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: '', sortOrder: 4
+      },
+      {
+        id: 'task-1005', title: 'Launch Kanban secondary view', description: 'Four lanes only: To Do, In Progress, Blocked, Done.', project: 'Task Manager Build', status: 'To Do', priority: 'Medium',
+        startDate: shiftDate(3), dueDate: shiftDate(12), percentComplete: 0, milestone: false, assignedTo: 'Travis', dependencyIds: ['task-1002'], blockedReason: '', blockedBy: '', blockedSince: '', followUpDate: '', tags: ['kanban'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: '', sortOrder: 5
+      },
+      {
+        id: 'task-1006', title: 'MVP ready for handoff', description: 'Milestone marking the first usable release.', project: 'Task Manager Build', status: 'To Do', priority: 'High',
+        startDate: shiftDate(15), dueDate: shiftDate(15), percentComplete: 0, milestone: true, assignedTo: 'Travis', dependencyIds: ['task-1004','task-1005'], blockedReason: '', blockedBy: '', blockedSince: '', followUpDate: '', tags: ['milestone','handoff'], createdAt: isoNow(), updatedAt: isoNow(), completedAt: '', sortOrder: 6
+      }
+    ];
+
+    let state = {
+      tasks: loadTasks(),
+      view: 'gantt',
+      filters: {
+        project: 'All Projects',
+        status: 'All Statuses',
+        priority: 'All Priorities',
+        search: ''
+      },
+      editingTaskId: null
+    };
+
+    const statsEl = document.getElementById('stats');
+    const viewContainer = document.getElementById('viewContainer');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelSub = document.getElementById('panelSub');
+    const projectFilter = document.getElementById('projectFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    const searchInput = document.getElementById('searchInput');
+    const modalBackdrop = document.getElementById('taskModalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalError = document.getElementById('modalError');
+
+    init();
+
+    function init() {
+      bindEvents();
+      seedIfEmpty();
+      render();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('.view-switch button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.view = btn.dataset.view;
+          document.querySelectorAll('.view-switch button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderView();
+        });
+      });
+
+      document.getElementById('addTaskBtn').addEventListener('click', () => openModal());
+      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+      document.getElementById('cancelBtn').addEventListener('click', closeModal);
+      document.getElementById('saveTaskBtn').addEventListener('click', saveTask);
+      document.getElementById('deleteTaskBtn').addEventListener('click', deleteTask);
+      document.getElementById('resetSampleBtn').addEventListener('click', () => {
+        if (confirm('Reset to sample data? This will overwrite current local task data.')) {
+          state.tasks = structuredClone(sampleTasks);
+          persist();
+          render();
+        }
+      });
+      document.getElementById('exportBtn').addEventListener('click', exportJson);
+
+      projectFilter.addEventListener('change', e => { state.filters.project = e.target.value; render(); });
+      statusFilter.addEventListener('change', e => { state.filters.status = e.target.value; render(); });
+      priorityFilter.addEventListener('change', e => { state.filters.priority = e.target.value; render(); });
+      searchInput.addEventListener('input', e => { state.filters.search = e.target.value.trim().toLowerCase(); render(); });
+
+      document.getElementById('status').addEventListener('change', (e) => toggleBlockedFields(e.target.value));
+      modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeModal(); });
+    }
+
+    function seedIfEmpty() {
+      if (!state.tasks.length) {
+        state.tasks = structuredClone(sampleTasks);
+        persist();
+      }
+    }
+
+    function render() {
+      populateFilters();
+      renderStats();
+      renderView();
+    }
+
+    function populateFilters() {
+      const projects = ['All Projects', ...new Set(state.tasks.map(t => t.project).filter(Boolean))];
+      const statuses = ['All Statuses', 'To Do', 'In Progress', 'Blocked', 'Done'];
+      const priorities = ['All Priorities', 'Low', 'Medium', 'High', 'Critical'];
+      setOptions(projectFilter, projects, state.filters.project);
+      setOptions(statusFilter, statuses, state.filters.status);
+      setOptions(priorityFilter, priorities, state.filters.priority);
+      searchInput.value = state.filters.search;
+    }
+
+    function setOptions(select, options, selected) {
+      select.innerHTML = options.map(o => `<option ${o===selected?'selected':''}>${escapeHtml(o)}</option>`).join('');
+    }
+
+    function getFilteredTasks() {
+      return state.tasks.filter(task => {
+        const matchesProject = state.filters.project === 'All Projects' || task.project === state.filters.project;
+        const matchesStatus = state.filters.status === 'All Statuses' || task.status === state.filters.status;
+        const matchesPriority = state.filters.priority === 'All Priorities' || task.priority === state.filters.priority;
+        const searchBlob = [task.title, task.description, task.tags?.join(' '), task.assignedTo, task.project, task.blockedReason].join(' ').toLowerCase();
+        const matchesSearch = !state.filters.search || searchBlob.includes(state.filters.search);
+        return matchesProject && matchesStatus && matchesPriority && matchesSearch;
+      }).sort((a,b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+    }
+
+    function renderStats() {
+      const tasks = getFilteredTasks();
+      const overdue = tasks.filter(t => isOverdue(t)).length;
+      const blocked = tasks.filter(t => t.status === 'Blocked').length;
+      const done = tasks.filter(t => t.status === 'Done').length;
+      const progressAvg = tasks.length ? Math.round(tasks.reduce((sum, t) => sum + Number(t.percentComplete || 0), 0) / tasks.length) : 0;
+      const milestones = tasks.filter(t => t.milestone).length;
+
+      const cards = [
+        { label: 'Visible Tasks', value: tasks.length },
+        { label: 'Blocked', value: blocked },
+        { label: 'Overdue', value: overdue },
+        { label: 'Avg. Progress', value: `${progressAvg}%` },
+        { label: 'Milestones', value: milestones }
+      ];
+      statsEl.innerHTML = cards.map(card => `
+        <div class="stat">
+          <div class="label">${escapeHtml(card.label)}</div>
+          <div class="value">${escapeHtml(String(card.value))}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderView() {
+      const tasks = getFilteredTasks();
+      if (state.view === 'gantt') renderGantt(tasks);
+      if (state.view === 'kanban') renderKanban(tasks);
+      if (state.view === 'list') renderList(tasks);
+    }
+
+    function renderGantt(tasks) {
+      panelTitle.textContent = 'Gantt View';
+      panelSub.textContent = 'Primary planning view with timeline, dependencies, milestones, and overdue visibility.';
+      const months = buildMonthRange(tasks);
+      const todayPos = getTodayPosition(months);
+
+      const header = `
+        <div class="gantt-header">
+          <div class="left-head">Task / Schedule</div>
+          ${months.map(m => `<div class="month-head">${m.label}</div>`).join('')}
+        </div>`;
+
+      const body = tasks.length ? tasks.map(task => {
+        const { startIndex, span, milestoneIndex } = calculateBar(task, months);
+        const dependencyText = task.dependencyIds?.length ? `Depends on ${task.dependencyIds.join(', ')}` : 'No dependencies';
+        const left = `
+          <div class="gantt-cell-left">
+            <div>
+              <div class="gantt-task-title">${escapeHtml(task.title)}</div>
+              <div class="gantt-task-meta">${escapeHtml(task.project || 'No project')} · ${escapeHtml(task.status)} · ${escapeHtml(task.priority)}</div>
+              <div class="gantt-task-meta">${escapeHtml(dependencyText)}</div>
+            </div>
+            <button class="btn small" onclick="openTaskById('${task.id}')">Edit</button>
+          </div>`;
+
+        const grid = `<div class="gantt-time-grid">
+          ${months.map(() => '<div></div>').join('')}
+          <div class="bar-area">
+            ${todayPos !== null ? `<div class="today-line" style="left:${todayPos}%"></div>` : ''}
+            ${task.milestone && milestoneIndex !== null ? `<div class="milestone ${statusClass(task.status)}" style="left: calc(${(milestoneIndex / months.length) * 100}% - 11px)" onclick="openTaskById('${task.id}')" title="${escapeHtml(task.title)}"></div>` : ''}
+            ${!task.milestone && startIndex !== null ? `<div class="task-bar ${statusClass(task.status)} ${isOverdue(task) ? 'overdue' : ''}" style="left:${(startIndex / months.length) * 100}%; width:${span}%" onclick="openTaskById('${task.id}')">
+              <span>${escapeHtml(task.title)}</span>
+              <span>${Number(task.percentComplete || 0)}%</span>
+            </div>` : ''}
+          </div>
+        </div>`;
+
+        return `<div class="gantt-row">${left}${grid}</div>`;
+      }).join('') : '<div class="empty">No tasks match the current filters.</div>';
+
+      viewContainer.innerHTML = `<div class="gantt-wrap">${header}${body}</div>`;
+    }
+
+    function renderKanban(tasks) {
+      panelTitle.textContent = 'Kanban View';
+      panelSub.textContent = 'Secondary execution view with honest workflow lanes, including Blocked.';
+      const lanes = ['To Do', 'In Progress', 'Blocked', 'Done'];
+      viewContainer.innerHTML = `
+        <div class="kanban">
+          ${lanes.map(lane => {
+            const laneTasks = tasks.filter(t => t.status === lane);
+            return `
+              <div class="lane" data-lane="${lane}" ondragover="allowDrop(event)" ondrop="dropTask(event, '${lane}')">
+                <div class="lane-header">
+                  <span class="lane-title">${escapeHtml(lane)}</span>
+                  <span class="badge ${statusClass(lane)}">${laneTasks.length}</span>
+                </div>
+                <div class="lane-body">
+                  ${laneTasks.length ? laneTasks.map(task => renderKanbanCard(task)).join('') : '<div class="empty">No tasks here.</div>'}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+      bindCardDragEvents();
+    }
+
+    function renderKanbanCard(task) {
+      return `
+        <div class="card" draggable="true" data-task-id="${task.id}">
+          <div class="card-title">${escapeHtml(task.title)}</div>
+          <div class="desc">${escapeHtml(task.description || 'No description')}</div>
+          <div class="meta-row">
+            <span class="badge ${statusClass(task.status)}">${escapeHtml(task.status)}</span>
+            <span class="pill">${escapeHtml(task.priority)}</span>
+            ${task.dueDate ? `<span class="pill">Due ${escapeHtml(formatDate(task.dueDate))}</span>` : ''}
+            ${task.assignedTo ? `<span class="pill">${escapeHtml(task.assignedTo)}</span>` : ''}
+          </div>
+          ${task.status === 'Blocked' && task.blockedReason ? `<div class="desc"><strong>Blocked:</strong> ${escapeHtml(task.blockedReason)}</div>` : ''}
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Progress</span><span>${Number(task.percentComplete || 0)}%</span></div>
+            <div class="progress"><span style="width:${Number(task.percentComplete || 0)}%"></span></div>
+          </div>
+          <div class="meta-row" style="margin-top:12px;">
+            <button class="btn small" onclick="openTaskById('${task.id}')">Edit</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderList(tasks) {
+      panelTitle.textContent = 'List View';
+      panelSub.textContent = 'Utility table for bulk review, sorting, and metadata inspection.';
+      viewContainer.innerHTML = tasks.length ? `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Project</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Start</th>
+                <th>Due</th>
+                <th>Assigned</th>
+                <th>% Complete</th>
+                <th>Dependencies</th>
+                <th>Blocked</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tasks.map(task => `
+                <tr>
+                  <td><button class="link-btn" onclick="openTaskById('${task.id}')">${escapeHtml(task.title)}</button><div class="gantt-task-meta">${escapeHtml(task.id)}</div></td>
+                  <td>${escapeHtml(task.project || '')}</td>
+                  <td><span class="badge ${statusClass(task.status)}">${escapeHtml(task.status)}</span></td>
+                  <td>${escapeHtml(task.priority)}</td>
+                  <td>${escapeHtml(formatDate(task.startDate))}</td>
+                  <td>${escapeHtml(formatDate(task.dueDate))}</td>
+                  <td>${escapeHtml(task.assignedTo || '')}</td>
+                  <td>${Number(task.percentComplete || 0)}%</td>
+                  <td>${escapeHtml((task.dependencyIds || []).join(', ') || '—')}</td>
+                  <td>${escapeHtml(task.blockedReason || '—')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '<div class="empty">No tasks match the current filters.</div>';
+    }
+
+    function buildMonthRange(tasks) {
+      const dates = tasks.flatMap(t => [t.startDate, t.dueDate]).filter(Boolean).map(d => new Date(d));
+      const baseStart = dates.length ? new Date(Math.min(...dates)) : new Date();
+      const start = new Date(baseStart.getFullYear(), baseStart.getMonth() - 1, 1);
+      const months = [];
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+        months.push({
+          year: d.getFullYear(),
+          month: d.getMonth(),
+          label: d.toLocaleDateString(undefined, { month: 'short', year: '2-digit' })
+        });
+      }
+      return months;
+    }
+
+    function calculateBar(task, months) {
+      if (!task.startDate && !task.dueDate) return { startIndex: null, span: 0, milestoneIndex: null };
+      const start = task.startDate ? new Date(task.startDate) : new Date(task.dueDate);
+      const end = task.dueDate ? new Date(task.dueDate) : new Date(task.startDate);
+      const startIndex = monthIndex(months, start);
+      const endIndex = monthIndex(months, end);
+      if (task.milestone) return { startIndex: null, span: 0, milestoneIndex: endIndex === null ? startIndex : endIndex };
+      if (startIndex === null) return { startIndex: null, span: 0, milestoneIndex: null };
+      const effectiveEnd = endIndex === null ? startIndex : Math.max(startIndex, endIndex);
+      const monthsWide = (effectiveEnd - startIndex) + 1;
+      return { startIndex, span: (monthsWide / months.length) * 100, milestoneIndex: null };
+    }
+
+    function monthIndex(months, date) {
+      const idx = months.findIndex(m => m.year === date.getFullYear() && m.month === date.getMonth());
+      if (idx !== -1) return idx;
+      if (date < new Date(months[0].year, months[0].month, 1)) return 0;
+      if (date > new Date(months[months.length - 1].year, months[months.length - 1].month + 1, 0)) return months.length - 1;
+      return null;
+    }
+
+    function getTodayPosition(months) {
+      const idx = monthIndex(months, new Date());
+      return idx === null ? null : (idx / months.length) * 100;
+    }
+
+    function bindCardDragEvents() {
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('dragstart', e => {
+          card.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', card.dataset.taskId);
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      });
+    }
+
+    function openModal(task = null) {
+      state.editingTaskId = task?.id || null;
+      modalTitle.textContent = task ? 'Edit Task' : 'Add Task';
+      modalError.textContent = '';
+      document.getElementById('deleteTaskBtn').style.visibility = task ? 'visible' : 'hidden';
+
+      document.getElementById('taskId').value = task?.id || '';
+      document.getElementById('title').value = task?.title || '';
+      document.getElementById('description').value = task?.description || '';
+      document.getElementById('project').value = task?.project || '';
+      document.getElementById('assignedTo').value = task?.assignedTo || '';
+      document.getElementById('status').value = task?.status || 'To Do';
+      document.getElementById('priority').value = task?.priority || 'Medium';
+      document.getElementById('startDate').value = task?.startDate || '';
+      document.getElementById('dueDate').value = task?.dueDate || '';
+      document.getElementById('percentComplete').value = task?.percentComplete ?? 0;
+      document.getElementById('milestone').value = String(Boolean(task?.milestone));
+      document.getElementById('dependencies').value = (task?.dependencyIds || []).join(', ');
+      document.getElementById('blockedReason').value = task?.blockedReason || '';
+      document.getElementById('blockedBy').value = task?.blockedBy || '';
+      document.getElementById('followUpDate').value = task?.followUpDate || '';
+      document.getElementById('tags').value = (task?.tags || []).join(', ');
+
+      toggleBlockedFields(document.getElementById('status').value);
+      modalBackdrop.classList.add('show');
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove('show');
+      state.editingTaskId = null;
+      document.getElementById('taskForm').reset();
+      modalError.textContent = '';
+    }
+
+    function toggleBlockedFields(status) {
+      const disabled = status !== 'Blocked';
+      ['blockedReason','blockedBy','followUpDate'].forEach(id => {
+        document.getElementById(id).disabled = false;
+      });
+      if (disabled) modalError.textContent = '';
+    }
+
+    function saveTask() {
+      const task = collectFormData();
+      if (!task) return;
+
+      const existingIndex = state.tasks.findIndex(t => t.id === task.id);
+      if (existingIndex >= 0) {
+        const prior = state.tasks[existingIndex];
+        task.createdAt = prior.createdAt;
+        task.sortOrder = prior.sortOrder;
+        state.tasks[existingIndex] = task;
+      } else {
+        task.sortOrder = state.tasks.length + 1;
+        state.tasks.push(task);
+      }
+
+      persist();
+      closeModal();
+      render();
+    }
+
+    function collectFormData() {
+      const id = document.getElementById('taskId').value || `task-${Date.now()}`;
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const project = document.getElementById('project').value.trim();
+      const assignedTo = document.getElementById('assignedTo').value.trim();
+      const status = document.getElementById('status').value;
+      const priority = document.getElementById('priority').value;
+      const startDate = document.getElementById('startDate').value;
+      const dueDate = document.getElementById('dueDate').value;
+      const percentComplete = clamp(Number(document.getElementById('percentComplete').value || 0), 0, 100);
+      const milestone = document.getElementById('milestone').value === 'true';
+      const dependencyIds = document.getElementById('dependencies').value.split(',').map(s => s.trim()).filter(Boolean);
+      const blockedReason = document.getElementById('blockedReason').value.trim();
+      const blockedBy = document.getElementById('blockedBy').value.trim();
+      const followUpDate = document.getElementById('followUpDate').value;
+      const tags = document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean);
+
+      if (!title) {
+        modalError.textContent = 'Task title is required.';
+        return null;
+      }
+      if (status === 'Blocked' && !blockedReason) {
+        modalError.textContent = 'Blocked Reason is required when status is Blocked.';
+        return null;
+      }
+      if (startDate && dueDate && new Date(startDate) > new Date(dueDate)) {
+        modalError.textContent = 'Start Date cannot be after Due Date.';
+        return null;
+      }
+
+      const now = isoNow();
+      return {
+        id,
+        title,
+        description,
+        project,
+        status,
+        priority,
+        startDate,
+        dueDate,
+        percentComplete: status === 'Done' ? 100 : percentComplete,
+        milestone,
+        assignedTo,
+        dependencyIds,
+        blockedReason: status === 'Blocked' ? blockedReason : '',
+        blockedBy: status === 'Blocked' ? blockedBy : '',
+        blockedSince: status === 'Blocked' ? (findTask(id)?.blockedSince || todayIso()) : '',
+        followUpDate: status === 'Blocked' ? followUpDate : '',
+        tags,
+        createdAt: findTask(id)?.createdAt || now,
+        updatedAt: now,
+        completedAt: status === 'Done' ? now : ''
+      };
+    }
+
+    function deleteTask() {
+      if (!state.editingTaskId) return closeModal();
+      if (!confirm('Delete this task?')) return;
+      state.tasks = state.tasks.filter(t => t.id !== state.editingTaskId);
+      persist();
+      closeModal();
+      render();
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tasks));
+    }
+
+    function loadTasks() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function findTask(id) {
+      return state.tasks.find(t => t.id === id);
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(state.tasks, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tasks-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function statusClass(status) {
+      return String(status || '').toLowerCase().replace(/\s+/g, '');
+    }
+
+    function isOverdue(task) {
+      if (!task.dueDate || task.status === 'Done') return false;
+      return new Date(task.dueDate) < new Date(todayIso());
+    }
+
+    function allowDrop(event) { event.preventDefault(); }
+
+    function dropTask(event, newStatus) {
+      event.preventDefault();
+      const taskId = event.dataTransfer.getData('text/plain');
+      const task = findTask(taskId);
+      if (!task) return;
+      if (newStatus === 'Blocked' && !task.blockedReason) {
+        openModal(task);
+        document.getElementById('status').value = 'Blocked';
+        modalError.textContent = 'Add a Blocked Reason before saving.';
+        return;
+      }
+      task.status = newStatus;
+      task.updatedAt = isoNow();
+      if (newStatus === 'Done') {
+        task.percentComplete = 100;
+        task.completedAt = isoNow();
+      }
+      if (newStatus !== 'Blocked') {
+        task.blockedReason = '';
+        task.blockedBy = '';
+        task.blockedSince = '';
+        task.followUpDate = '';
+      }
+      persist();
+      render();
+    }
+
+    function openTaskById(id) {
+      const task = findTask(id);
+      if (task) openModal(task);
+    }
+
+    window.openTaskById = openTaskById;
+    window.allowDrop = allowDrop;
+    window.dropTask = dropTask;
+
+    function isoNow() { return new Date().toISOString(); }
+    function todayIso() { return new Date().toISOString().slice(0,10); }
+    function shiftDate(days) {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0,10);
+    }
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+    }
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  </script>
+</body>
+</html>
