@@ -1,0 +1,3804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>KYTRAC — Track Your Job From Estimate to Completion</title>
+  <style>
+    :root {
+      --bg: #050e1c;
+      --surface: rgba(10,22,45,.95);
+      --surface2: rgba(14,29,58,.94);
+      --line: rgba(110,145,210,.18);
+      --text: #eaf0fb;
+      --muted: #7a8fab;
+      --amber: #d97706;
+      --amber2: #b45309;
+      --amber-dim: rgba(217,119,6,.15);
+      --amber-border: rgba(217,119,6,.28);
+      --green: #1dbb87;
+      --red: #ef5350;
+      --blue: #4d8dff;
+      --shadow: 0 8px 32px rgba(0,0,0,.35);
+      --sidebar-w: 220px;
+      --topbar-h: 60px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    html, body { min-height: 100vh; background: #050e1c; color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    button, input, select, textarea { font: inherit; touch-action: manipulation; }
+    input, select, textarea { width: 100%; background: rgba(7,17,33,.94); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; outline: none; }
+    input[type="date"], input[type="time"] { color-scheme: dark; }
+    textarea { min-height: 100px; resize: vertical; }
+    .small { font-size: .84rem; }
+    .muted { color: var(--muted); }
+    .good { color: #a3f2d2; }
+    .bad { color: #ffc0be; }
+
+    /* ══ LAYOUT ══ */
+    .kt-layout { display: flex; min-height: 100vh; }
+
+    /* ══ SIDEBAR ══ */
+    .kt-sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, rgba(8,18,38,.99) 0%, rgba(5,12,26,.99) 100%);
+      border-right: 1px solid var(--amber-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+      transition: transform .25s;
+    }
+    .kt-logo {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid var(--amber-border);
+    }
+    .kt-logo-mark {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--amber);
+      letter-spacing: -.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .kt-logo-tag {
+      font-size: .68rem;
+      color: rgba(217,119,6,.55);
+      margin-top: 3px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .kt-nav {
+      flex: 1;
+      padding: 10px 0;
+      overflow-y: auto;
+    }
+    .kt-nav-section {
+      padding: 10px 14px 4px;
+      font-size: .65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: rgba(110,145,210,.35);
+    }
+    .kt-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 16px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all .12s;
+      user-select: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .kt-nav-item:hover { background: rgba(217,119,6,.07); color: #eaf0fb; }
+    .kt-nav-item.active {
+      background: rgba(217,119,6,.12);
+      color: var(--amber);
+      border-left: 3px solid var(--amber);
+      font-weight: 700;
+    }
+    .kt-nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .kt-nav-badge {
+      margin-left: auto;
+      background: var(--amber);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 1px 7px;
+      min-width: 18px;
+      text-align: center;
+    }
+    .kt-sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--amber-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kt-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--amber);
+      background: var(--amber-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--amber);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .kt-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .kt-user-info { flex: 1; min-width: 0; }
+    .kt-user-name { font-size: .82rem; font-weight: 700; color: #eaf0fb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kt-user-role { font-size: .7rem; color: var(--muted); }
+    .kt-signout-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 6px; font-size: .9rem; flex-shrink: 0; }
+    .kt-signout-btn:hover { color: var(--red); background: rgba(239,83,80,.1); }
+
+    /* ══ MAIN CONTENT ══ */
+    .kt-main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══ TOP BAR ══ */
+    .kt-topbar {
+      height: var(--topbar-h);
+      background: linear-gradient(180deg, rgba(8,18,38,.98), rgba(5,12,26,.98));
+      border-bottom: 1px solid var(--amber-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 16px;
+    }
+    .kt-page-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #eaf0fb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kt-topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .kt-search {
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 7px 14px 7px 36px;
+      color: #eaf0fb;
+      font-size: .85rem;
+      width: 240px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237a8fab' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+    .kt-search::placeholder { color: var(--muted); }
+    .kt-search:focus { outline: none; border-color: var(--amber-border); background-color: rgba(217,119,6,.05); }
+
+    /* ══ BUTTONS ══ */
+    .btn { border: 1px solid var(--line); background: rgba(17,34,65,.9); color: var(--text); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: .85rem; font-weight: 600; }
+    .btn:hover { background: rgba(30,50,90,.9); }
+    .btn:active { opacity: .8; }
+    .btn-amber { background: linear-gradient(135deg, var(--amber), var(--amber2)); color: #fff; border: none; border-radius: 10px; padding: 9px 18px; font-size: .88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-amber:hover { opacity: .9; }
+    .btn-danger { background: linear-gradient(135deg, #c94343, #982d2d); color: #fff; border: none; }
+    .btn-green { background: linear-gradient(135deg, #2fca97, #149869); color: #fff; border: none; }
+
+    /* ══ PAGES ══ */
+    .kt-page { display: none; padding: 24px; flex: 1; }
+    .kt-page.active { display: block; }
+
+    /* ══ AUTH WALL ══ */
+    .kt-auth {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at 30% 40%, rgba(217,119,6,.08) 0%, transparent 60%),
+                  radial-gradient(circle at 70% 60%, rgba(77,141,255,.05) 0%, transparent 60%),
+                  #050e1c;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .kt-auth-logo { font-size: 4rem; font-weight: 900; color: var(--amber); letter-spacing: -.04em; margin-bottom: 4px; }
+    .kt-auth-tag { font-size: .9rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 40px; }
+    .kt-auth-card {
+      background: linear-gradient(180deg, rgba(12,26,50,.97), rgba(7,17,33,.97));
+      border: 1px solid var(--amber-border);
+      border-radius: 24px;
+      padding: 40px 48px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    }
+    .kt-auth-card h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .kt-auth-card p { color: var(--muted); font-size: .9rem; line-height: 1.6; margin-bottom: 28px; }
+    .kt-auth-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--amber), var(--amber2));
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: opacity .15s;
+    }
+    .kt-auth-btn:hover { opacity: .9; }
+    .kt-auth-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .kt-auth-loading { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: .88rem; margin-top: 20px; }
+    .kt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); animation: ktDot 1.2s infinite; }
+    .kt-dot:nth-child(2) { animation-delay: .2s; }
+    .kt-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes ktDot { 0%,80%,100% { transform:scale(.7); opacity:.35; } 40% { transform:scale(1); opacity:1; } }
+
+    /* ══ CARDS / SURFACES ══ */
+    .kt-card {
+      background: linear-gradient(180deg, rgba(12,26,50,.95), rgba(7,17,33,.95));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+    .kt-card-head {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .kt-card-head h2, .kt-card-head h3 { margin: 0; font-size: 1rem; }
+    .kt-card-body { padding: 18px 20px; }
+
+    /* ══ STATS STRIP ══ */
+    .kt-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .kt-stat {
+      background: linear-gradient(180deg, rgba(12,26,50,.95), rgba(7,17,33,.95));
+      border: 1px solid var(--amber-border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kt-stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber), var(--amber2));
+    }
+    .kt-stat-val { font-size: 1.7rem; font-weight: 900; color: var(--amber); line-height: 1; margin-bottom: 4px; }
+    .kt-stat-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+
+    /* ══ JOB BOARD ══ */
+    .kt-board-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      padding-bottom: 16px;
+    }
+    .kt-board-wrap::-webkit-scrollbar { height: 7px; }
+    .kt-board-wrap::-webkit-scrollbar-track { background: rgba(255,255,255,.04); border-radius: 4px; }
+    .kt-board-wrap::-webkit-scrollbar-thumb { background: var(--amber-border); border-radius: 4px; }
+    .kt-board {
+      display: inline-flex;
+      flex-direction: row;
+      gap: 10px;
+      align-items: flex-start;
+      min-width: 100%;
+      padding: 4px 2px 8px;
+    }
+    .kt-col {
+      background: rgba(8,18,36,.8);
+      border: 1px solid rgba(110,145,210,.16);
+      border-top: 3px solid var(--amber);
+      border-radius: 12px;
+      padding: 10px 8px;
+      min-height: 400px;
+      width: 190px;
+      min-width: 190px;
+      max-width: 190px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .kt-col-head {
+      font-size: .63rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(110,145,210,.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 4px;
+      line-height: 1.3;
+    }
+    .kt-col-head-label { flex: 1; word-break: break-word; }
+    .kt-col-count {
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: .68rem;
+      font-weight: 800;
+    }
+    .kt-job-card {
+      background: rgba(12,24,48,.95);
+      border: 1px solid rgba(110,145,210,.12);
+      border-left: 3px solid var(--amber);
+      border-radius: 9px;
+      padding: 9px 10px;
+      margin-bottom: 7px;
+      cursor: pointer;
+      transition: transform .1s, box-shadow .12s, border-color .12s;
+      word-break: break-word;
+    }
+    .kt-job-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.4); border-color: rgba(110,145,210,.25); }
+    .kt-job-num { font-size: .62rem; font-weight: 800; margin-bottom: 2px; opacity: .85; }
+    .kt-job-name { font-weight: 700; font-size: .82rem; margin-bottom: 3px; line-height: 1.3; color: #eaf0fb; }
+    .kt-job-meta { font-size: .7rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .kt-job-value { font-size: .74rem; color: #a3f2d2; margin-top: 5px; font-weight: 800; }
+    .kt-col-empty { color: rgba(110,145,210,.25); font-size: .75rem; font-style: italic; padding: 8px 4px; text-align: center; }
+
+    /* ══ MODAL ══ */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,5,14,.8); z-index: 9999; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: rgba(6,14,28,.99); border: 1px solid rgba(110,145,210,.2); border-radius: 22px; width: min(960px,calc(100vw - 24px)); margin: auto; box-shadow: 0 30px 80px rgba(0,0,0,.6); color: var(--text); }
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid rgba(110,145,210,.14); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .modal-head h3 { margin: 0; font-size: 1.05rem; }
+    .modal-body { padding: 20px 22px; }
+    .modal-foot { padding: 16px 22px; border-top: 1px solid rgba(110,145,210,.14); display: flex; justify-content: flex-end; gap: 10px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .form-grid label.small { display: block; margin-bottom: 5px; color: var(--muted); font-size: .78rem; font-weight: 600; }
+    .full { grid-column: 1/-1; }
+
+    /* ══ CON SUBTABS (detail modal) ══ */
+    .con-subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .con-subtab { background: rgba(8,18,36,.8); border: 1px solid var(--amber-border); color: var(--muted); padding: 7px 14px; border-radius: 9px; cursor: pointer; font-size: .82rem; font-weight: 600; }
+    .con-subtab.active { background: linear-gradient(135deg, var(--amber), var(--amber2)); color: #fff; border-color: transparent; }
+
+    /* ══ FINANCIALS / PHASES / LOGS ══ */
+    .fin-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(110,145,210,.08); }
+    .fin-label { font-size: .86rem; color: var(--muted); }
+    .fin-val { font-weight: 700; }
+    .margin-bar { height: 7px; background: rgba(110,145,210,.12); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+    .margin-fill { height: 100%; background: linear-gradient(90deg, var(--amber), var(--green)); border-radius: 4px; transition: width .4s; }
+    .phase-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(110,145,210,.08); }
+    .phase-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .phase-status-dot.not-started { background: var(--muted); }
+    .phase-status-dot.in-progress { background: var(--amber); }
+    .phase-status-dot.complete { background: var(--green); }
+    .log-entry { background: rgba(8,18,36,.6); border: 1px solid rgba(110,145,210,.1); border-radius: 11px; padding: 12px; margin-bottom: 8px; }
+    .log-date { font-size: .76rem; color: var(--amber); font-weight: 700; }
+    .log-weather { font-size: .76rem; color: var(--muted); }
+
+    /* ══ ESTIMATE TABLE ══ */
+    .est-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .est-table th { background: rgba(11,24,47,.98); padding: 8px 10px; text-align: left; font-weight: 700; font-size: .73rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid rgba(110,145,210,.14); }
+    .est-table td { padding: 8px 10px; border-bottom: 1px solid rgba(110,145,210,.06); vertical-align: middle; }
+    .est-cat-header { background: rgba(217,119,6,.07); font-weight: 700; font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--amber); padding: 7px 10px; border-bottom: 1px solid rgba(110,145,210,.06); }
+    .markup-badge { font-size: .7rem; color: #a3f2d2; background: rgba(29,187,135,.1); border-radius: 5px; padding: 1px 5px; margin-left: 4px; }
+
+    /* ══ CHANGE ORDERS ══ */
+    .co-card { background: rgba(8,18,36,.65); border: 1px solid var(--amber-border); border-radius: 11px; padding: 12px 14px; margin-bottom: 8px; }
+    .co-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; border: 1px solid; }
+    .co-pending { background: rgba(243,179,61,.12); color: #ffe09d; border-color: rgba(243,179,61,.28); }
+    .co-approved { background: rgba(29,187,135,.12); color: #a3f2d2; border-color: rgba(29,187,135,.28); }
+    .co-rejected { background: rgba(239,83,80,.12); color: #ffc0be; border-color: rgba(239,83,80,.28); }
+    .co-void { background: rgba(110,145,210,.08); color: var(--muted); border-color: rgba(110,145,210,.18); }
+
+    /* ══ SUBS ══ */
+    .sub-card { background: rgba(8,18,36,.65); border: 1px solid var(--amber-border); border-radius: 11px; padding: 11px 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+    .sub-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--amber-dim); border: 2px solid var(--amber); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+    /* ══ PHOTOS ══ */
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 8px; margin-top: 10px; }
+    .photo-thumb { aspect-ratio: 1; border-radius: 9px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: border-color .12s; }
+    .photo-thumb:hover { border-color: var(--amber); }
+    .photo-upload-btn { aspect-ratio: 1; border-radius: 9px; border: 2px dashed rgba(217,119,6,.35); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(217,119,6,.05); color: var(--amber); font-size: .72rem; font-weight: 700; gap: 4px; transition: background .12s; }
+    .photo-upload-btn:hover { background: rgba(217,119,6,.1); }
+    .photo-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.94); z-index: 999999; align-items: center; justify-content: center; flex-direction: column; }
+    .photo-lightbox.open { display: flex; }
+    .photo-lightbox img { max-width: 92vw; max-height: 82vh; border-radius: 14px; }
+
+    /* ══ JOB COSTING DASHBOARD ══ */
+    .jcd-hero { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 12px; margin-bottom: 18px; }
+    .jcd-kpi { background: linear-gradient(180deg,rgba(12,26,50,.95),rgba(7,17,33,.95)); border: 1px solid var(--amber-border); border-radius: 14px; padding: 15px 17px; position: relative; overflow: hidden; }
+    .jcd-kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .jcd-kpi-val { font-size: 1.65rem; font-weight: 900; line-height: 1; margin-bottom: 4px; color: var(--amber); }
+    .jcd-kpi-label { font-size: .69rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .jcd-kpi-sub { font-size: .75rem; color: var(--muted); margin-top: 3px; }
+    .pipeline-strip { display: grid; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+    .pipeline-stage { background: rgba(8,18,36,.75); border: 1px solid var(--amber-border); border-radius: 10px; padding: 9px 11px; text-align: center; cursor: pointer; transition: background .12s; }
+    .pipeline-stage:hover { background: rgba(217,119,6,.08); }
+    .pipeline-stage-label { font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; margin-bottom: 3px; }
+    .pipeline-stage-val { font-size: 1rem; font-weight: 900; }
+    .pipeline-stage-count { font-size: .68rem; color: var(--muted); margin-top: 2px; }
+    .jcd-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+    .jcd-table th { background: rgba(11,24,47,.98); padding: 9px 11px; text-align: left; font-weight: 700; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid rgba(110,145,210,.14); position: sticky; top: 0; z-index: 1; cursor: pointer; }
+    .jcd-table th:hover { color: var(--amber); }
+    .jcd-table td { padding: 10px 11px; border-bottom: 1px solid rgba(110,145,210,.06); vertical-align: middle; }
+    .jcd-table tr:hover td { background: rgba(217,119,6,.03); cursor: pointer; }
+    .margin-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: .73rem; font-weight: 700; }
+    .margin-good { background: rgba(29,187,135,.13); color: #a3f2d2; border: 1px solid rgba(29,187,135,.27); }
+    .margin-warn { background: rgba(243,179,61,.13); color: #ffe09d; border: 1px solid rgba(243,179,61,.27); }
+    .margin-bad { background: rgba(239,83,80,.13); color: #ffc0be; border: 1px solid rgba(239,83,80,.27); }
+    .variance-bar-wrap { height: 5px; background: rgba(110,145,210,.12); border-radius: 999px; margin-top: 4px; overflow: hidden; min-width: 70px; }
+    .variance-bar-fill { height: 5px; border-radius: 999px; transition: width .4s; }
+    .jcd-section { background: linear-gradient(180deg,rgba(12,26,50,.95),rgba(7,17,33,.95)); border: 1px solid var(--amber-border); border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+    .jcd-section-head { padding: 13px 17px 9px; border-bottom: 1px solid var(--amber-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .jcd-section-head h3 { margin: 0; font-size: .92rem; font-weight: 700; color: var(--amber); }
+    .jcd-section-body { padding: 13px 17px; }
+    .cost-cat-row { display: grid; grid-template-columns: 1.4fr 90px 90px 90px 90px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(110,145,210,.07); font-size: .84rem; }
+    .cost-cat-input { background: rgba(8,19,37,.9); border: 1px solid rgba(110,145,210,.18); border-radius: 7px; padding: 5px 8px; color: #eaf0fb; font-size: .82rem; width: 100%; text-align: right; }
+    .cost-cat-input:focus { outline: none; border-color: var(--amber); }
+    .jcd-alert { background: rgba(239,83,80,.07); border: 1px solid rgba(239,83,80,.22); border-radius: 10px; padding: 9px 13px; font-size: .82rem; color: #ffc0be; display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+    .jcd-alert-warn { background: rgba(243,179,61,.07); border-color: rgba(243,179,61,.22); color: #ffe09d; }
+    .jcd-alert-ok { background: rgba(29,187,135,.07); border-color: rgba(29,187,135,.22); color: #a3f2d2; }
+
+    /* ══ LIST VIEW TABLE ══ */
+    .kt-table { width: 100%; border-collapse: collapse; }
+    .kt-table th { background: rgba(11,24,47,.98); padding: 10px 12px; text-align: left; font-weight: 700; font-size: .73rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid rgba(110,145,210,.14); position: sticky; top: 0; }
+    .kt-table td { padding: 11px 12px; border-bottom: 1px solid rgba(110,145,210,.07); vertical-align: middle; }
+    .kt-table tr:hover td { background: rgba(217,119,6,.03); cursor: pointer; }
+
+    /* ══ MOBILE ══ */
+    .kt-menu-btn { display: none; background: none; border: none; color: var(--amber); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 0px; }
+      .kt-sidebar { transform: translateX(-220px); width: 220px; }
+      .kt-sidebar.open { transform: translateX(0); }
+      .kt-main { margin-left: 0; }
+      .kt-menu-btn { display: block; }
+      .kt-search { width: 160px; }
+      .kt-stats { grid-template-columns: repeat(2,1fr); }
+      .jcd-hero { grid-template-columns: repeat(2,1fr); }
+      .cost-cat-row { grid-template-columns: 1fr 80px 80px; }
+      .form-grid { grid-template-columns: 1fr; }
+      #ktPageDashboard > div[style*="grid-template-columns:1fr 280px"] { grid-template-columns: 1fr; }
+      #ktPageDashboard > div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .kt-topbar { padding: 0 14px; }
+      .kt-page { padding: 14px; }
+      .kt-search { display: none; }
+    }
+    /* ══ MISC ══ */
+    .table-wrap { overflow: auto; }
+    /* ── Drag & Drop ── */
+    .kt-job-card.dragging { opacity: .4; transform: rotate(2deg) scale(.97); cursor: grabbing; }
+    .kt-col.drag-over { background: rgba(217,119,6,.12); border-color: var(--amber); box-shadow: inset 0 0 0 2px rgba(217,119,6,.3); }
+    .kt-job-card { cursor: grab; }
+    .kt-job-card:active { cursor: grabbing; }
+    @keyframes kythyDot { 0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.1);opacity:1} }
+
+    /* ══ COST CATALOG ══ */
+    .cat-item {
+      display: grid;
+      grid-template-columns: 2fr 1fr 80px 80px 100px 80px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(110,145,210,.07);
+      font-size: .86rem;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .cat-item:hover { background: rgba(217,119,6,.04); }
+    .cat-item-header {
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-bottom: 2px solid rgba(110,145,210,.12);
+      background: rgba(8,18,36,.8);
+    }
+    .cat-group-header {
+      padding: 8px 12px;
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--amber);
+      background: rgba(217,119,6,.06);
+      border-bottom: 1px solid var(--amber-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cat-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: .7rem;
+      font-weight: 700;
+      background: rgba(217,119,6,.12);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+    .cat-search {
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 14px 8px 36px;
+      color: #eaf0fb;
+      font-size: .85rem;
+      width: 280px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237a8fab' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     AUTH WALL — shown when not signed in
+═══════════════════════════════════════ -->
+<div id="ktAuthWall" class="kt-auth">
+  <div class="kt-auth-logo">⚡ KYTRAC</div>
+  <div class="kt-auth-tag">Track your job from estimate to completion</div>
+  <div class="kt-auth-card">
+    <h2>Welcome back</h2>
+    <p>Sign in with your Google account to access your jobs, estimates, daily logs, and team activity.</p>
+    <button class="kt-auth-btn" id="ktSignInBtn" onclick="conSignIn()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="kt-auth-loading" id="ktAuthLoading">
+      <div class="kt-dot"></div>
+      <div class="kt-dot"></div>
+      <div class="kt-dot"></div>
+      <span>Connecting to KYTRAC...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP — shown when signed in
+═══════════════════════════════════════ -->
+<div id="ktApp" class="kt-layout" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="kt-sidebar" id="ktSidebar">
+    <div class="kt-logo">
+      <div class="kt-logo-mark">⚡ KYTRAC</div>
+      <div class="kt-logo-tag">Construction Tracking · v0.3.1 · 21/Jun/2026</div>
+    </div>
+
+    <nav class="kt-nav">
+      <div class="kt-nav-section">Main</div>
+      <button class="kt-nav-item active" onclick="ktNav('dashboard',this)">
+        <span class="kt-nav-icon">🏠</span> Home
+      </button>
+      <button class="kt-nav-item" onclick="ktNav('jobs',this)">
+        <span class="kt-nav-icon">🔧</span> Jobs
+      </button>
+      <button class="kt-nav-item" onclick="ktNav('logs',this)">
+        <span class="kt-nav-icon">📋</span> Daily Logs
+      </button>
+      <button class="kt-nav-item" onclick="ktNav('schedule',this)">
+        <span class="kt-nav-icon">📅</span> Schedule
+      </button>
+
+      <div class="kt-nav-section">Financials</div>
+      <button class="kt-nav-item" onclick="ktNav('costing',this)">
+        <span class="kt-nav-icon">💰</span> Job Costing
+      </button>
+      <button class="kt-nav-item" onclick="ktNav('catalog',this)">
+        <span class="kt-nav-icon">📦</span> Cost Catalog
+      </button>
+
+
+    </nav>
+
+    <div class="kt-sidebar-footer">
+      <div class="kt-avatar" id="ktAvatarWrap">
+        <img id="ktAvatarImg" src="" style="display:none" />
+        <span id="ktAvatarInitial">?</span>
+      </div>
+      <div class="kt-user-info">
+        <div class="kt-user-name" id="ktUserName">—</div>
+        <div class="kt-user-role">Team Member</div>
+      </div>
+      <button class="kt-signout-btn" onclick="conSignOut()" title="Sign out">⏻</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="kt-main">
+
+    <!-- TOP BAR -->
+    <div class="kt-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="kt-menu-btn" onclick="document.getElementById('ktSidebar').classList.toggle('open')">☰</button>
+        <div class="kt-page-title" id="ktPageTitle">🏠 Home</div>
+      </div>
+      <div class="kt-topbar-actions">
+        <input class="kt-search" placeholder="Search jobs..." id="ktSearchInput" oninput="ktFilterJobs(this.value)" />
+        <button class="btn-amber" onclick="openNewJobModal()">+ New Job</button>
+      </div>
+    </div>
+
+    <!-- ── PAGE: DASHBOARD ── -->
+    <div class="kt-page active" id="ktPageDashboard">
+
+      <!-- KPI Stats -->
+      <div class="kt-stats" id="conStats" style="margin-bottom:16px">
+        <div class="kt-stat"><div class="kt-stat-val" id="statActiveJobs">0</div><div class="kt-stat-label">Active Jobs</div></div>
+        <div class="kt-stat"><div class="kt-stat-val" id="statContractTotal">$0</div><div class="kt-stat-label">Contract Value</div></div>
+        <div class="kt-stat"><div class="kt-stat-val" id="statAvgMargin">0%</div><div class="kt-stat-label">Avg Margin</div></div>
+        <div class="kt-stat"><div class="kt-stat-val" id="statLogsToday">—</div><div class="kt-stat-label">Logs Today</div></div>
+      </div>
+
+      <!-- Two column: Active Jobs + Quick Actions/Pipeline -->
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px">
+        <!-- Active Jobs -->
+        <div class="kt-card">
+          <div class="kt-card-head">
+            <h3>🔧 Active Jobs</h3>
+            <button class="btn" onclick="ktNav('jobs',null)" style="font-size:.78rem">View All →</button>
+          </div>
+          <div style="overflow:auto;max-height:300px">
+            <table class="kt-table">
+              <thead><tr><th>Job</th><th>Client</th><th>Status</th><th style="text-align:right">Contract</th></tr></thead>
+              <tbody id="homeActiveJobsBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Quick Actions -->
+          <div class="kt-card">
+            <div class="kt-card-head"><h3>⚡ Quick Actions</h3></div>
+            <div class="kt-card-body" style="display:flex;flex-direction:column;gap:8px;padding:14px 16px">
+              <button class="btn-amber" onclick="openNewJobModal()" style="width:100%;justify-content:center">+ New Job</button>
+              <button class="btn" onclick="ktNav('jobs',null)" style="width:100%">📋 Job Board</button>
+              <button class="btn" onclick="ktNav('costing',null)" style="width:100%">💰 Job Costing</button>
+              <button class="btn" onclick="ktNav('catalog',null)" style="width:100%">📦 Cost Catalog</button>
+            </div>
+          </div>
+          <!-- Pipeline Summary -->
+          <div class="kt-card">
+            <div class="kt-card-head"><h3>📊 Pipeline</h3></div>
+            <div class="kt-card-body" id="homePipelineSummary" style="display:flex;flex-direction:column;gap:4px;padding:12px 16px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Activity -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+
+        <!-- Jobs Needing Attention -->
+        <div class="kt-card">
+          <div class="kt-card-head" style="padding:14px 16px 10px">
+            <h3 style="font-size:.9rem">🚨 Needs Attention</h3>
+          </div>
+          <div style="padding:10px 14px;max-height:280px;overflow-y:auto" id="homeNeedsAttention">
+            <div class="small muted" style="font-style:italic;padding:10px 0">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Recent Daily Logs -->
+        <div class="kt-card">
+          <div class="kt-card-head" style="padding:14px 16px 10px">
+            <h3 style="font-size:.9rem">📋 Recent Logs</h3>
+          </div>
+          <div style="padding:10px 14px;max-height:280px;overflow-y:auto" id="homeRecentLogs">
+            <div class="small muted" style="font-style:italic;padding:10px 0">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Upcoming Phases -->
+        <div class="kt-card">
+          <div class="kt-card-head" style="padding:14px 16px 10px">
+            <h3 style="font-size:.9rem">📅 Upcoming Phases</h3>
+          </div>
+          <div style="padding:10px 14px;max-height:280px;overflow-y:auto" id="homeUpcomingPhases">
+            <div class="small muted" style="font-style:italic;padding:10px 0">Loading...</div>
+          </div>
+        </div>
+
+      </div>
+      <!-- Hidden board still needed for conRenderBoard -->
+      <div style="display:none"><div class="kt-board" id="conBoard"></div></div>
+      <span id="ktBoardCount" style="display:none"></span>
+
+    </div>
+
+    <!-- ── PAGE: JOBS ── -->
+    <div class="kt-page" id="ktPageJobs">
+
+      <!-- View toggle + stats -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:0;background:rgba(8,18,36,.8);border:1px solid var(--amber-border);border-radius:10px;overflow:hidden">
+          <button id="jobsKanbanBtn" onclick="switchJobsView('kanban')"
+            style="padding:8px 18px;border:none;cursor:pointer;font-size:.84rem;font-weight:700;background:linear-gradient(135deg,var(--amber),var(--amber2));color:#fff;">
+            📋 Kanban
+          </button>
+          <button id="jobsListBtn" onclick="switchJobsView('list')"
+            style="padding:8px 18px;border:none;cursor:pointer;font-size:.84rem;font-weight:600;background:transparent;color:var(--muted);">
+            📃 List
+          </button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <select id="jobsStatusFilter" onchange="conRenderBoard();conRenderList()"
+            style="font-size:.8rem;padding:6px 12px;background:rgba(8,19,37,.9);border:1px solid var(--amber-border);color:#eaf0fb;border-radius:8px">
+            <option value="">All Statuses</option>
+            <option>New Lead</option><option>Hipshot Needed</option><option>Appointment Set</option>
+            <option>Estimating</option><option>Submitted</option><option>Approved</option>
+            <option>Design Phase</option><option>Permitting</option><option>Scheduled</option>
+            <option>Work In Progress</option><option>Inspection Pending</option><option>Invoicing</option>
+            <option>Pending Payment</option><option>Delinquent</option><option>Closed Hipshot Sent</option>
+            <option>Closed Won</option><option>Closed Lost</option>
+          </select>
+          <span class="small muted" id="ktJobCount"></span>
+        </div>
+      </div>
+
+      <!-- Kanban View -->
+      <div id="jobsKanbanView">
+        <div class="kt-card" style="overflow:visible">
+          <div style="overflow-x:auto;padding:10px 14px 14px;-webkit-overflow-scrolling:touch">
+            <div class="kt-board" id="jobsBoard"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- List View -->
+      <div id="jobsListView" style="display:none">
+        <div class="kt-card">
+          <div style="overflow:auto">
+            <table class="kt-table">
+              <thead><tr>
+                <th>Job #</th><th>Job Name</th><th>Client</th><th>Status</th>
+                <th style="text-align:right">Contract</th><th>Status Date</th><th>Sales Rep</th><th></th>
+              </tr></thead>
+              <tbody id="conListBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── PAGE: DAILY LOGS ── -->
+    <div class="kt-page" id="ktPageLogs">
+      <div class="kt-card">
+        <div class="kt-card-head">
+          <h3>📋 Daily Logs — All Jobs</h3>
+        </div>
+        <div class="kt-card-body" id="ktAllLogsBody">
+          <p class="muted">Select a job to view its daily logs, or open a job and go to the Daily Logs tab.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: SCHEDULE ── -->
+    <div class="kt-page" id="ktPageSchedule">
+      <div class="kt-card">
+        <div class="kt-card-head"><h3>📅 Schedule</h3></div>
+        <div class="kt-card-body" id="conScheduleList">
+          <p class="muted">Phase dates from active jobs appear here.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: JOB COSTING ── -->
+    <div class="kt-page" id="ktPageCosting">
+      <div class="jcd-hero" id="jcdKpiStrip"></div>
+      <div class="jcd-section">
+        <div class="jcd-section-head">
+          <h3>📊 Revenue Pipeline</h3>
+          <span class="small muted" id="jcdPipelineTotal"></span>
+        </div>
+        <div class="jcd-section-body" style="overflow-x:auto;padding:12px 14px">
+          <div id="jcdPipelineStrip" style="display:flex;gap:8px;min-width:900px"></div>
+        </div>
+      </div>
+      <div id="jcdAlerts" style="margin-bottom:16px"></div>
+      <div class="jcd-section">
+        <div class="jcd-section-head">
+          <h3>💰 Job Costing — All Jobs</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="jcdStatusFilter" onchange="renderJCDTable()" style="font-size:.78rem;padding:5px 10px;background:rgba(8,19,37,.9);border:1px solid var(--amber-border);color:#eaf0fb;border-radius:8px">
+              <option value="">All Statuses</option>
+              <option>New Lead</option><option>Hipshot Needed</option><option>Appointment Set</option>
+              <option>Estimating</option><option>Submitted</option><option>Approved</option>
+              <option>Design Phase</option><option>Permitting</option><option>Scheduled</option>
+              <option>Work In Progress</option><option>Inspection Pending</option><option>Invoicing</option>
+              <option>Pending Payment</option><option>Delinquent</option><option>Closed Hipshot Sent</option>
+              <option>Closed Won</option><option>Closed Lost</option>
+            </select>
+            <span class="small muted" id="jcdTableSummary"></span>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:440px">
+          <table class="jcd-table">
+            <thead><tr>
+              <th onclick="jcdSort('name')">Job ↕</th>
+              <th onclick="jcdSort('status')">Status ↕</th>
+              <th onclick="jcdSort('contractValue')" style="text-align:right">Contract ↕</th>
+              <th onclick="jcdSort('estCost')" style="text-align:right">Est. Cost ↕</th>
+              <th onclick="jcdSort('actualCost')" style="text-align:right">Actual ↕</th>
+              <th onclick="jcdSort('variance')" style="text-align:right">Variance ↕</th>
+              <th onclick="jcdSort('margin')" style="text-align:right">Margin ↕</th>
+              <th style="text-align:right">CO Impact</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="jcdTableBody"></tbody>
+            <tfoot id="jcdTableFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div id="jcdJobDetail" style="display:none">
+        <div class="jcd-section">
+          <div class="jcd-section-head">
+            <h3 id="jcdDetailJobName">Job Detail</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn-amber" onclick="saveJobCostActuals()" style="padding:6px 14px;font-size:.82rem">💾 Save Actuals</button>
+              <button class="btn" onclick="document.getElementById('jcdJobDetail').style.display='none'" style="font-size:.8rem">Close ✕</button>
+            </div>
+          </div>
+          <div class="jcd-section-body">
+            <div id="jcdDetailKpis" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px"></div>
+            <div id="jcdDetailAlerts" style="margin-bottom:12px"></div>
+            <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:10px">Cost by Category</div>
+            <div class="cost-cat-row" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding-bottom:8px;border-bottom:2px solid rgba(110,145,210,.12)">
+              <div>Category</div><div style="text-align:right">Estimated</div><div style="text-align:right">Actual</div><div style="text-align:right">Variance</div><div style="text-align:right">% Used</div>
+            </div>
+            <div id="jcdCostCatBody"></div>
+            <div id="jcdCostCatTotals" style="margin-top:10px;padding-top:10px;border-top:2px solid var(--amber-border)"></div>
+            <div style="margin-top:16px;padding:13px;background:rgba(217,119,6,.05);border:1px solid var(--amber-border);border-radius:11px" id="jcdCtcPanel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: COST CATALOG ── -->
+    <div class="kt-page" id="ktPageCatalog">
+      <div class="kt-card" style="margin-bottom:16px">
+        <div class="kt-card-head">
+          <div>
+            <h3>📦 Cost Catalog</h3>
+            <p class="muted small" style="margin-top:3px">Reusable items for fast estimating — labor rates, materials, subcontractor pricing</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input class="cat-search" id="catSearchInput" placeholder="Search catalog..." oninput="renderCatalog()" />
+            <select id="catCategoryFilter" onchange="renderCatalog()" style="font-size:.82rem;padding:7px 12px;background:rgba(8,19,37,.9);border:1px solid var(--amber-border);color:#eaf0fb;border-radius:9px">
+              <option value="">All Categories</option>
+              <option>Labor</option>
+              <option>Materials</option>
+              <option>Subcontractor</option>
+              <option>Equipment</option>
+              <option>Permits & Fees</option>
+              <option>Overhead</option>
+            </select>
+            <button class="btn-amber" onclick="openCatalogItemModal()">+ Add Item</button>
+          </div>
+        </div>
+        <!-- Stats strip -->
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)">
+          <div style="text-align:center"><div style="font-size:1.5rem;font-weight:900;color:var(--amber)" id="catStatTotal">0</div><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700">Total Items</div></div>
+          <div style="text-align:center"><div style="font-size:1.5rem;font-weight:900;color:#4d8dff" id="catStatLabor">0</div><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700">Labor</div></div>
+          <div style="text-align:center"><div style="font-size:1.5rem;font-weight:900;color:#1dbb87" id="catStatMaterials">0</div><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700">Materials</div></div>
+          <div style="text-align:center"><div style="font-size:1.5rem;font-weight:900;color:#a855f7" id="catStatSubs">0</div><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700">Subcontractor</div></div>
+        </div>
+        <!-- Table header -->
+        <div class="cat-item cat-item-header" style="display:grid;grid-template-columns:2fr 1fr 80px 80px 100px 80px;gap:10px;padding:8px 12px">
+          <div>Description</div>
+          <div>Category</div>
+          <div style="text-align:right">Unit</div>
+          <div style="text-align:right">Unit Cost</div>
+          <div style="text-align:right">Default Markup</div>
+          <div></div>
+        </div>
+        <!-- Catalog body -->
+        <div id="catBody" style="max-height:560px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+
+
+  </div><!-- end kt-main -->
+</div><!-- end kt-layout -->
+
+<!-- ══ COST CATALOG MODAL ══ -->
+<div id="catalogItemModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-head">
+      <h3 id="catalogModalTitle" style="margin:0">Add Catalog Item</h3>
+      <button class="btn" onclick="kClose('catalogItemModal')">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <input type="hidden" id="catItemId" />
+        <div class="full"><label class="small muted" style="display:block;margin-bottom:5px">Description *</label>
+          <input id="catItemDesc" placeholder="e.g. Framing labor — per sq ft" /></div>
+        <div><label class="small muted" style="display:block;margin-bottom:5px">Category</label>
+          <select id="catItemCategory">
+            <option>Labor</option><option>Materials</option><option>Subcontractor</option>
+            <option>Equipment</option><option>Permits & Fees</option><option>Overhead</option>
+          </select>
+        </div>
+        <div><label class="small muted" style="display:block;margin-bottom:5px">Unit</label>
+          <select id="catItemUnit">
+            <option value="ea">ea — each</option>
+            <option value="hr">hr — hour</option>
+            <option value="sf">sf — sq ft</option>
+            <option value="lf">lf — linear ft</option>
+            <option value="ls">ls — lump sum</option>
+            <option value="day">day</option>
+            <option value="ton">ton</option>
+            <option value="yd">yd — cubic yard</option>
+            <option value="gal">gal — gallon</option>
+            <option value="sqft">sqft</option>
+          </select>
+        </div>
+        <div><label class="small muted" style="display:block;margin-bottom:5px">Unit Cost ($)</label>
+          <input id="catItemCost" type="number" step="0.01" placeholder="0.00" oninput="calcCatPreview()" /></div>
+        <div><label class="small muted" style="display:block;margin-bottom:5px">Default Markup %</label>
+          <input id="catItemMarkup" type="number" step="0.5" placeholder="0" value="0" oninput="calcCatPreview()" /></div>
+        <!-- Live price preview -->
+        <div class="full" style="background:rgba(217,119,6,.07);border:1px solid var(--amber-border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small muted">Sell Price (with markup)</div>
+            <div id="catItemPreview" style="font-size:1.4rem;font-weight:900;color:var(--amber)">$0.00</div>
+          </div>
+          <div style="text-align:right">
+            <div class="small muted">Margin</div>
+            <div id="catItemMargin" style="font-size:1rem;font-weight:700;color:#a3f2d2">0%</div>
+          </div>
+        </div>
+        <div class="full"><label class="small muted" style="display:block;margin-bottom:5px">Notes / Spec</label>
+          <textarea id="catItemNotes" rows="2" placeholder="Optional notes, spec details, supplier info..."></textarea>
+        </div>
+        <div class="full"><label class="small muted" style="display:block;margin-bottom:5px">Supplier / Vendor</label>
+          <input id="catItemSupplier" placeholder="e.g. Home Depot, ABC Supply" /></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="deleteCatItemBtn" onclick="deleteCatalogItem()" style="display:none">Delete</button>
+      <button class="btn" onclick="kClose('catalogItemModal')">Cancel</button>
+      <button class="btn-amber" onclick="saveCatalogItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PHOTO LIGHTBOX ══ -->
+<div id="photoLightbox" class="photo-lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Photo" />
+  <div style="color:rgba(255,255,255,.4);font-size:.8rem;margin-top:10px">Tap to close</div>
+</div>
+
+<!-- ── New/Edit Job Modal ── -->
+  <div id="newJobModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:640px">
+      <div class="modal-head">
+        <div><h3 id="jobModalTitle" style="margin:0">New Job</h3></div>
+        <button class="btn" onclick="kClose('newJobModal')">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="full"><label class="small muted">Job Name *</label><input id="jobName" placeholder="Kitchen Remodel — Smith Residence" /></div>
+          <div><label class="small muted">Client Name *</label><input id="jobClient" placeholder="John Smith" /></div>
+          <div><label class="small muted">Client Phone</label><input id="jobPhone" placeholder="(314) 555-0100" /></div>
+          <div><label class="small muted">Client Email</label><input id="jobEmail" placeholder="john@email.com" /></div>
+          <div><label class="small muted">Job Address</label><input id="jobAddress" placeholder="123 Main St, St. Peters, MO" /></div>
+          <div><label class="small muted">Status</label>
+            <select id="jobStatus">
+              <option value="Lead">Lead</option>
+              <option value="Estimating">Estimating</option>
+              <option value="Contracted" selected>Contracted</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Complete">Complete</option>
+              <option value="Warranty">Warranty</option>
+            </select>
+          </div>
+          <div><label class="small muted">Job Type</label>
+            <select id="jobType">
+              <option value="Residential Remodel">Residential Remodel</option>
+              <option value="New Construction">New Construction</option>
+              <option value="Commercial">Commercial</option>
+              <option value="Repair/Service">Repair/Service</option>
+            </select>
+          </div>
+          <div><label class="small muted">Contract Value ($)</label><input id="jobContractValue" type="number" step="0.01" placeholder="0.00" /></div>
+          <div><label class="small muted">Estimated Cost ($)</label><input id="jobEstCost" type="number" step="0.01" placeholder="0.00" /></div>
+          <div><label class="small muted">Start Date</label><input id="jobStartDate" type="date" /></div>
+          <div><label class="small muted">Target End Date</label><input id="jobEndDate" type="date" /></div>
+          <div><label class="small muted">Assigned Superintendent</label><input id="jobSuperintendent" placeholder="Name" /></div>
+          <div><label class="small muted">Project Manager</label><input id="jobPM" placeholder="Name" /></div>
+          <div class="full"><label class="small muted">Notes</label><textarea id="jobNotes" rows="3" placeholder="Scope summary, special instructions..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="kClose('newJobModal')">Cancel</button>
+        <button class="btn-amber" onclick="saveJob()">Save Job</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Job Detail Modal ── -->
+  <div id="jobDetailModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:740px">
+      <div class="modal-head">
+        <div>
+          <div id="detailJobNum" style="font-size:.8rem;color:var(--amber);font-weight:700"></div>
+          <h3 id="detailJobName" style="margin:4px 0 0"></h3>
+          <div id="detailJobClient" class="muted small"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="editCurrentJob()">✏️ Edit</button>
+          <button class="btn btn-danger" onclick="deleteCurrentJob()" style="font-size:.82rem">🗑 Delete</button>
+          <button class="btn" onclick="kClose('jobDetailModal')">Close</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <!-- Detail sub-tabs -->
+        <div class="con-subtabs" style="margin-bottom:14px;flex-wrap:wrap">
+          <button class="con-subtab active" onclick="switchDetailTab('overview',this)">Overview</button>
+          <button class="con-subtab" onclick="switchDetailTab('financials',this)">Financials</button>
+          <button class="con-subtab" onclick="switchDetailTab('estimate',this)">📋 Estimate</button>
+          <button class="con-subtab" onclick="switchDetailTab('changeorders',this)">🔄 Change Orders</button>
+          <button class="con-subtab" onclick="switchDetailTab('subs',this)">👷 Subs</button>
+          <button class="con-subtab" onclick="switchDetailTab('phases',this)">Phases</button>
+          <button class="con-subtab" onclick="switchDetailTab('logs',this)">Daily Logs</button>
+        </div>
+
+        <!-- Overview -->
+        <div id="detailOverview">
+          <div class="form-grid">
+            <div><div class="small muted">Status</div><div id="detailStatus" style="font-weight:700;color:var(--amber)"></div></div>
+            <div><div class="small muted">Type</div><div id="detailType"></div></div>
+            <div><div class="small muted">Start Date</div><div id="detailStart"></div></div>
+            <div><div class="small muted">Target End</div><div id="detailEnd"></div></div>
+            <div><div class="small muted">Superintendent</div><div id="detailSuper"></div></div>
+            <div><div class="small muted">Project Manager</div><div id="detailPM"></div></div>
+            <div class="full"><div class="small muted">Address</div><div id="detailAddress"></div></div>
+            <div class="full"><div class="small muted">Notes</div><div id="detailNotes" style="white-space:pre-wrap"></div></div>
+          </div>
+        </div>
+
+        <!-- Financials -->
+        <div id="detailFinancials" style="display:none">
+          <div class="fin-row"><span class="fin-label">Contract Value</span><span class="fin-val" id="finContract" style="color:#a3f2d2"></span></div>
+          <div class="fin-row"><span class="fin-label">Estimated Cost</span><span class="fin-val" id="finEstCost"></span></div>
+          <div class="fin-row"><span class="fin-label">Estimated Gross Profit</span><span class="fin-val" id="finEstProfit" style="color:#a3f2d2"></span></div>
+          <div class="fin-row"><span class="fin-label">Estimated Margin</span><span class="fin-val" id="finEstMargin"></span></div>
+          <div class="margin-bar"><div class="margin-fill" id="finMarginBar" style="width:0%"></div></div>
+          <div style="margin-top:16px">
+            <div style="font-weight:700;margin-bottom:8px">Actual Cost to Date</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input id="actualCostInput" type="number" step="0.01" placeholder="Enter actual cost to date" style="flex:1" />
+              <button class="btn-amber" onclick="saveActualCost()" style="padding:8px 16px;font-size:.84rem">Update</button>
+            </div>
+            <div class="fin-row"><span class="fin-label">Actual Cost</span><span class="fin-val" id="finActualCost"></span></div>
+            <div class="fin-row"><span class="fin-label">Variance (Est vs Actual)</span><span class="fin-val" id="finVariance"></span></div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:var(--amber-light);border-radius:10px;font-size:.8rem;color:var(--muted)">
+            💡 QuickBooks Online sync: reconcile actual costs monthly from QBO reports.
+          </div>
+        </div>
+
+        <!-- Phases -->
+        <div id="detailPhases" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:700">Project Phases</div>
+            <button class="btn-amber" onclick="openAddPhaseModal()" style="padding:6px 14px;font-size:.82rem">+ Add Phase</button>
+          </div>
+          <div id="phaseList"></div>
+        </div>
+
+        <!-- Daily Logs -->
+        <div id="detailLogs" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:700">Daily Logs</div>
+            <button class="btn-amber" onclick="openAddLogModal()" style="padding:6px 14px;font-size:.82rem">+ Add Log</button>
+          </div>
+          <div id="logList"></div>
+        </div>
+
+        <!-- Estimate (Line Items) -->
+        <div id="detailEstimate" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:700">Line Item Estimate</div>
+              <div class="small muted" id="estSummaryLine" style="margin-top:2px"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <select id="estCategoryFilter" onchange="renderEstimateList()" style="font-size:.82rem;padding:6px 10px;background:rgba(8,19,37,.9);border:1px solid var(--amber-border);color:#eaf0fb;border-radius:8px">
+                <option value="">All Categories</option>
+              </select>
+              <button class="btn-amber" onclick="openAddEstItemModal()" style="padding:6px 14px;font-size:.82rem">+ Add Line Item</button>
+            </div>
+          </div>
+          <div style="overflow:auto;max-height:420px">
+            <table class="est-table" id="estimateTable">
+              <thead><tr><th>Category</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th>Markup %</th><th>Total</th><th></th></tr></thead>
+              <tbody id="estimateBody"></tbody>
+              <tfoot id="estimateFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Change Orders -->
+        <div id="detailChangeorders" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div style="font-weight:700">Change Orders</div>
+              <div class="small muted" id="coSummaryLine" style="margin-top:2px"></div>
+            </div>
+            <button class="btn-amber" onclick="openAddCOModal()" style="padding:6px 14px;font-size:.82rem">+ New CO</button>
+          </div>
+          <div id="coList"></div>
+        </div>
+
+        <!-- Subs & Vendors -->
+        <div id="detailSubs" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:700">Subs & Vendors</div>
+            <button class="btn-amber" onclick="openAddSubModal()" style="padding:6px 14px;font-size:.82rem">+ Add Sub</button>
+          </div>
+          <div id="subList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add Phase Modal ── -->
+  <div id="addPhaseModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-head"><h3 style="margin:0">Add Phase</h3><button class="btn" onclick="kClose('addPhaseModal')">Close</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="full"><label class="small muted">Phase Name *</label>
+            <select id="phaseName">
+              <option>Demo</option><option>Site Prep</option><option>Foundation</option><option>Framing</option>
+              <option>Roofing</option><option>Rough Electrical</option><option>Rough Plumbing</option>
+              <option>HVAC Rough</option><option>Insulation</option><option>Drywall</option>
+              <option>Paint</option><option>Cabinets</option><option>Flooring</option>
+              <option>Trim & Finish</option><option>Finish Electrical</option><option>Finish Plumbing</option>
+              <option>HVAC Finish</option><option>Tile</option><option>Countertops</option>
+              <option>Exterior</option><option>Landscaping</option><option>Final Inspection</option><option>Punch List</option>
+            </select>
+          </div>
+          <div><label class="small muted">Start Date</label><input id="phaseStart" type="date" /></div>
+          <div><label class="small muted">End Date</label><input id="phaseEnd" type="date" /></div>
+          <div class="full"><label class="small muted">Assigned To</label><input id="phaseAssigned" placeholder="Crew member or sub name" /></div>
+          <div class="full"><label class="small muted">Status</label>
+            <select id="phaseStatus">
+              <option value="not-started">Not Started</option>
+              <option value="in-progress">In Progress</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="kClose('addPhaseModal')">Cancel</button>
+        <button class="btn-amber" onclick="savePhase()">Save Phase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add Daily Log Modal ── -->
+  <div id="addLogModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px">
+      <div class="modal-head"><h3 style="margin:0">Daily Log</h3><button class="btn" onclick="kClose('addLogModal')">Close</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div><label class="small muted">Date</label><input id="logDate" type="date" /></div>
+          <div><label class="small muted">Weather</label>
+            <select id="logWeather">
+              <option>☀️ Clear</option><option>⛅ Partly Cloudy</option><option>🌧️ Rain</option>
+              <option>⛈️ Storm</option><option>❄️ Snow/Ice</option><option>🌬️ High Wind</option>
+            </select>
+          </div>
+          <div class="full"><label class="small muted">Crew on Site</label><input id="logCrew" placeholder="Names or headcount" /></div>
+          <div class="full"><label class="small muted">Work Performed</label><textarea id="logNotes" rows="4" placeholder="Describe work completed today..."></textarea></div>
+          <div class="full"><label class="small muted">Issues / Delays</label><textarea id="logIssues" rows="2" placeholder="Any problems, delays, or safety concerns..."></textarea></div>
+          <div class="full">
+            <label class="small muted" style="display:block;margin-bottom:8px">📸 Photos</label>
+            <div id="logPhotoGrid" class="photo-grid">
+              <label class="photo-upload-btn" style="aspect-ratio:1;min-height:80px">
+                <span style="font-size:1.5rem">📷</span>
+                <span>Add Photo</span>
+                <input type="file" accept="image/*" multiple style="display:none" onchange="handleLogPhotoUpload(this)" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="kClose('addLogModal')">Cancel</button>
+        <button class="btn-amber" onclick="saveLog()">Save Log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add Estimate Line Item Modal ── -->
+  <div id="addEstItemModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px">
+      <div class="modal-head"><h3 style="margin:0" id="estItemModalTitle">Add Line Item</h3><button class="btn" onclick="kClose('addEstItemModal')">Close</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <input type="hidden" id="estItemId" />
+          <div class="full"><label class="small muted">Category</label>
+            <select id="estItemCategory">
+              <option>Labor</option><option>Materials</option><option>Subcontractor</option>
+              <option>Equipment</option><option>Permits & Fees</option><option>Overhead</option><option>Other</option>
+            </select>
+          </div>
+          <div class="full"><label class="small muted">Description *</label><input id="estItemDesc" placeholder="e.g. Framing labor — main floor" /></div>
+          <div><label class="small muted">Qty</label><input id="estItemQty" type="number" step="0.01" placeholder="1" oninput="calcEstItemTotal()" /></div>
+          <div><label class="small muted">Unit</label>
+            <select id="estItemUnit" onchange="calcEstItemTotal()">
+              <option value="ea">ea</option><option value="hr">hr</option><option value="lf">lf</option>
+              <option value="sf">sf</option><option value="ls">ls</option><option value="day">day</option>
+              <option value="ton">ton</option><option value="yd">yd</option><option value="gal">gal</option>
+            </select>
+          </div>
+          <div><label class="small muted">Unit Cost ($)</label><input id="estItemUnitCost" type="number" step="0.01" placeholder="0.00" oninput="calcEstItemTotal()" /></div>
+          <div><label class="small muted">Markup %</label><input id="estItemMarkup" type="number" step="0.5" placeholder="0" value="0" oninput="calcEstItemTotal()" /></div>
+          <div class="full" style="background:rgba(217,119,6,.07);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+            <span class="small muted">Line Total (with markup)</span>
+            <span id="estItemTotal" style="font-size:1.2rem;font-weight:800;color:var(--amber)">$0.00</span>
+          </div>
+          <div class="full"><label class="small muted">Notes</label><input id="estItemNotes" placeholder="Optional notes" /></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger" id="deleteEstItemBtn" onclick="deleteEstItem()" style="display:none">Delete</button>
+        <button class="btn" onclick="kClose('addEstItemModal')">Cancel</button>
+        <button class="btn-amber" onclick="saveEstItem()">Save Line Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add Change Order Modal ── -->
+  <div id="addCOModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px">
+      <div class="modal-head"><h3 style="margin:0" id="coModalTitle">New Change Order</h3><button class="btn" onclick="kClose('addCOModal')">Close</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <input type="hidden" id="coId" />
+          <div class="full"><label class="small muted">Title *</label><input id="coTitle" placeholder="e.g. Owner-directed drywall upgrade" /></div>
+          <div><label class="small muted">Date</label><input id="coDate" type="date" /></div>
+          <div><label class="small muted">Status</label>
+            <select id="coStatus">
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Void">Void</option>
+            </select>
+          </div>
+          <div><label class="small muted">CO Amount ($)</label><input id="coAmount" type="number" step="0.01" placeholder="0.00" /></div>
+          <div><label class="small muted">Days Added to Schedule</label><input id="coDays" type="number" placeholder="0" /></div>
+          <div class="full"><label class="small muted">Reason / Scope</label><textarea id="coReason" rows="3" placeholder="Describe the scope change and reason..."></textarea></div>
+          <div class="full"><label class="small muted">Approved By</label><input id="coApprovedBy" placeholder="Owner name or signature reference" /></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger" id="deleteCOBtn" onclick="deleteCO()" style="display:none">Delete</button>
+        <button class="btn" onclick="kClose('addCOModal')">Cancel</button>
+        <button class="btn-amber" onclick="saveCO()">Save Change Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add Sub/Vendor Modal ── -->
+  <div id="addSubModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:540px">
+      <div class="modal-head"><h3 style="margin:0" id="subModalTitle">Add Sub / Vendor</h3><button class="btn" onclick="kClose('addSubModal')">Close</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <input type="hidden" id="subId" />
+          <div class="full"><label class="small muted">Company / Name *</label><input id="subName" placeholder="e.g. ABC Electrical LLC" /></div>
+          <div><label class="small muted">Trade</label>
+            <select id="subTrade">
+              <option>General Labor</option><option>Electrical</option><option>Plumbing</option>
+              <option>HVAC</option><option>Drywall</option><option>Flooring</option><option>Painting</option>
+              <option>Roofing</option><option>Masonry</option><option>Landscaping</option>
+              <option>Concrete</option><option>Framing</option><option>Insulation</option>
+              <option>Tile</option><option>Cabinets</option><option>Windows & Doors</option>
+              <option>Excavation</option><option>Inspections</option><option>Supplier</option><option>Other</option>
+            </select>
+          </div>
+          <div><label class="small muted">Status</label>
+            <select id="subStatus">
+              <option value="Bidding">Bidding</option>
+              <option value="Contracted">Contracted</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="On Site">On Site</option>
+              <option value="Complete">Complete</option>
+            </select>
+          </div>
+          <div><label class="small muted">Contact Name</label><input id="subContact" placeholder="Contact person" /></div>
+          <div><label class="small muted">Phone</label><input id="subPhone" placeholder="(314) 555-0100" /></div>
+          <div><label class="small muted">Email</label><input id="subEmail" placeholder="contact@company.com" /></div>
+          <div><label class="small muted">Bid / Contract Amount ($)</label><input id="subAmount" type="number" step="0.01" placeholder="0.00" /></div>
+          <div><label class="small muted">Insurance Exp. Date</label><input id="subInsExp" type="date" /></div>
+          <div class="full"><label class="small muted">Notes / License #</label><textarea id="subNotes" rows="2" placeholder="License number, notes, scope of work..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-danger" id="deleteSubBtn" onclick="deleteSub()" style="display:none">Delete</button>
+        <button class="btn" onclick="kClose('addSubModal')">Cancel</button>
+        <button class="btn-amber" onclick="saveSub()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Photo Lightbox ── -->
+  <div id="photoLightbox" class="photo-lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Photo" />
+    <div style="color:rgba(255,255,255,.5);font-size:.82rem;margin-top:10px">Tap to close</div>
+  </div>
+
+<!-- ══ JOB DETAIL MODAL ══ -->
+<div id="jobDetailModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:780px">
+    <div class="modal-head">
+      <div>
+        <div id="detailJobNum" style="font-size:.8rem;color:var(--amber);font-weight:700"></div>
+        <h3 id="detailJobName" style="margin:4px 0 0"></h3>
+        <div id="detailJobClient" class="muted small"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="editCurrentJob()">✏️ Edit</button>
+        <button class="btn" onclick="kClose('jobDetailModal')">Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="con-subtabs" style="margin-bottom:14px;flex-wrap:wrap">
+        <button class="con-subtab active" onclick="switchDetailTab('overview',this)">Overview</button>
+        <button class="con-subtab" onclick="switchDetailTab('financials',this)">Financials</button>
+        <button class="con-subtab" onclick="switchDetailTab('estimate',this)">📋 Estimate</button>
+        <button class="con-subtab" onclick="switchDetailTab('changeorders',this)">🔄 Change Orders</button>
+        <button class="con-subtab" onclick="switchDetailTab('subs',this)">👷 Subs</button>
+        <button class="con-subtab" onclick="switchDetailTab('phases',this)">Phases</button>
+        <button class="con-subtab" onclick="switchDetailTab('logs',this)">Daily Logs</button>
+      </div>
+      <div id="detailOverview">
+        <div class="form-grid">
+          <div><div class="small muted">Status</div><div id="detailStatus" style="font-weight:700;color:var(--amber)"></div></div>
+          <div><div class="small muted">Type</div><div id="detailType"></div></div>
+          <div><div class="small muted">Status Date</div><div id="detailStart"></div></div>
+          <div><div class="small muted">Target End</div><div id="detailEnd"></div></div>
+          <div><div class="small muted">Superintendent</div><div id="detailSuper"></div></div>
+          <div><div class="small muted">Project Manager</div><div id="detailPM"></div></div>
+          <div class="full"><div class="small muted">Address</div><div id="detailAddress"></div></div>
+          <div class="full"><div class="small muted">Notes</div><div id="detailNotes" style="white-space:pre-wrap"></div></div>
+        </div>
+      </div>
+      <div id="detailFinancials" style="display:none">
+        <div class="fin-row"><span class="fin-label">Contract Value</span><span class="fin-val" id="finContract" style="color:#a3f2d2"></span></div>
+        <div class="fin-row"><span class="fin-label">Estimated Cost</span><span class="fin-val" id="finEstCost"></span></div>
+        <div class="fin-row"><span class="fin-label">Estimated Gross Profit</span><span class="fin-val" id="finEstProfit" style="color:#a3f2d2"></span></div>
+        <div class="fin-row"><span class="fin-label">Estimated Margin</span><span class="fin-val" id="finEstMargin"></span></div>
+        <div class="margin-bar"><div class="margin-fill" id="finMarginBar" style="width:0%"></div></div>
+        <div style="margin-top:16px">
+          <div style="font-weight:700;margin-bottom:8px">Actual Cost to Date</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="actualCostInput" type="number" step="0.01" placeholder="Enter actual cost to date" style="flex:1" />
+            <button class="btn-amber" onclick="saveActualCost()" style="padding:8px 16px;font-size:.84rem">Update</button>
+          </div>
+          <div class="fin-row"><span class="fin-label">Actual Cost</span><span class="fin-val" id="finActualCost"></span></div>
+          <div class="fin-row"><span class="fin-label">Variance (Est vs Actual)</span><span class="fin-val" id="finVariance"></span></div>
+        </div>
+      </div>
+      <div id="detailEstimate" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div><div style="font-weight:700">Line Item Estimate</div><div class="small muted" id="estSummaryLine" style="margin-top:2px"></div></div>
+          <div style="display:flex;gap:8px">
+            <select id="estCategoryFilter" onchange="renderEstimateList()" style="font-size:.82rem;padding:6px 10px;background:rgba(8,19,37,.9);border:1px solid var(--amber-border);color:#eaf0fb;border-radius:8px"><option value="">All Categories</option></select>
+            <button class="btn-amber" onclick="openAddEstItemModal()" style="padding:6px 14px;font-size:.82rem">+ Add Line Item</button>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:420px">
+          <table class="est-table" id="estimateTable">
+            <thead><tr><th>Category</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th>Markup %</th><th>Total</th><th></th></tr></thead>
+            <tbody id="estimateBody"></tbody>
+            <tfoot id="estimateFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div id="detailChangeorders" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div><div style="font-weight:700">Change Orders</div><div class="small muted" id="coSummaryLine" style="margin-top:2px"></div></div>
+          <button class="btn-amber" onclick="openAddCOModal()" style="padding:6px 14px;font-size:.82rem">+ New CO</button>
+        </div>
+        <div id="coList"></div>
+      </div>
+      <div id="detailSubs" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-weight:700">Subs & Vendors</div>
+          <button class="btn-amber" onclick="openAddSubModal()" style="padding:6px 14px;font-size:.82rem">+ Add Sub</button>
+        </div>
+        <div id="subList"></div>
+      </div>
+      <div id="detailPhases" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-weight:700">Project Phases</div>
+          <button class="btn-amber" onclick="openAddPhaseModal()" style="padding:6px 14px;font-size:.82rem">+ Add Phase</button>
+        </div>
+        <div id="phaseList"></div>
+      </div>
+      <div id="detailLogs" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-weight:700">Daily Logs</div>
+          <button class="btn-amber" onclick="openAddLogModal()" style="padding:6px 14px;font-size:.82rem">+ Add Log</button>
+        </div>
+        <div id="logList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const uid = p => `${p}-${Math.random().toString(36).slice(2,9)}`;
+const fmtMoney = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(n||0));
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '—';
+const todayISO = () => new Date().toISOString().slice(0,10);
+const addDays = (iso,n) => { const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+
+function kOpen(id){ const el=document.getElementById(id); if(el){ el.style.display='flex'; el.classList.add('open'); } }
+function kClose(id){ const el=document.getElementById(id); if(el){ el.style.display='none'; el.classList.remove('open'); } }
+window.kOpen = kOpen;
+window.kClose = kClose;
+
+// ── NAVIGATION ──
+const KT_PAGES = {
+  dashboard: { el:'ktPageDashboard', title:'🏠 Home' },
+  jobs:      { el:'ktPageJobs',      title:'🔧 Jobs' },
+  logs:      { el:'ktPageLogs',      title:'📋 Daily Logs' },
+  schedule:  { el:'ktPageSchedule',  title:'📅 Schedule' },
+  costing:   { el:'ktPageCosting',   title:'💰 Job Costing' },
+  catalog:   { el:'ktPageCatalog',   title:'📦 Cost Catalog' },
+
+};
+
+// ── Jobs page view toggle ──
+let _jobsView = 'kanban';
+function switchJobsView(view) {
+  _jobsView = view;
+  const kanbanView = document.getElementById('jobsKanbanView');
+  const listView = document.getElementById('jobsListView');
+  const kanbanBtn = document.getElementById('jobsKanbanBtn');
+  const listBtn = document.getElementById('jobsListBtn');
+  if (kanbanView) kanbanView.style.display = view === 'kanban' ? 'block' : 'none';
+  if (listView) listView.style.display = view === 'list' ? 'block' : 'none';
+  if (kanbanBtn) {
+    kanbanBtn.style.background = view === 'kanban' ? 'linear-gradient(135deg,var(--amber),var(--amber2))' : 'transparent';
+    kanbanBtn.style.color = view === 'kanban' ? '#fff' : 'var(--muted)';
+    kanbanBtn.style.fontWeight = view === 'kanban' ? '700' : '600';
+  }
+  if (listBtn) {
+    listBtn.style.background = view === 'list' ? 'linear-gradient(135deg,var(--amber),var(--amber2))' : 'transparent';
+    listBtn.style.color = view === 'list' ? '#fff' : 'var(--muted)';
+    listBtn.style.fontWeight = view === 'list' ? '700' : '600';
+  }
+  if (view === 'kanban') renderJobsBoard();
+  if (view === 'list') conRenderList();
+}
+window.switchJobsView = switchJobsView;
+
+// ── DRAG AND DROP ──
+let _dragJobId = null;
+
+function initDragDrop(boardId) {
+  const board = document.getElementById(boardId);
+  if (!board) return;
+
+  // Drag start on cards
+  board.querySelectorAll('.kt-job-card').forEach(card => {
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', e => {
+      _dragJobId = card.dataset.jobId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      board.querySelectorAll('.kt-col').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+
+  // Drop targets on columns
+  board.querySelectorAll('.kt-col').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      board.querySelectorAll('.kt-col').forEach(c => c.classList.remove('drag-over'));
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', e => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      if (!_dragJobId || !conDb) return;
+      const newStatus = col.dataset.status;
+      if (!newStatus) return;
+      // Update Firebase
+      conDb.collection('jobs').doc(_dragJobId).update({
+        status: newStatus,
+        statusDate: new Date().toISOString().split('T')[0],
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: conCurrentUser ? conCurrentUser.email : 'unknown'
+      }).catch(e => alert('Error moving job: ' + e.message));
+      _dragJobId = null;
+    });
+  });
+}
+window.initDragDrop = initDragDrop;
+
+// ── Jobs page kanban board (separate from Home board) ──
+function renderJobsBoard() {
+  const board = document.getElementById('jobsBoard');
+  if (!board) return;
+  const statusFilter = document.getElementById('jobsStatusFilter')?.value || '';
+  board.innerHTML = '';
+  const statusesToShow = statusFilter
+    ? KYTRAC_STATUSES.filter(s => s.name === statusFilter)
+    : KYTRAC_STATUSES;
+  statusesToShow.forEach(s => {
+    const jobs = conJobs.filter(j => j.status === s.name);
+    const col = document.createElement('div');
+    col.className = 'kt-col';
+    col.style.borderTopColor = s.color;
+    col.dataset.status = s.name;
+    col.innerHTML = `<div class="kt-col-head"><span class="kt-col-head-label" style="color:${s.color}">${s.name}</span><span class="kt-col-count" style="background:${s.color}22;color:${s.color};flex-shrink:0">${jobs.length}</span></div>`;
+    jobs.forEach(job => {
+      const card = document.createElement('div');
+      card.className = 'kt-job-card';
+      card.style.borderLeftColor = s.color;
+      card.dataset.jobId = job.id;
+      card.innerHTML = `
+        <div class="kt-job-num" style="color:${s.color}">${esc(job.jobNumber||'')}</div>
+        <div class="kt-job-name">${esc(job.name)}</div>
+        ${job.client?`<div class="kt-job-meta">Customer: ${esc(job.client)}</div>`:''}
+        ${job.statusDate||job.startDate?`<div class="kt-job-meta">Status Date: ${job.statusDate||job.startDate}</div>`:''}
+        ${job.superintendent||job.pm?`<div class="kt-job-meta">Sales Rep: ${esc(job.superintendent||job.pm)}</div>`:''}
+        ${job.contractValue?`<div class="kt-job-value">$${Number(job.contractValue).toLocaleString()}</div>`:''}
+      `;
+      card.onclick = () => openJobDetail(job.id);
+      col.appendChild(card);
+    });
+    if (!jobs.length) {
+      const empty = document.createElement('div');
+      empty.className = 'kt-col-empty';
+      empty.textContent = 'No jobs';
+      col.appendChild(empty);
+    }
+    board.appendChild(col);
+  });
+  // Init drag and drop after render
+  setTimeout(() => initDragDrop('jobsBoard'), 50);
+}
+window.renderJobsBoard = renderJobsBoard;
+
+function ktNav(key, btn) {
+  Object.values(KT_PAGES).forEach(p => {
+    const el = document.getElementById(p.el);
+    if(el) el.classList.remove('active');
+  });
+  document.querySelectorAll('.kt-nav-item').forEach(b => b.classList.remove('active'));
+  const page = KT_PAGES[key];
+  if(!page) return;
+  const el = document.getElementById(page.el);
+  if(el) el.classList.add('active');
+  if(btn) btn.classList.add('active');
+  const title = document.getElementById('ktPageTitle');
+  if(title) title.textContent = page.title;
+  // Close mobile sidebar
+  document.getElementById('ktSidebar')?.classList.remove('open');
+  // Trigger renders
+  if(key==='costing') renderJobCostDashboard();
+  if(key==='schedule') conRenderSchedule();
+  if(key==='jobs') {
+    if(_jobsView === 'kanban') renderJobsBoard();
+    else conRenderList();
+  }
+  if(key==='dashboard') { conRenderBoard(); conRenderStats(); renderHomeDashboard(); }
+  if(key==='catalog') renderCatalog();
+}
+
+function ktFilterJobs(q) {
+  q = (q||'').toLowerCase();
+  document.querySelectorAll('.kt-job-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = !q || text.includes(q) ? '' : 'none';
+  });
+}
+
+// ── OVERRIDE conShowMain to use new KYTRAC UI ──
+function conShowMain(user) {
+  document.getElementById('ktAuthWall').style.display = 'none';
+  document.getElementById('ktApp').style.display = 'flex';
+  // User info in sidebar
+  const name = user.displayName || user.email || 'Team Member';
+  document.getElementById('ktUserName').textContent = name.split(' ')[0] || name;
+  const avatarImg = document.getElementById('ktAvatarImg');
+  const avatarInit = document.getElementById('ktAvatarInitial');
+  if(user.photoURL) {
+    avatarImg.src = user.photoURL;
+    avatarImg.style.display = 'block';
+    avatarInit.style.display = 'none';
+  } else {
+    avatarInit.textContent = (name[0]||'?').toUpperCase();
+  }
+  // Also set topbar new job button visibility
+  const nb = document.getElementById('newJobBtn');
+  const so = document.getElementById('signOutBtn');
+  if(nb) nb.style.display = 'inline-flex';
+  if(so) so.style.display = 'inline-flex';
+}
+
+function conShowAuthWall() {
+  document.getElementById('ktAuthWall').style.display = 'flex';
+  document.getElementById('ktApp').style.display = 'none';
+}
+
+// ── OVERRIDE conRenderBoard to use kt-board classes ──
+function conRenderBoard() {
+  const board = document.getElementById('conBoard');
+  if(!board) return;
+  board.innerHTML = '';
+  let totalJobs = 0;
+  KYTRAC_STATUSES.forEach(s => {
+    const jobs = conJobs.filter(j => j.status === s.name);
+    totalJobs += jobs.length;
+    const col = document.createElement('div');
+    col.className = 'kt-col';
+    col.style.borderTopColor = s.color;
+    col.dataset.status = s.name;
+    col.innerHTML = `<div class="kt-col-head"><span class="kt-col-head-label" style="color:${s.color}">${s.name}</span><span class="kt-col-count" style="background:${s.color}22;color:${s.color};flex-shrink:0">${jobs.length}</span></div>`;
+    jobs.forEach(job => {
+      const card = document.createElement('div');
+      card.className = 'kt-job-card';
+      card.style.borderLeftColor = s.color;
+      card.dataset.jobId = job.id;
+      card.innerHTML = `
+        <div class="kt-job-num" style="color:${s.color}">${job.jobNumber||''}</div>
+        <div class="kt-job-name">${esc(job.name)}</div>
+        ${job.client?`<div class="kt-job-meta">👤 ${esc(job.client)}</div>`:''}
+        ${job.statusDate||job.startDate?`<div class="kt-job-meta">📅 ${job.statusDate||job.startDate}</div>`:''}
+        ${job.superintendent||job.pm?`<div class="kt-job-meta">👷 ${esc(job.superintendent||job.pm)}</div>`:''}
+        ${job.contractValue?`<div class="kt-job-value">$${Number(job.contractValue).toLocaleString()}</div>`:''}
+      `;
+      card.onclick = () => openJobDetail(job.id);
+      col.appendChild(card);
+    });
+    if (!jobs.length) {
+      const empty = document.createElement('div');
+      empty.className = 'kt-col-empty';
+      empty.textContent = 'No jobs';
+      col.appendChild(empty);
+    }
+    board.appendChild(col);
+  });
+  const cnt = document.getElementById('ktBoardCount');
+  if(cnt) cnt.textContent = totalJobs + ' job' + (totalJobs!==1?'s':'');
+  setTimeout(() => initDragDrop('conBoard'), 50);
+}
+
+// ── OVERRIDE conRenderList to use both list page targets ──
+function conRenderList() {
+  const bodies = ['conListBody','ktListBody'];
+  bodies.forEach(id => {
+    const tbody = document.getElementById(id);
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    conJobs.forEach(job => {
+      const s = KYTRAC_STATUSES.find(x => x.name === job.status) || {color:'var(--amber)'};
+      const tr = document.createElement('tr');
+      tr.onclick = () => openJobDetail(job.id);
+      tr.innerHTML = `
+        <td style="color:${s.color};font-weight:800;font-size:.8rem">${job.jobNumber||'—'}</td>
+        <td style="font-weight:700">${esc(job.name)}</td>
+        <td>${esc(job.client||'—')}</td>
+        <td><span style="background:${s.color}22;color:${s.color};padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap">${job.status}</span></td>
+        <td style="text-align:right;color:#a3f2d2;font-weight:700">${job.contractValue?'$'+Number(job.contractValue).toLocaleString():'—'}</td>
+        <td style="color:var(--muted)">${job.statusDate||job.startDate||'—'}</td>
+        <td style="color:var(--muted)">${esc(job.superintendent||job.pm||'—')}</td>
+        <td><button class="btn" style="padding:3px 10px;font-size:.75rem" onclick="event.stopPropagation();openJobDetail('${job.id}')">Open →</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    if(!conJobs.length) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:28px;font-style:italic">No jobs yet — create your first job with + New Job</td></tr>';
+  });
+  const jc = document.getElementById('ktJobCount');
+  if(jc) jc.textContent = conJobs.length + ' job' + (conJobs.length!==1?'s':'');
+  const lc = document.getElementById('ktListCount');
+  if(lc) lc.textContent = conJobs.length + ' job' + (conJobs.length!==1?'s':'');
+}
+
+// ── OVERRIDE Firebase auth reveal ──
+function ktRevealSignIn() {
+  const loading = document.getElementById('ktAuthLoading');
+  const btn = document.getElementById('ktSignInBtn');
+  if(loading) loading.style.display = 'none';
+  if(btn) { btn.disabled = false; btn.textContent = ''; btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google'; }
+}
+
+
+
+// ════════════════════════════════════════════════════
+// ── MODULE 6: CONSTRUCTION JOB HUB ──
+// ── Firebase Firestore + Google Auth ──
+// ════════════════════════════════════════════════════
+
+// Firebase config
+const CON_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDoFC2N0rrgwO-vY8SCPb3J-jKgSLYn5BQ",
+  authDomain: "kytrac-72d91.firebaseapp.com",
+  projectId: "kytrac-72d91",
+  storageBucket: "kytrac-72d91.firebasestorage.app",
+  messagingSenderId: "1061786207687",
+  appId: "1:1061786207687:web:219bce6739311f43b205e2"
+};
+
+// Approved users whitelist — add all team members here
+const CON_APPROVED_EMAILS = [
+  'travisdurbin73@gmail.com',
+  'travis@durbinleadershipgroup.com'
+];
+
+let conApp = null, conDb = null, conAuth = null;
+let conCurrentUser = null;
+let conCurrentJobId = null;
+let conEditingJobId = null;
+let conJobs = [];
+let conFirebaseReady = false;
+
+const KYTRAC_STATUSES = [
+  {name:'New Lead',           color:'#ef4444', group:'sales'},
+  {name:'Hipshot Needed',     color:'#f97316', group:'sales'},
+  {name:'Appointment Set',    color:'#f97316', group:'sales'},
+  {name:'Estimating',         color:'#f97316', group:'sales'},
+  {name:'Submitted',          color:'#d97706', group:'sales'},
+  {name:'Approved',           color:'#16a34a', group:'active'},
+  {name:'Design Phase',       color:'#16a34a', group:'active'},
+  {name:'Permitting',         color:'#16a34a', group:'active'},
+  {name:'Scheduled',          color:'#0d9488', group:'active'},
+  {name:'Work In Progress',   color:'#0891b2', group:'active'},
+  {name:'Inspection Pending', color:'#2563eb', group:'active'},
+  {name:'Invoicing',          color:'#2563eb', group:'finance'},
+  {name:'Pending Payment',    color:'#7c3aed', group:'finance'},
+  {name:'Delinquent',         color:'#7c3aed', group:'finance'},
+  {name:'Closed Hipshot Sent',color:'#7c3aed', group:'closed'},
+  {name:'Closed Won',         color:'#db2777', group:'closed'},
+  {name:'Closed Lost',        color:'#dc2626', group:'closed'},
+];
+const CON_JOB_STATUSES = KYTRAC_STATUSES.map(s => s.name);
+
+function conLoadFirebase() {
+  if (conFirebaseReady) return;
+  // Load Firebase SDKs in sequence — app MUST load before auth and firestore
+  const scripts = [
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
+  ];
+  if (typeof firebase !== 'undefined') { conInitFirebase(); return; }
+  function loadNext(i) {
+    if (i >= scripts.length) { conInitFirebase(); return; }
+    const s = document.createElement('script');
+    s.src = scripts[i];
+    s.onload = () => loadNext(i + 1);
+    s.onerror = () => {
+      console.error('Failed to load Firebase script:', scripts[i]);
+      // Show error to user
+      const loader = document.getElementById('conSignInLoading');
+      if (loader) loader.innerHTML = '<div style="color:#ef5350;font-size:.9rem">⚠️ Could not connect to KYTRAC.<br>Check your internet connection and reload.</div>';
+    };
+    document.head.appendChild(s);
+  }
+  loadNext(0);
+}
+
+function conInitFirebase() { /* overridden below */ }
+
+// conShowAuthWall and conShowMain overridden by KYTRAC UI versions below
+
+function conSignIn() {
+  if (!conFirebaseReady) {
+    // If somehow called before ready, just wait and retry
+    const btn = document.getElementById('conSignInBtn');
+    if (btn) { btn.textContent = 'Connecting...'; btn.disabled = true; }
+    setTimeout(conSignIn, 1000);
+    return;
+  }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  conAuth.signInWithPopup(provider).catch(e => {
+    alert('Sign-in failed: ' + e.message);
+  });
+}
+
+function conSignOut() {
+  if (conAuth) conAuth.signOut();
+}
+
+function conLoadJobs() {
+  if (!conDb) return;
+  conDb.collection('jobs').orderBy('createdAt','desc').onSnapshot(snap => {
+    conJobs = [];
+    snap.forEach(doc => conJobs.push({ id: doc.id, ...doc.data() }));
+    conRenderBoard();
+    conRenderList();
+    conRenderStats();
+    conRenderSchedule();
+    loadAllCOTotals();
+    loadCatalog();
+    renderHomeDashboard();
+    // Refresh costing page if visible
+    const costingPage = document.getElementById('ktPageCosting');
+    if(costingPage && costingPage.classList.contains('active')) renderJobCostDashboard();
+  });
+}
+
+function conGenJobNumber() {
+  const year = new Date().getFullYear();
+  const num = String(Math.floor(Math.random() * 900) + 100);
+  return 'JOB-' + year + '-' + num;
+}
+
+function openNewJobModal() {
+  conEditingJobId = null;
+  document.getElementById('jobModalTitle').textContent = 'New Job';
+  ['jobName','jobClient','jobPhone','jobEmail','jobAddress','jobNotes','jobContractValue','jobEstCost','jobSuperintendent','jobPM'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('jobStatus').value = 'Contracted';
+  document.getElementById('jobType').value = 'Residential Remodel';
+  document.getElementById('jobStartDate').value = '';
+  document.getElementById('jobEndDate').value = '';
+  kOpen('newJobModal');
+}
+
+function saveJob() {
+  const name = document.getElementById('jobName').value.trim();
+  const client = document.getElementById('jobClient').value.trim();
+  if (!name || !client) { alert('Job name and client name are required.'); return; }
+
+  const data = {
+    name, client,
+    phone: document.getElementById('jobPhone').value.trim(),
+    email: document.getElementById('jobEmail').value.trim(),
+    address: document.getElementById('jobAddress').value.trim(),
+    status: document.getElementById('jobStatus').value,
+    statusDate: new Date().toISOString().split('T')[0],
+    type: document.getElementById('jobType').value,
+    contractValue: parseFloat(document.getElementById('jobContractValue').value) || 0,
+    estCost: parseFloat(document.getElementById('jobEstCost').value) || 0,
+    startDate: document.getElementById('jobStartDate').value,
+    endDate: document.getElementById('jobEndDate').value,
+    superintendent: document.getElementById('jobSuperintendent').value.trim(),
+    pm: document.getElementById('jobPM').value.trim(),
+    notes: document.getElementById('jobNotes').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: conCurrentUser ? conCurrentUser.email : 'unknown'
+  };
+
+  if (conEditingJobId) {
+    conDb.collection('jobs').doc(conEditingJobId).update(data)
+      .then(() => kClose('newJobModal'))
+      .catch(e => alert('Error saving: ' + e.message));
+  } else {
+    data.jobNumber = conGenJobNumber();
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    data.createdBy = conCurrentUser ? conCurrentUser.email : 'unknown';
+    data.actualCost = 0;
+    conDb.collection('jobs').add(data)
+      .then(() => kClose('newJobModal'))
+      .catch(e => alert('Error saving: ' + e.message));
+  }
+}
+
+function conRenderBoard() {
+  const board = document.getElementById('conBoard');
+  if (!board) return;
+  board.innerHTML = '';
+  KYTRAC_STATUSES.forEach(s => {
+    const jobs = conJobs.filter(j => j.status === s.name);
+    const col = document.createElement('div');
+    col.className = 'con-col';
+    col.style.borderTopColor = s.color;
+    col.innerHTML = `<div class="con-col-head" style="color:${s.color}">${s.name} <span class="con-col-count" style="background:${s.color}22;color:${s.color}">${jobs.length}</span></div>`;
+    jobs.forEach(job => {
+      const card = document.createElement('div');
+      card.className = 'job-card';
+      card.style.borderLeftColor = s.color;
+      // Format: jobNumber — customer name (like JobTread shows address)
+      const statusDate = job.statusDate || job.startDate || '';
+      const salesRep = job.superintendent || job.pm || '';
+      card.innerHTML = `
+        <div class="job-card-num" style="color:${s.color}">${job.jobNumber || ''}</div>
+        <div class="job-card-name">${job.name}</div>
+        ${job.client ? `<div class="job-card-meta">Customer: ${job.client}</div>` : ''}
+        ${statusDate ? `<div class="job-card-meta">Status Date: ${statusDate}</div>` : ''}
+        ${salesRep ? `<div class="job-card-meta">Sales Rep: ${salesRep}</div>` : ''}
+        ${job.contractValue ? `<div class="job-card-value">$${Number(job.contractValue).toLocaleString()}</div>` : ''}
+      `;
+      card.onclick = () => openJobDetail(job.id);
+      col.appendChild(card);
+    });
+    if (!jobs.length) {
+      const empty = document.createElement('div');
+      empty.className = 'kt-col-empty';
+      empty.textContent = 'No jobs';
+      col.appendChild(empty);
+    }
+    board.appendChild(col);
+  });
+}
+
+function conRenderList() {
+  const tbody = document.getElementById('conListBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  conJobs.forEach(job => {
+    const tr = document.createElement('tr');
+    const val = job.contractValue ? '$' + Number(job.contractValue).toLocaleString() : '—';
+    tr.innerHTML = `
+      <td style="color:var(--amber);font-weight:700">${job.jobNumber || '—'}</td>
+      <td style="font-weight:600">${job.name}</td>
+      <td>${job.client}</td>
+      <td><span style="background:var(--amber-light);color:var(--amber);padding:3px 8px;border-radius:8px;font-size:.78rem">${job.status}</span></td>
+      <td style="color:#a3f2d2">${val}</td>
+      <td>${job.startDate || '—'}</td>
+      <td>${job.superintendent || job.pm || '—'}</td>
+      <td><button class="btn" style="padding:4px 10px;font-size:.78rem" onclick="openJobDetail('${job.id}')">Open</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function conRenderStats() {
+  const active = conJobs.filter(j => ['Work In Progress','Scheduled','Inspection Pending','Approved','Design Phase','Permitting'].includes(j.status)).length;
+  document.getElementById('statActiveJobs').textContent = active;
+  const totalContract = conJobs.reduce((s, j) => s + (j.contractValue || 0), 0);
+  document.getElementById('statContractTotal').textContent = '$' + totalContract.toLocaleString();
+  const margins = conJobs.filter(j => j.contractValue && j.estCost).map(j => (j.contractValue - j.estCost) / j.contractValue * 100);
+  const avgMargin = margins.length ? (margins.reduce((a,b) => a+b, 0) / margins.length).toFixed(1) : '0';
+  document.getElementById('statAvgMargin').textContent = avgMargin + '%';
+  const today = new Date().toISOString().split('T')[0];
+  // Log count today requires querying — skip for now, show placeholder
+  document.getElementById('statLogsToday').textContent = '—';
+}
+
+function conRenderSchedule() {
+  const el = document.getElementById('conScheduleList');
+  if (!el) return;
+  const jobsWithDates = conJobs.filter(j => j.startDate && ['Work In Progress','Scheduled','Approved','Design Phase','Permitting'].includes(j.status));
+  if (!jobsWithDates.length) { el.innerHTML = '<p class="muted">No active jobs with scheduled dates.</p>'; return; }
+  el.innerHTML = jobsWithDates.sort((a,b) => a.startDate.localeCompare(b.startDate)).map(j => `
+    <div class="fin-row">
+      <div>
+        <div style="font-weight:700">${j.name}</div>
+        <div class="small muted">${j.client} · ${j.status}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="small" style="color:var(--amber)">${j.startDate} → ${j.endDate || 'TBD'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openJobDetail(jobId) {
+  const job = conJobs.find(j => j.id === jobId);
+  if (!job) return;
+  conCurrentJobId = jobId;
+
+  document.getElementById('detailJobNum').textContent = job.jobNumber || '';
+  document.getElementById('detailJobName').textContent = job.name;
+  document.getElementById('detailJobClient').textContent = '👤 ' + job.client + (job.phone ? ' · ' + job.phone : '') + (job.email ? ' · ' + job.email : '');
+  document.getElementById('detailStatus').textContent = job.status;
+  document.getElementById('detailType').textContent = job.type || '—';
+  document.getElementById('detailStart').textContent = job.startDate || '—';
+  document.getElementById('detailEnd').textContent = job.endDate || '—';
+  document.getElementById('detailSuper').textContent = job.superintendent || '—';
+  document.getElementById('detailPM').textContent = job.pm || '—';
+  document.getElementById('detailAddress').textContent = job.address || '—';
+  document.getElementById('detailNotes').textContent = job.notes || '—';
+
+  // Financials
+  const cv = job.contractValue || 0;
+  const ec = job.estCost || 0;
+  const ac = job.actualCost || 0;
+  const profit = cv - ec;
+  const margin = cv ? (profit / cv * 100) : 0;
+  document.getElementById('finContract').textContent = '$' + cv.toLocaleString();
+  document.getElementById('finEstCost').textContent = '$' + ec.toLocaleString();
+  document.getElementById('finEstProfit').textContent = '$' + profit.toLocaleString();
+  document.getElementById('finEstMargin').textContent = margin.toFixed(1) + '%';
+  document.getElementById('finMarginBar').style.width = Math.min(margin, 100) + '%';
+  document.getElementById('finActualCost').textContent = '$' + ac.toLocaleString();
+  const variance = ec - ac;
+  const varEl = document.getElementById('finVariance');
+  varEl.textContent = (variance >= 0 ? '+' : '') + '$' + variance.toLocaleString();
+  varEl.style.color = variance >= 0 ? '#a3f2d2' : '#ef5350';
+  document.getElementById('actualCostInput').value = ac || '';
+
+  // Switch to overview tab
+  switchDetailTab('overview', document.querySelector('#jobDetailModal .con-subtab'));
+  conLoadPhases(jobId);
+  conLoadLogs(jobId);
+  kOpen('jobDetailModal');
+}
+
+function editCurrentJob() {
+  if (!conCurrentJobId) return;
+  const job = conJobs.find(j => j.id === conCurrentJobId);
+  if (!job) return;
+  conEditingJobId = conCurrentJobId;
+  document.getElementById('jobModalTitle').textContent = 'Edit Job';
+  document.getElementById('jobName').value = job.name || '';
+  document.getElementById('jobClient').value = job.client || '';
+  document.getElementById('jobPhone').value = job.phone || '';
+  document.getElementById('jobEmail').value = job.email || '';
+  document.getElementById('jobAddress').value = job.address || '';
+  document.getElementById('jobStatus').value = job.status || 'Contracted';
+  document.getElementById('jobType').value = job.type || 'Residential Remodel';
+  document.getElementById('jobContractValue').value = job.contractValue || '';
+  document.getElementById('jobEstCost').value = job.estCost || '';
+  document.getElementById('jobStartDate').value = job.startDate || '';
+  document.getElementById('jobEndDate').value = job.endDate || '';
+  document.getElementById('jobSuperintendent').value = job.superintendent || '';
+  document.getElementById('jobPM').value = job.pm || '';
+  document.getElementById('jobNotes').value = job.notes || '';
+  kClose('jobDetailModal');
+  kOpen('newJobModal');
+}
+
+function saveActualCost() {
+  if (!conCurrentJobId || !conDb) return;
+  const val = parseFloat(document.getElementById('actualCostInput').value) || 0;
+  conDb.collection('jobs').doc(conCurrentJobId).update({ actualCost: val, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+    .then(() => {
+      const job = conJobs.find(j => j.id === conCurrentJobId);
+      if (job) { job.actualCost = val; openJobDetail(conCurrentJobId); }
+    })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+// ── Phases ──
+let conPhases = [];
+
+function conLoadPhases(jobId) {
+  if (!conDb) return;
+  conDb.collection('jobs').doc(jobId).collection('phases').orderBy('startDate').onSnapshot(snap => {
+    conPhases = [];
+    snap.forEach(doc => conPhases.push({ id: doc.id, ...doc.data() }));
+    renderPhaseList();
+  });
+}
+
+function renderPhaseList() {
+  const el = document.getElementById('phaseList');
+  if (!el) return;
+  if (!conPhases.length) { el.innerHTML = '<p class="muted">No phases added yet.</p>'; return; }
+  el.innerHTML = conPhases.map((p,i) => `
+    <div class="phase-row">
+      <div class="phase-status-dot ${p.status || 'not-started'}"></div>
+      <div style="flex:1">
+        <div style="font-weight:700">${p.name}</div>
+        <div class="small muted">${p.startDate || ''}${p.endDate ? ' → ' + p.endDate : ''} ${p.assigned ? '· ' + p.assigned : ''}</div>
+      </div>
+      <select style="font-size:.78rem;padding:4px 8px;background:rgba(8,18,36,.8);border:1px solid var(--amber-border);color:var(--text);border-radius:8px" onchange="updatePhaseStatus('${p.id}',this.value)">
+        <option value="not-started" ${p.status==='not-started'?'selected':''}>Not Started</option>
+        <option value="in-progress" ${p.status==='in-progress'?'selected':''}>In Progress</option>
+        <option value="complete" ${p.status==='complete'?'selected':''}>Complete</option>
+      </select>
+      <button class="btn btn-danger" style="padding:3px 8px;font-size:.75rem" onclick="deletePhase('${p.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function openAddPhaseModal() {
+  document.getElementById('phaseName').selectedIndex = 0;
+  document.getElementById('phaseStart').value = '';
+  document.getElementById('phaseEnd').value = '';
+  document.getElementById('phaseAssigned').value = '';
+  document.getElementById('phaseStatus').value = 'not-started';
+  kOpen('addPhaseModal');
+}
+
+function savePhase() {
+  if (!conCurrentJobId || !conDb) return;
+  const data = {
+    name: document.getElementById('phaseName').value,
+    startDate: document.getElementById('phaseStart').value,
+    endDate: document.getElementById('phaseEnd').value,
+    assigned: document.getElementById('phaseAssigned').value.trim(),
+    status: document.getElementById('phaseStatus').value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  conDb.collection('jobs').doc(conCurrentJobId).collection('phases').add(data)
+    .then(() => { kClose('addPhaseModal'); switchDetailTab('phases', null); })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+function updatePhaseStatus(phaseId, status) {
+  if (!conCurrentJobId || !conDb) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('phases').doc(phaseId).update({ status });
+}
+
+function deletePhase(phaseId) {
+  if (!confirm('Delete this phase?')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('phases').doc(phaseId).delete();
+}
+
+// ── Daily Logs ──
+let conLogs = [];
+
+function conLoadLogs(jobId) {
+  if (!conDb) return;
+  conDb.collection('jobs').doc(jobId).collection('logs').orderBy('date','desc').onSnapshot(snap => {
+    conLogs = [];
+    snap.forEach(doc => conLogs.push({ id: doc.id, ...doc.data() }));
+    renderLogList();
+  });
+}
+
+function renderLogList() {
+  const el = document.getElementById('logList');
+  if (!el) return;
+  if (!conLogs.length) { el.innerHTML = '<p class="muted">No daily logs yet.</p>'; return; }
+  el.innerHTML = conLogs.map(l => `
+    <div class="log-entry">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="log-date">${l.date}</span>
+        <span class="log-weather">${l.weather || ''}</span>
+        <button class="btn btn-danger" style="padding:2px 8px;font-size:.75rem" onclick="deleteLog('${l.id}')">✕</button>
+      </div>
+      ${l.crew ? `<div class="small muted" style="margin-bottom:4px">👷 ${l.crew}</div>` : ''}
+      <div style="font-size:.88rem;margin-bottom:4px">${l.notes || ''}</div>
+      ${l.issues ? `<div style="font-size:.82rem;color:#ef5350">⚠️ ${l.issues}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function openAddLogModal() {
+  document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('logWeather').selectedIndex = 0;
+  document.getElementById('logCrew').value = '';
+  document.getElementById('logNotes').value = '';
+  document.getElementById('logIssues').value = '';
+  kOpen('addLogModal');
+}
+
+function saveLog() {
+  if (!conCurrentJobId || !conDb) return;
+  const date = document.getElementById('logDate').value;
+  if (!date) { alert('Date is required.'); return; }
+  const data = {
+    date,
+    weather: document.getElementById('logWeather').value,
+    crew: document.getElementById('logCrew').value.trim(),
+    notes: document.getElementById('logNotes').value.trim(),
+    issues: document.getElementById('logIssues').value.trim(),
+    createdBy: conCurrentUser ? conCurrentUser.email : 'unknown',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  conDb.collection('jobs').doc(conCurrentJobId).collection('logs').add(data)
+    .then(() => { kClose('addLogModal'); switchDetailTab('logs', null); })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+function deleteLog(logId) {
+  if (!confirm('Delete this log entry?')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('logs').doc(logId).delete();
+}
+
+// ── UI helpers ──
+function switchConTab(tab, btn) {
+  ['conDashView','conBoardView','conListView','conCalView'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const map = { dashboard:'conDashView', board:'conBoardView', list:'conListView', calendar:'conCalView' };
+  const target = document.getElementById(map[tab]);
+  if (target) target.style.display = 'block';
+  document.querySelectorAll('.con-subtabs .con-subtab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'dashboard') renderJobCostDashboard();
+}
+
+// ════════════════════════════════════════════════════
+// ── JOB COSTING DASHBOARD ──
+// ════════════════════════════════════════════════════
+
+const JCD_COST_CATEGORIES = ['Labor','Materials','Subcontractor','Equipment','Permits & Fees','Overhead','Other'];
+let _jcdSortKey = 'margin';
+let _jcdSortDir = 1; // 1=asc, -1=desc
+let _jcdSelectedJobId = null;
+let _jcdActualsCache = {}; // { jobId: { category: amount } }
+
+// ── Top-level render ──────────────────────────────────
+function renderJobCostDashboard() {
+  renderJCDKpis();
+  renderJCDPipeline();
+  renderJCDAlerts();
+  renderJCDTable();
+  if (_jcdSelectedJobId) renderJCDJobDetail(_jcdSelectedJobId);
+}
+
+// ── KPI strip ────────────────────────────────────────
+function renderJCDKpis() {
+  const el = document.getElementById('jcdKpiStrip');
+  if (!el) return;
+
+  const jobs = conJobs;
+  const active = jobs.filter(j => ['In Progress','Contracted'].includes(j.status));
+  const totalContract = jobs.reduce((s,j) => s + (j.contractValue||0), 0);
+  const totalEst = jobs.reduce((s,j) => s + (j.estCost||0), 0);
+  const totalActual = jobs.reduce((s,j) => s + getJobTotalActual(j.id), 0);
+
+  // Weighted avg margin on jobs with contract value
+  const marginJobs = jobs.filter(j => j.contractValue && j.estCost);
+  const avgEstMargin = marginJobs.length
+    ? marginJobs.reduce((s,j) => s + ((j.contractValue - j.estCost) / j.contractValue * 100), 0) / marginJobs.length
+    : 0;
+
+  // Jobs with margin < 15% (threshold warning)
+  const atRisk = jobs.filter(j => {
+    if (!j.contractValue || !j.estCost) return false;
+    const m = (j.contractValue - j.estCost) / j.contractValue * 100;
+    return m < 15 && ['Work In Progress','Scheduled','Inspection Pending'].includes(j.status);
+  }).length;
+
+  // Approved CO total
+  const approvedCOTotal = _jcdCOTotals ? Object.values(_jcdCOTotals).reduce((s,v)=>s+v,0) : 0;
+
+  const kpis = [
+    { label:'Total Pipeline', val:'$'+Math.round(totalContract).toLocaleString(), sub: jobs.length+' job'+(jobs.length!==1?'s':''), accent:'var(--amber)' },
+    { label:'Active Jobs', val: active.length, sub: 'In Progress + Contracted', accent:'#4d8dff' },
+    { label:'Avg Est. Margin', val: avgEstMargin.toFixed(1)+'%', sub:'Target ≥ 20%', accent: avgEstMargin >= 20 ? '#1dbb87' : avgEstMargin >= 15 ? '#f3b33d' : '#ef5350', valColor: avgEstMargin >= 20 ? '#a3f2d2' : avgEstMargin >= 15 ? '#ffe09d' : '#ffc0be' },
+    { label:'Est. vs Actual', val: totalActual > 0 ? '$'+Math.round(totalActual).toLocaleString() : '—', sub: totalEst > 0 ? 'of $'+Math.round(totalEst).toLocaleString()+' est.' : 'No actuals yet', accent:'#f3b33d' },
+    { label:'⚠ At-Risk Jobs', val: atRisk, sub: 'Margin < 15%', accent: atRisk > 0 ? '#ef5350' : '#1dbb87', valColor: atRisk > 0 ? '#ffc0be' : '#a3f2d2' },
+  ];
+
+  el.innerHTML = kpis.map(k => `
+    <div class="jcd-kpi">
+      <div class="jcd-kpi-accent" style="background:${k.accent}"></div>
+      <div class="jcd-kpi-val" style="color:${k.valColor||'var(--amber)'}">${k.val}</div>
+      <div class="jcd-kpi-label">${k.label}</div>
+      <div class="jcd-kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+// ── Pipeline strip ────────────────────────────────────
+function renderJCDPipeline() {
+  const strip = document.getElementById('jcdPipelineStrip');
+  const totalEl = document.getElementById('jcdPipelineTotal');
+  if (!strip) return;
+
+  const stages = KYTRAC_STATUSES.map(s => s.name);
+  let grandTotal = 0;
+
+  strip.innerHTML = KYTRAC_STATUSES.map(s => {
+    const jobs = conJobs.filter(j => j.status === s.name);
+    const val = jobs.reduce((t,j) => t + (j.contractValue||0), 0);
+    grandTotal += val;
+    return `<div class="pipeline-stage" onclick="filterJCDByStatus('${s.name}')" style="cursor:pointer;border-top:3px solid ${s.color}" title="Filter to ${s.name}">
+      <div class="pipeline-stage-label" style="color:${s.color}">${s.name}</div>
+      <div class="pipeline-stage-val" style="color:${s.color}">${val > 0 ? '$'+Math.round(val/1000)+'K' : '—'}</div>
+      <div class="pipeline-stage-count">${jobs.length} job${jobs.length!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+
+  if (totalEl) totalEl.textContent = 'Total pipeline: $' + Math.round(grandTotal).toLocaleString();
+}
+
+function filterJCDByStatus(status) {
+  const sel = document.getElementById('jcdStatusFilter');
+  if (sel) { sel.value = sel.value === status ? '' : status; }
+  renderJCDTable();
+}
+
+// ── Alerts ────────────────────────────────────────────
+function renderJCDAlerts(containerId) {
+  const el = document.getElementById(containerId || 'jcdAlerts');
+  if (!el) return;
+  const alerts = [];
+
+  conJobs.forEach(j => {
+    if (!['Work In Progress','Scheduled','Inspection Pending','Approved','Design Phase','Permitting'].includes(j.status)) return;
+    const cv = j.contractValue || 0;
+    const ec = j.estCost || 0;
+    const ac = getJobTotalActual(j.id);
+
+    // Over budget
+    if (ac > 0 && ec > 0 && ac > ec * 0.9) {
+      alerts.push({ type: ac > ec ? 'bad' : 'warn', msg: `⚠️ ${j.name}: Actual cost ${ac > ec ? 'exceeds' : 'approaching'} estimate ($${Math.round(ac).toLocaleString()} vs $${Math.round(ec).toLocaleString()})` });
+    }
+    // Thin margin
+    if (cv && ec) {
+      const m = (cv - ec) / cv * 100;
+      if (m < 10) alerts.push({ type: 'bad', msg: `🔴 ${j.name}: Estimated margin is ${m.toFixed(1)}% — below 10% threshold` });
+      else if (m < 15) alerts.push({ type: 'warn', msg: `🟡 ${j.name}: Estimated margin is ${m.toFixed(1)}% — watch closely` });
+    }
+    // No estimate
+    if (cv > 0 && !ec) alerts.push({ type: 'warn', msg: `📋 ${j.name}: No estimated cost set — margin unknown` });
+  });
+
+  if (!alerts.length) {
+    el.innerHTML = `<div class="jcd-alert jcd-alert-ok">✅ All active jobs are within expected cost and margin targets.</div>`;
+    return;
+  }
+  el.innerHTML = alerts.map(a => `<div class="jcd-alert ${a.type==='bad'?'':'jcd-alert-warn'}">${a.msg}</div>`).join('');
+}
+
+// ── Costing table ─────────────────────────────────────
+let _jcdCOTotals = {}; // { jobId: approvedCOTotal }
+
+function jcdSort(key) {
+  if (_jcdSortKey === key) _jcdSortDir *= -1;
+  else { _jcdSortKey = key; _jcdSortDir = -1; }
+  renderJCDTable();
+}
+
+function renderJCDTable() {
+  const tbody = document.getElementById('jcdTableBody');
+  const tfoot = document.getElementById('jcdTableFoot');
+  const sumEl = document.getElementById('jcdTableSummary');
+  if (!tbody) return;
+
+  const statusFilter = (document.getElementById('jcdStatusFilter')||{}).value || '';
+  let jobs = statusFilter ? conJobs.filter(j => j.status === statusFilter) : conJobs;
+
+  // Compute derived fields
+  jobs = jobs.map(j => {
+    const cv = j.contractValue || 0;
+    const ec = j.estCost || 0;
+    const ac = getJobTotalActual(j.id);
+    const coTotal = _jcdCOTotals[j.id] || 0;
+    const adjustedContract = cv + coTotal;
+    const variance = ec > 0 ? ec - ac : 0;
+    const margin = adjustedContract > 0 ? (adjustedContract - (ac > 0 ? ac : ec)) / adjustedContract * 100 : 0;
+    return { ...j, _cv: cv, _ec: ec, _ac: ac, _coTotal: coTotal, _adjustedContract: adjustedContract, _variance: variance, _margin: margin };
+  });
+
+  // Sort
+  jobs.sort((a, b) => {
+    let av = a['_'+_jcdSortKey] ?? a[_jcdSortKey] ?? '';
+    let bv = b['_'+_jcdSortKey] ?? b[_jcdSortKey] ?? '';
+    if (typeof av === 'string') return av.localeCompare(bv) * _jcdSortDir;
+    return (av - bv) * _jcdSortDir;
+  });
+
+  if (!jobs.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">No jobs found. Add your first job with + New Job.</td></tr>`;
+    if (tfoot) tfoot.innerHTML = '';
+    if (sumEl) sumEl.textContent = '';
+    return;
+  }
+
+  // Totals
+  let totCV = 0, totEC = 0, totAC = 0, totCO = 0;
+  jobs.forEach(j => { totCV += j._cv; totEC += j._ec; totAC += j._ac; totCO += j._coTotal; });
+
+  tbody.innerHTML = jobs.map(j => {
+    const mClass = j._margin >= 20 ? 'margin-good' : j._margin >= 10 ? 'margin-warn' : 'margin-bad';
+    const varColor = j._variance >= 0 ? '#a3f2d2' : '#ef5350';
+    const varSign = j._variance >= 0 ? '+' : '';
+    const acDisplay = j._ac > 0 ? '$'+Math.round(j._ac).toLocaleString() : '<span style="color:var(--muted)">—</span>';
+    const pctUsed = j._ec > 0 && j._ac > 0 ? Math.round(j._ac / j._ec * 100) : 0;
+    const barColor = pctUsed > 100 ? '#ef5350' : pctUsed > 85 ? '#f3b33d' : '#1dbb87';
+
+    return `<tr onclick="openJCDJobDetail('${j.id}')">
+      <td>
+        <div style="font-weight:700">${esc(j.name)}</div>
+        <div style="font-size:.75rem;color:var(--amber)">${j.jobNumber||''}</div>
+        <div style="font-size:.75rem;color:var(--muted)">${esc(j.client||'')}</div>
+      </td>
+      <td><span style="font-size:.75rem;background:var(--amber-light);color:var(--amber);padding:2px 8px;border-radius:999px">${j.status}</span></td>
+      <td style="text-align:right;font-weight:700;color:#a3f2d2">$${Math.round(j._adjustedContract).toLocaleString()}</td>
+      <td style="text-align:right">$${Math.round(j._ec).toLocaleString()}</td>
+      <td style="text-align:right">
+        ${acDisplay}
+        ${pctUsed > 0 ? `<div class="variance-bar-wrap"><div class="variance-bar-fill" style="width:${Math.min(pctUsed,100)}%;background:${barColor}"></div></div>` : ''}
+      </td>
+      <td style="text-align:right;font-weight:700;color:${varColor}">${j._ac > 0 ? varSign+'$'+Math.abs(Math.round(j._variance)).toLocaleString() : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="text-align:right"><span class="margin-pill ${mClass}">${j._margin.toFixed(1)}%</span></td>
+      <td style="text-align:right;color:${j._coTotal > 0 ? '#ffe09d' : 'var(--muted)'}">
+        ${j._coTotal > 0 ? '+$'+Math.round(j._coTotal).toLocaleString() : '—'}
+      </td>
+      <td><button class="btn" style="padding:3px 10px;font-size:.75rem" onclick="event.stopPropagation();openJCDJobDetail('${j.id}')">Detail →</button></td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const avgM = jobs.filter(j=>j._adjustedContract>0).length
+    ? jobs.filter(j=>j._adjustedContract>0).reduce((s,j)=>s+j._margin,0) / jobs.filter(j=>j._adjustedContract>0).length
+    : 0;
+  const mClass = avgM >= 20 ? 'margin-good' : avgM >= 10 ? 'margin-warn' : 'margin-bad';
+  if (tfoot) tfoot.innerHTML = `<tr style="background:rgba(217,119,6,.06)">
+    <td colspan="2" style="font-weight:800;color:var(--amber);padding:12px">TOTALS (${jobs.length} jobs)</td>
+    <td style="text-align:right;font-weight:800;color:#a3f2d2">$${Math.round(totCV+totCO).toLocaleString()}</td>
+    <td style="text-align:right;font-weight:700">$${Math.round(totEC).toLocaleString()}</td>
+    <td style="text-align:right;font-weight:700">${totAC > 0 ? '$'+Math.round(totAC).toLocaleString() : '—'}</td>
+    <td style="text-align:right;font-weight:700;color:${totEC-totAC>=0?'#a3f2d2':'#ef5350'}">${totAC>0?(totEC-totAC>=0?'+':'')+' $'+Math.abs(Math.round(totEC-totAC)).toLocaleString():'—'}</td>
+    <td style="text-align:right"><span class="margin-pill ${mClass}">${avgM.toFixed(1)}%</span></td>
+    <td style="text-align:right;color:#ffe09d">${totCO>0?'+$'+Math.round(totCO).toLocaleString():'—'}</td>
+    <td></td>
+  </tr>`;
+
+  if (sumEl) sumEl.textContent = jobs.length + ' job' + (jobs.length!==1?'s':'') + ' · Pipeline: $' + Math.round(totCV).toLocaleString();
+}
+
+// ── Per-job detail panel ──────────────────────────────
+function openJCDJobDetail(jobId) {
+  _jcdSelectedJobId = jobId;
+  const panel = document.getElementById('jcdJobDetail');
+  if (panel) panel.style.display = 'block';
+  // Scroll to it
+  setTimeout(() => { if(panel) panel.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+  // Load actuals from Firestore for this job
+  loadJobCostActuals(jobId, () => renderJCDJobDetail(jobId));
+}
+
+function renderJCDJobDetail(jobId) {
+  const job = conJobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  const nameEl = document.getElementById('jcdDetailJobName');
+  if (nameEl) nameEl.textContent = '💰 ' + job.name + ' — Cost Breakdown';
+
+  const cv = job.contractValue || 0;
+  const ec = job.estCost || 0;
+  const ac = getJobTotalActual(jobId);
+  const coTotal = _jcdCOTotals[jobId] || 0;
+  const adjustedContract = cv + coTotal;
+  const estMargin = adjustedContract > 0 ? ((adjustedContract - ec) / adjustedContract * 100) : 0;
+  const actualMargin = adjustedContract > 0 && ac > 0 ? ((adjustedContract - ac) / adjustedContract * 100) : null;
+  const variance = ec - ac;
+  const pctComplete = ec > 0 && ac > 0 ? Math.min(100, (ac / ec * 100)).toFixed(0) : 0;
+
+  // KPI row
+  const kpiEl = document.getElementById('jcdDetailKpis');
+  if (kpiEl) {
+    const mClass = estMargin >= 20 ? '#a3f2d2' : estMargin >= 10 ? '#ffe09d' : '#ffc0be';
+    const amClass = actualMargin !== null ? (actualMargin >= 20 ? '#a3f2d2' : actualMargin >= 10 ? '#ffe09d' : '#ffc0be') : 'var(--muted)';
+    kpiEl.innerHTML = [
+      { label:'Adjusted Contract', val:'$'+Math.round(adjustedContract).toLocaleString(), sub: coTotal>0?'Includes $'+Math.round(coTotal).toLocaleString()+' in COs':'No COs yet', color:'#a3f2d2' },
+      { label:'Estimated Cost', val:'$'+Math.round(ec).toLocaleString(), sub:'Est. margin: '+estMargin.toFixed(1)+'%', color:mClass },
+      { label:'Actual Cost', val: ac>0?'$'+Math.round(ac).toLocaleString():'Not entered', sub: ac>0?pctComplete+'% of estimate used':'Enter actuals below', color: ac>0?amClass:'var(--muted)' },
+      { label:'Variance', val: ac>0?(variance>=0?'+':'')+' $'+Math.abs(Math.round(variance)).toLocaleString():'—', sub: ac>0?(variance>=0?'Under budget':'OVER budget'):'Awaiting actuals', color: variance>=0?'#a3f2d2':'#ffc0be' },
+    ].map(k=>`<div style="background:rgba(8,18,36,.8);border:1px solid var(--amber-border);border-radius:12px;padding:12px 14px">
+      <div style="font-size:1.3rem;font-weight:900;color:${k.color}">${k.val}</div>
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:3px">${k.label}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${k.sub}</div>
+    </div>`).join('');
+  }
+
+  // Alerts
+  renderJCDAlerts('jcdDetailAlerts');
+
+  // Category table — estimate comes from estimate line items, actuals are manually entered
+  const catBody = document.getElementById('jcdCostCatBody');
+  const catTotals = document.getElementById('jcdCostCatTotals');
+  if (!catBody) return;
+
+  const actuals = _jcdActualsCache[jobId] || {};
+  // Build estimated cost per category from estimate sub-collection (cached in _jcdEstCache)
+  const estByCat = _jcdEstCache[jobId] || {};
+
+  let totalEst = 0, totalActual = 0;
+  catBody.innerHTML = JCD_COST_CATEGORIES.map(cat => {
+    const estVal = estByCat[cat] || 0;
+    const actVal = actuals[cat] || 0;
+    const variance2 = estVal - actVal;
+    const pct = estVal > 0 ? Math.min(200, (actVal / estVal * 100)) : 0;
+    const barColor = pct > 100 ? '#ef5350' : pct > 85 ? '#f3b33d' : '#1dbb87';
+    totalEst += estVal;
+    totalActual += actVal;
+    return `<div class="cost-cat-row">
+      <div>
+        <div class="cost-cat-label">${cat}</div>
+        ${pct > 0 ? `<div class="variance-bar-wrap" style="min-width:unset"><div class="variance-bar-fill" style="width:${Math.min(pct,100)}%;background:${barColor}"></div></div>` : ''}
+      </div>
+      <div style="text-align:right;color:var(--muted)">${estVal>0?'$'+Math.round(estVal).toLocaleString():'—'}</div>
+      <div style="text-align:right">
+        <input class="cost-cat-input" type="number" step="1" placeholder="0"
+          value="${actVal||''}"
+          onchange="updateJobCostActual('${jobId}','${cat}',this.value)"
+          id="costCatInput_${cat.replace(/[^a-z0-9]/gi,'_')}" />
+      </div>
+      <div style="text-align:right;font-weight:700;color:${variance2>=0?'#a3f2d2':variance2<0?'#ef5350':'var(--muted)'}">
+        ${actVal>0 ? (variance2>=0?'+':'')+' $'+Math.abs(Math.round(variance2)).toLocaleString() : '—'}
+      </div>
+      <div style="text-align:right;color:${pct>100?'#ef5350':pct>85?'#f3b33d':'var(--muted)'}">
+        ${pct>0?pct.toFixed(0)+'%':'—'}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Totals row
+  if (catTotals) {
+    const netV = totalEst - totalActual;
+    catTotals.innerHTML = `<div class="cost-cat-row" style="font-weight:800;font-size:.92rem;border-top:none">
+      <div style="color:var(--amber)">TOTAL</div>
+      <div style="text-align:right;color:var(--muted)">${totalEst>0?'$'+Math.round(totalEst).toLocaleString():'—'}</div>
+      <div style="text-align:right;font-weight:800;color:#eaf0fb">${totalActual>0?'$'+Math.round(totalActual).toLocaleString():'—'}</div>
+      <div style="text-align:right;font-weight:800;color:${netV>=0?'#a3f2d2':'#ef5350'}">${totalActual>0?(netV>=0?'+':'')+' $'+Math.abs(Math.round(netV)).toLocaleString():'—'}</div>
+      <div style="text-align:right;color:${totalEst>0&&totalActual/totalEst>1?'#ef5350':totalEst>0&&totalActual/totalEst>0.85?'#f3b33d':'var(--muted)'}">
+        ${totalEst>0&&totalActual>0?Math.round(totalActual/totalEst*100)+'%':'—'}
+      </div>
+    </div>`;
+  }
+
+  // Cost-to-complete panel
+  const ctcEl = document.getElementById('jcdCtcPanel');
+  if (ctcEl) {
+    const pctDone = totalEst > 0 && totalActual > 0 ? totalActual / totalEst : 0;
+    const projFinal = pctDone > 0 ? totalActual / pctDone : totalEst;
+    const projVariance = totalEst - projFinal;
+    const projMargin = adjustedContract > 0 ? ((adjustedContract - projFinal) / adjustedContract * 100) : 0;
+    ctcEl.innerHTML = `<div style="font-size:.8rem;font-weight:700;color:var(--amber);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">📈 Cost-to-Complete Projection</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:.86rem">
+        <div><div style="color:var(--muted);font-size:.72rem;margin-bottom:2px">% Budget Used</div><div style="font-weight:700">${pctDone>0?(pctDone*100).toFixed(0)+'%':'No actuals yet'}</div></div>
+        <div><div style="color:var(--muted);font-size:.72rem;margin-bottom:2px">Projected Final Cost</div><div style="font-weight:700;color:${projFinal>totalEst?'#ef5350':'#a3f2d2'}">${totalActual>0?'$'+Math.round(projFinal).toLocaleString():'—'}</div></div>
+        <div><div style="color:var(--muted);font-size:.72rem;margin-bottom:2px">Projected Margin</div><div style="font-weight:700;color:${projMargin>=20?'#a3f2d2':projMargin>=10?'#ffe09d':'#ffc0be'}">${totalActual>0?projMargin.toFixed(1)+'%':'—'}</div></div>
+      </div>
+      <div style="font-size:.75rem;color:rgba(110,145,210,.4);margin-top:8px">Projection uses actual spend rate to forecast final cost. Assumes current cost pace continues.</div>`;
+  }
+}
+
+// ── Actuals storage ───────────────────────────────────
+let _jcdEstCache = {}; // { jobId: { category: estTotal } }
+
+function loadJobCostActuals(jobId, callback) {
+  if (!conDb) { if(callback) callback(); return; }
+  // Load actuals from Firestore job document field
+  conDb.collection('jobs').doc(jobId).get().then(doc => {
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.costActuals) _jcdActualsCache[jobId] = data.costActuals;
+      else _jcdActualsCache[jobId] = {};
+    }
+    // Also load estimate sub-collection to build estByCat
+    return conDb.collection('jobs').doc(jobId).collection('estimate').get();
+  }).then(snap => {
+    const byCat = {};
+    snap.forEach(doc => {
+      const item = doc.data();
+      const cat = item.category || 'Other';
+      const qty = Number(item.qty||1);
+      const uc = Number(item.unitCost||0);
+      const markup = Number(item.markup||0);
+      const lineTotal = qty * uc * (1 + markup/100);
+      byCat[cat] = (byCat[cat]||0) + lineTotal;
+    });
+    _jcdEstCache[jobId] = byCat;
+    if(callback) callback();
+  }).catch(e => {
+    console.warn('loadJobCostActuals error:', e);
+    if(callback) callback();
+  });
+}
+
+function updateJobCostActual(jobId, category, value) {
+  if (!_jcdActualsCache[jobId]) _jcdActualsCache[jobId] = {};
+  _jcdActualsCache[jobId][category] = parseFloat(value) || 0;
+}
+
+function saveJobCostActuals() {
+  const jobId = _jcdSelectedJobId;
+  if (!jobId || !conDb) return;
+  const actuals = _jcdActualsCache[jobId] || {};
+  const totalActual = Object.values(actuals).reduce((s,v)=>s+v,0);
+  conDb.collection('jobs').doc(jobId).update({
+    costActuals: actuals,
+    actualCost: totalActual,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    // Refresh
+    renderJCDJobDetail(jobId);
+    renderJCDKpis();
+    renderJCDTable();
+    renderJCDAlerts();
+    // Brief save confirmation
+    const btn = document.querySelector('[onclick="saveJobCostActuals()"]');
+    if (btn) { btn.textContent = '✅ Saved'; setTimeout(()=>btn.textContent='💾 Save Actuals', 1500); }
+  }).catch(e => alert('Error saving: ' + e.message));
+}
+
+function getJobTotalActual(jobId) {
+  // Use cached actuals or fall back to job.actualCost
+  const cached = _jcdActualsCache[jobId];
+  if (cached) return Object.values(cached).reduce((s,v)=>s+v, 0);
+  const job = conJobs.find(j=>j.id===jobId);
+  return job ? (job.actualCost||0) : 0;
+}
+
+// ── Load CO totals for all jobs (approved only) ────────
+function loadAllCOTotals() {
+  if (!conDb || !conJobs.length) return;
+  conJobs.forEach(job => {
+    conDb.collection('jobs').doc(job.id).collection('changeorders')
+      .where('status','==','Approved').get()
+      .then(snap => {
+        let total = 0;
+        snap.forEach(doc => { total += Number(doc.data().amount||0); });
+        _jcdCOTotals[job.id] = total;
+      }).catch(()=>{});
+  });
+}
+
+// ── Expose dashboard functions ──
+window.renderJobCostDashboard = renderJobCostDashboard;
+window.openJCDJobDetail = openJCDJobDetail;
+window.saveJobCostActuals = saveJobCostActuals;
+window.filterJCDByStatus = filterJCDByStatus;
+window.jcdSort = jcdSort;
+window.updateJobCostActual = updateJobCostActual;
+window.renderJCDTable = renderJCDTable;
+
+// conLoadJobs CO patch removed — consolidated into main function above
+
+function switchDetailTab(tab, btn) {
+  ['overview','financials','phases','logs'].forEach(t => {
+    const el = document.getElementById('detail' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#jobDetailModal .con-subtab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const btns = document.querySelectorAll('#jobDetailModal .con-subtab');
+    const idx = ['overview','financials','phases','logs'].indexOf(tab);
+    if (btns[idx]) btns[idx].classList.add('active');
+  }
+}
+
+
+
+// Expose to window
+window.conSignIn = conSignIn;
+window.conSignOut = conSignOut;
+window.openNewJobModal = openNewJobModal;
+window.saveJob = saveJob;
+window.openJobDetail = openJobDetail;
+window.editCurrentJob = editCurrentJob;
+window.saveActualCost = saveActualCost;
+window.openAddPhaseModal = openAddPhaseModal;
+window.savePhase = savePhase;
+window.updatePhaseStatus = updatePhaseStatus;
+window.deletePhase = deletePhase;
+window.openAddLogModal = openAddLogModal;
+window.saveLog = saveLog;
+window.deleteLog = deleteLog;
+window.switchConTab = switchConTab;
+window.switchDetailTab = switchDetailTab;
+
+// ════════════════════════════════════════════════════
+// ── PHASE 2: LINE ITEM ESTIMATING ──
+// ════════════════════════════════════════════════════
+let conEstItems = [];
+let conEditingEstItemId = null;
+const EST_CATEGORIES = ['Labor','Materials','Subcontractor','Equipment','Permits & Fees','Overhead','Other'];
+
+function conLoadEstimate(jobId) {
+  if (!conDb) return;
+  conDb.collection('jobs').doc(jobId).collection('estimate')
+    .orderBy('category').onSnapshot(snap => {
+      conEstItems = [];
+      snap.forEach(doc => conEstItems.push({ id: doc.id, ...doc.data() }));
+      renderEstimateList();
+    });
+}
+
+function renderEstimateList() {
+  const tbody = document.getElementById('estimateBody');
+  const tfoot = document.getElementById('estimateFoot');
+  const sumEl = document.getElementById('estSummaryLine');
+  const catFilter = document.getElementById('estCategoryFilter');
+  if (!tbody) return;
+
+  // Populate category filter
+  const cats = [...new Set(conEstItems.map(i => i.category))].sort();
+  if (catFilter) {
+    const cur = catFilter.value;
+    catFilter.innerHTML = '<option value="">All Categories</option>' +
+      cats.map(c => `<option value="${esc(c)}" ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+  }
+
+  const filterCat = catFilter ? catFilter.value : '';
+  const items = filterCat ? conEstItems.filter(i => i.category === filterCat) : conEstItems;
+
+  // Group by category
+  const grouped = {};
+  items.forEach(i => { if (!grouped[i.category]) grouped[i.category] = []; grouped[i.category].push(i); });
+
+  let html = '';
+  let grandTotal = 0;
+  Object.keys(grouped).sort().forEach(cat => {
+    let catTotal = 0;
+    html += `<tr><td colspan="8" class="est-cat-header">${esc(cat)}</td></tr>`;
+    grouped[cat].forEach(item => {
+      const qty = Number(item.qty || 1);
+      const uc = Number(item.unitCost || 0);
+      const markup = Number(item.markup || 0);
+      const lineTotal = qty * uc * (1 + markup / 100);
+      catTotal += lineTotal;
+      grandTotal += lineTotal;
+      html += `<tr>
+        <td></td>
+        <td>${esc(item.desc || '')}</td>
+        <td style="text-align:right">${qty}</td>
+        <td style="color:var(--muted)">${esc(item.unit || 'ea')}</td>
+        <td style="text-align:right">$${Number(item.unitCost||0).toFixed(2)}</td>
+        <td style="text-align:right">${markup > 0 ? `<span class="markup-badge">+${markup}%</span>` : '—'}</td>
+        <td style="text-align:right;font-weight:700;color:var(--amber)">$${lineTotal.toFixed(2)}</td>
+        <td><button class="btn" style="padding:3px 8px;font-size:.72rem" onclick="openEditEstItem('${item.id}')">Edit</button></td>
+      </tr>`;
+    });
+    html += `<tr><td></td><td colspan="5" style="text-align:right;font-size:.8rem;color:var(--muted)">Subtotal</td><td style="text-align:right;font-weight:700;color:var(--amber)">$${catTotal.toFixed(2)}</td><td></td></tr>`;
+  });
+
+  tbody.innerHTML = html || `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No line items yet. Add your first item above.</td></tr>`;
+
+  // Grand total row
+  const job = conJobs.find(j => j.id === conCurrentJobId);
+  const contract = job ? Number(job.contractValue || 0) : 0;
+  const margin = contract > 0 ? ((contract - grandTotal) / contract * 100).toFixed(1) : '—';
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr class="est-total-row">
+        <td colspan="6" style="text-align:right;font-size:.96rem;font-weight:800">ESTIMATE TOTAL</td>
+        <td style="text-align:right;font-size:1.1rem">$${grandTotal.toFixed(2)}</td>
+        <td></td>
+      </tr>
+      ${contract > 0 ? `<tr><td colspan="6" style="text-align:right;font-size:.8rem;color:var(--muted)">Contract Value</td><td style="text-align:right;font-weight:700;color:#a3f2d2">$${contract.toLocaleString()}</td><td></td></tr>
+      <tr><td colspan="6" style="text-align:right;font-size:.8rem;color:var(--muted)">Projected Gross Margin</td><td style="text-align:right;font-weight:700;color:${parseFloat(margin)>=15?'#a3f2d2':parseFloat(margin)>=0?'#f3b33d':'#ef5350'}">${margin}%</td><td></td></tr>` : ''}
+    `;
+  }
+  if (sumEl) sumEl.textContent = `${conEstItems.length} line item${conEstItems.length!==1?'s':''} · Total: $${grandTotal.toFixed(2)}`;
+}
+
+function calcEstItemTotal() {
+  const qty = parseFloat(document.getElementById('estItemQty').value) || 0;
+  const uc = parseFloat(document.getElementById('estItemUnitCost').value) || 0;
+  const markup = parseFloat(document.getElementById('estItemMarkup').value) || 0;
+  const total = qty * uc * (1 + markup / 100);
+  const el = document.getElementById('estItemTotal');
+  if (el) el.textContent = '$' + total.toFixed(2);
+}
+
+function openAddEstItemModal() {
+  conEditingEstItemId = null;
+  document.getElementById('estItemModalTitle').textContent = 'Add Line Item';
+  document.getElementById('estItemId').value = '';
+  document.getElementById('estItemCategory').value = 'Labor';
+  document.getElementById('estItemDesc').value = '';
+  document.getElementById('estItemQty').value = '1';
+  document.getElementById('estItemUnit').value = 'ea';
+  document.getElementById('estItemUnitCost').value = '';
+  document.getElementById('estItemMarkup').value = '0';
+  document.getElementById('estItemNotes').value = '';
+  document.getElementById('estItemTotal').textContent = '$0.00';
+  document.getElementById('deleteEstItemBtn').style.display = 'none';
+  kOpen('addEstItemModal');
+}
+
+function openEditEstItem(id) {
+  const item = conEstItems.find(i => i.id === id);
+  if (!item) return;
+  conEditingEstItemId = id;
+  document.getElementById('estItemModalTitle').textContent = 'Edit Line Item';
+  document.getElementById('estItemId').value = id;
+  document.getElementById('estItemCategory').value = item.category || 'Labor';
+  document.getElementById('estItemDesc').value = item.desc || '';
+  document.getElementById('estItemQty').value = item.qty || 1;
+  document.getElementById('estItemUnit').value = item.unit || 'ea';
+  document.getElementById('estItemUnitCost').value = item.unitCost || '';
+  document.getElementById('estItemMarkup').value = item.markup || 0;
+  document.getElementById('estItemNotes').value = item.notes || '';
+  document.getElementById('deleteEstItemBtn').style.display = 'inline-flex';
+  calcEstItemTotal();
+  kOpen('addEstItemModal');
+}
+
+function saveEstItem() {
+  if (!conCurrentJobId || !conDb) return;
+  const desc = document.getElementById('estItemDesc').value.trim();
+  if (!desc) { alert('Description is required.'); return; }
+  const data = {
+    category: document.getElementById('estItemCategory').value,
+    desc,
+    qty: parseFloat(document.getElementById('estItemQty').value) || 1,
+    unit: document.getElementById('estItemUnit').value,
+    unitCost: parseFloat(document.getElementById('estItemUnitCost').value) || 0,
+    markup: parseFloat(document.getElementById('estItemMarkup').value) || 0,
+    notes: document.getElementById('estItemNotes').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const col = conDb.collection('jobs').doc(conCurrentJobId).collection('estimate');
+  if (conEditingEstItemId) {
+    col.doc(conEditingEstItemId).update(data)
+      .then(() => { kClose('addEstItemModal'); switchDetailTab('estimate', null); })
+      .catch(e => alert('Error: ' + e.message));
+  } else {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    col.add(data)
+      .then(() => { kClose('addEstItemModal'); switchDetailTab('estimate', null); })
+      .catch(e => alert('Error: ' + e.message));
+  }
+}
+
+function deleteEstItem() {
+  if (!conEditingEstItemId || !confirm('Delete this line item?')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('estimate').doc(conEditingEstItemId).delete()
+    .then(() => kClose('addEstItemModal'))
+    .catch(e => alert('Error: ' + e.message));
+}
+
+// ════════════════════════════════════════════════════
+// ── PHASE 2: CHANGE ORDERS ──
+// ════════════════════════════════════════════════════
+let conCOs = [];
+let conEditingCOId = null;
+
+function conLoadCOs(jobId) {
+  if (!conDb) return;
+  conDb.collection('jobs').doc(jobId).collection('changeorders')
+    .orderBy('date', 'desc').onSnapshot(snap => {
+      conCOs = [];
+      snap.forEach(doc => conCOs.push({ id: doc.id, ...doc.data() }));
+      renderCOList();
+    });
+}
+
+function renderCOList() {
+  const el = document.getElementById('coList');
+  const sumEl = document.getElementById('coSummaryLine');
+  if (!el) return;
+  if (!conCOs.length) { el.innerHTML = '<p class="muted">No change orders yet.</p>'; if(sumEl)sumEl.textContent=''; return; }
+
+  const approvedTotal = conCOs.filter(c => c.status === 'Approved').reduce((s, c) => s + Number(c.amount || 0), 0);
+  const pendingTotal = conCOs.filter(c => c.status === 'Pending').reduce((s, c) => s + Number(c.amount || 0), 0);
+  if (sumEl) sumEl.textContent = `${conCOs.length} CO${conCOs.length!==1?'s':''} · Approved: $${approvedTotal.toLocaleString()} · Pending: $${pendingTotal.toLocaleString()}`;
+
+  el.innerHTML = conCOs.map(co => {
+    const badgeClass = { Pending:'co-pending', Approved:'co-approved', Rejected:'co-rejected', Void:'co-void' }[co.status] || 'co-pending';
+    const amt = Number(co.amount || 0);
+    return `<div class="co-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-weight:700;margin-bottom:4px">${esc(co.title || 'Untitled CO')}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span class="co-badge ${badgeClass}">${co.status}</span>
+            <span class="small muted">${co.date || ''}</span>
+            ${co.days ? `<span class="small muted">+${co.days} day${co.days!=1?'s':''}</span>` : ''}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.1rem;font-weight:800;color:${amt>=0?'var(--amber)':'#ef5350'}">${amt>=0?'+':''}$${Math.abs(amt).toLocaleString()}</div>
+        </div>
+      </div>
+      ${co.reason ? `<div style="font-size:.84rem;color:var(--muted);margin-bottom:8px">${esc(co.reason)}</div>` : ''}
+      ${co.approvedBy ? `<div class="small muted">Approved by: ${esc(co.approvedBy)}</div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn" style="padding:4px 10px;font-size:.76rem" onclick="openEditCO('${co.id}')">Edit</button>
+        ${co.status==='Pending' ? `<button class="btn btn-green" style="padding:4px 10px;font-size:.76rem" onclick="quickApproveCO('${co.id}')">✓ Approve</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddCOModal() {
+  conEditingCOId = null;
+  document.getElementById('coModalTitle').textContent = 'New Change Order';
+  document.getElementById('coId').value = '';
+  document.getElementById('coTitle').value = '';
+  document.getElementById('coDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('coStatus').value = 'Pending';
+  document.getElementById('coAmount').value = '';
+  document.getElementById('coDays').value = '';
+  document.getElementById('coReason').value = '';
+  document.getElementById('coApprovedBy').value = '';
+  document.getElementById('deleteCOBtn').style.display = 'none';
+  kOpen('addCOModal');
+}
+
+function openEditCO(id) {
+  const co = conCOs.find(c => c.id === id);
+  if (!co) return;
+  conEditingCOId = id;
+  document.getElementById('coModalTitle').textContent = 'Edit Change Order';
+  document.getElementById('coId').value = id;
+  document.getElementById('coTitle').value = co.title || '';
+  document.getElementById('coDate').value = co.date || '';
+  document.getElementById('coStatus').value = co.status || 'Pending';
+  document.getElementById('coAmount').value = co.amount || '';
+  document.getElementById('coDays').value = co.days || '';
+  document.getElementById('coReason').value = co.reason || '';
+  document.getElementById('coApprovedBy').value = co.approvedBy || '';
+  document.getElementById('deleteCOBtn').style.display = 'inline-flex';
+  kOpen('addCOModal');
+}
+
+function saveCO() {
+  if (!conCurrentJobId || !conDb) return;
+  const title = document.getElementById('coTitle').value.trim();
+  if (!title) { alert('Title is required.'); return; }
+  const data = {
+    title,
+    date: document.getElementById('coDate').value,
+    status: document.getElementById('coStatus').value,
+    amount: parseFloat(document.getElementById('coAmount').value) || 0,
+    days: parseInt(document.getElementById('coDays').value) || 0,
+    reason: document.getElementById('coReason').value.trim(),
+    approvedBy: document.getElementById('coApprovedBy').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: conCurrentUser ? conCurrentUser.email : 'unknown'
+  };
+  const col = conDb.collection('jobs').doc(conCurrentJobId).collection('changeorders');
+  if (conEditingCOId) {
+    col.doc(conEditingCOId).update(data)
+      .then(() => { kClose('addCOModal'); switchDetailTab('changeorders', null); })
+      .catch(e => alert('Error: ' + e.message));
+  } else {
+    data.coNumber = 'CO-' + String(conCOs.length + 1).padStart(3, '0');
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    data.createdBy = conCurrentUser ? conCurrentUser.email : 'unknown';
+    col.add(data)
+      .then(() => { kClose('addCOModal'); switchDetailTab('changeorders', null); })
+      .catch(e => alert('Error: ' + e.message));
+  }
+}
+
+function deleteCO() {
+  if (!conEditingCOId || !confirm('Delete this change order?')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('changeorders').doc(conEditingCOId).delete()
+    .then(() => kClose('addCOModal'))
+    .catch(e => alert('Error: ' + e.message));
+}
+
+function quickApproveCO(id) {
+  conDb.collection('jobs').doc(conCurrentJobId).collection('changeorders').doc(id).update({
+    status: 'Approved',
+    approvedBy: conCurrentUser ? conCurrentUser.displayName || conCurrentUser.email : 'Unknown',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(e => alert('Error: ' + e.message));
+}
+
+// ════════════════════════════════════════════════════
+// ── PHASE 2: SUBS & VENDORS ──
+// ════════════════════════════════════════════════════
+let conSubs = [];
+let conEditingSubId = null;
+
+function conLoadSubs(jobId) {
+  if (!conDb) return;
+  conDb.collection('jobs').doc(jobId).collection('subs')
+    .orderBy('trade').onSnapshot(snap => {
+      conSubs = [];
+      snap.forEach(doc => conSubs.push({ id: doc.id, ...doc.data() }));
+      renderSubList();
+    });
+}
+
+function renderSubList() {
+  const el = document.getElementById('subList');
+  if (!el) return;
+  if (!conSubs.length) { el.innerHTML = '<p class="muted">No subs or vendors added yet.</p>'; return; }
+
+  const today = new Date().toISOString().split('T')[0];
+  el.innerHTML = conSubs.map(s => {
+    const insExp = s.insExp || '';
+    const insExpired = insExp && insExp < today;
+    const insWarn = insExp && !insExpired && insExp < addDays(today, 30);
+    const statusColors = { Bidding:'#f3b33d', Contracted:'#4d8dff', Scheduled:'#a855f7', 'On Site':'var(--amber)', Complete:'#1dbb87' };
+    const col = statusColors[s.status] || 'var(--muted)';
+    return `<div class="sub-card">
+      <div class="sub-avatar">${s.trade ? s.trade[0] : '👷'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+          <span style="font-weight:700">${esc(s.name)}</span>
+          <span style="font-size:.72rem;background:${col}22;color:${col};border:1px solid ${col}44;border-radius:999px;padding:2px 8px">${s.status || 'Bidding'}</span>
+        </div>
+        <div class="small muted">${esc(s.trade || '')}${s.contact ? ' · ' + esc(s.contact) : ''}${s.phone ? ' · ' + esc(s.phone) : ''}</div>
+        ${s.amount ? `<div class="small" style="color:#a3f2d2;margin-top:2px">Contract: $${Number(s.amount).toLocaleString()}</div>` : ''}
+        ${insExp ? `<div class="small" style="color:${insExpired?'#ef5350':insWarn?'#f3b33d':'var(--muted)'};margin-top:2px">${insExpired?'⚠️ INS EXPIRED':'🛡 Ins exp:'} ${insExp}</div>` : ''}
+        ${s.notes ? `<div class="small muted" style="margin-top:2px">${esc(s.notes)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        <button class="btn" style="padding:4px 10px;font-size:.76rem" onclick="openEditSub('${s.id}')">Edit</button>
+        ${s.phone ? `<a href="tel:${esc(s.phone)}" class="btn" style="padding:4px 10px;font-size:.76rem;text-decoration:none;text-align:center">📞 Call</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddSubModal() {
+  conEditingSubId = null;
+  document.getElementById('subModalTitle').textContent = 'Add Sub / Vendor';
+  document.getElementById('subId').value = '';
+  ['subName','subContact','subPhone','subEmail','subNotes'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('subTrade').value = 'General Labor';
+  document.getElementById('subStatus').value = 'Bidding';
+  document.getElementById('subAmount').value = '';
+  document.getElementById('subInsExp').value = '';
+  document.getElementById('deleteSubBtn').style.display = 'none';
+  kOpen('addSubModal');
+}
+
+function openEditSub(id) {
+  const s = conSubs.find(x => x.id === id);
+  if (!s) return;
+  conEditingSubId = id;
+  document.getElementById('subModalTitle').textContent = 'Edit Sub / Vendor';
+  document.getElementById('subId').value = id;
+  document.getElementById('subName').value = s.name || '';
+  document.getElementById('subTrade').value = s.trade || 'General Labor';
+  document.getElementById('subStatus').value = s.status || 'Bidding';
+  document.getElementById('subContact').value = s.contact || '';
+  document.getElementById('subPhone').value = s.phone || '';
+  document.getElementById('subEmail').value = s.email || '';
+  document.getElementById('subAmount').value = s.amount || '';
+  document.getElementById('subInsExp').value = s.insExp || '';
+  document.getElementById('subNotes').value = s.notes || '';
+  document.getElementById('deleteSubBtn').style.display = 'inline-flex';
+  kOpen('addSubModal');
+}
+
+function saveSub() {
+  if (!conCurrentJobId || !conDb) return;
+  const name = document.getElementById('subName').value.trim();
+  if (!name) { alert('Company / Name is required.'); return; }
+  const data = {
+    name,
+    trade: document.getElementById('subTrade').value,
+    status: document.getElementById('subStatus').value,
+    contact: document.getElementById('subContact').value.trim(),
+    phone: document.getElementById('subPhone').value.trim(),
+    email: document.getElementById('subEmail').value.trim(),
+    amount: parseFloat(document.getElementById('subAmount').value) || 0,
+    insExp: document.getElementById('subInsExp').value,
+    notes: document.getElementById('subNotes').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const col = conDb.collection('jobs').doc(conCurrentJobId).collection('subs');
+  if (conEditingSubId) {
+    col.doc(conEditingSubId).update(data)
+      .then(() => { kClose('addSubModal'); switchDetailTab('subs', null); })
+      .catch(e => alert('Error: ' + e.message));
+  } else {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    col.add(data)
+      .then(() => { kClose('addSubModal'); switchDetailTab('subs', null); })
+      .catch(e => alert('Error: ' + e.message));
+  }
+}
+
+function deleteSub() {
+  if (!conEditingSubId || !confirm('Delete this sub/vendor?')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).collection('subs').doc(conEditingSubId).delete()
+    .then(() => kClose('addSubModal'))
+    .catch(e => alert('Error: ' + e.message));
+}
+
+// ════════════════════════════════════════════════════
+// ── PHASE 2: PHOTO UPLOADS FOR DAILY LOGS ──
+// ════════════════════════════════════════════════════
+let _logPhotoPending = []; // {dataUrl, name}[]
+
+function handleLogPhotoUpload(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      _logPhotoPending.push({ dataUrl: e.target.result, name: file.name });
+      renderLogPhotoGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderLogPhotoGrid() {
+  const grid = document.getElementById('logPhotoGrid');
+  if (!grid) return;
+  // Build preview thumbnails for pending photos
+  let html = _logPhotoPending.map((p, i) => `
+    <div style="position:relative">
+      <img src="${p.dataUrl}" class="photo-thumb" onclick="openLightbox('${p.dataUrl}')" />
+      <button onclick="removeLogPhoto(${i})" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>
+    </div>
+  `).join('');
+  html += `<label class="photo-upload-btn" style="min-height:80px">
+    <span style="font-size:1.5rem">📷</span>
+    <span>Add Photo</span>
+    <input type="file" accept="image/*" multiple style="display:none" onchange="handleLogPhotoUpload(this)" />
+  </label>`;
+  grid.innerHTML = html;
+}
+
+function removeLogPhoto(idx) {
+  _logPhotoPending.splice(idx, 1);
+  renderLogPhotoGrid();
+}
+
+// Store photos as base64 in Firestore (small photos) or show warning for large
+async function uploadLogPhotos() {
+  if (!_logPhotoPending.length) return [];
+  // Compress to max ~200KB each before storing in Firestore
+  const results = [];
+  for (const p of _logPhotoPending) {
+    try {
+      const compressed = await compressImage(p.dataUrl, 800, 0.7);
+      results.push({ dataUrl: compressed, name: p.name, uploadedAt: new Date().toISOString() });
+    } catch(e) {
+      results.push({ dataUrl: p.dataUrl, name: p.name, uploadedAt: new Date().toISOString() });
+    }
+  }
+  return results;
+}
+
+function compressImage(dataUrl, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(img.width * scale);
+      canvas.height = Math.floor(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+// Render photos in a log entry
+function renderLogPhotos(photos) {
+  if (!photos || !photos.length) return '';
+  return `<div class="photo-grid" style="margin-top:8px">
+    ${photos.map(p => `<img src="${p.dataUrl}" class="photo-thumb" onclick="openLightbox('${p.dataUrl.replace(/'/g,"\\'")}') " />`).join('')}
+  </div>`;
+}
+
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('photoLightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('photoLightbox').classList.remove('open');
+  document.getElementById('lightboxImg').src = '';
+}
+
+// ── Patch saveLog to include photos ──
+const _origSaveLog = window.saveLog;
+window.saveLog = async function() {
+  if (!conCurrentJobId || !conDb) return;
+  const date = document.getElementById('logDate').value;
+  if (!date) { alert('Date is required.'); return; }
+
+  // Upload photos first
+  let photos = [];
+  if (_logPhotoPending.length > 0) {
+    try { photos = await uploadLogPhotos(); }
+    catch(e) { console.warn('Photo upload error:', e); }
+  }
+
+  const data = {
+    date,
+    weather: document.getElementById('logWeather').value,
+    crew: document.getElementById('logCrew').value.trim(),
+    notes: document.getElementById('logNotes').value.trim(),
+    issues: document.getElementById('logIssues').value.trim(),
+    photos,
+    createdBy: conCurrentUser ? conCurrentUser.email : 'unknown',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  conDb.collection('jobs').doc(conCurrentJobId).collection('logs').add(data)
+    .then(() => {
+      _logPhotoPending = [];
+      kClose('addLogModal');
+      switchDetailTab('logs', null);
+    })
+    .catch(e => alert('Error: ' + e.message));
+};
+
+// ── Patch openAddLogModal to clear photos ──
+const _origOpenAddLogModal = window.openAddLogModal;
+window.openAddLogModal = function() {
+  _logPhotoPending = [];
+  document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('logWeather').selectedIndex = 0;
+  document.getElementById('logCrew').value = '';
+  document.getElementById('logNotes').value = '';
+  document.getElementById('logIssues').value = '';
+  renderLogPhotoGrid();
+  kOpen('addLogModal');
+};
+
+// ── Patch renderLogList to show photos ──
+const _origRenderLogList = renderLogList;
+function renderLogList() {
+  const el = document.getElementById('logList');
+  if (!el) return;
+  if (!conLogs.length) { el.innerHTML = '<p class="muted">No daily logs yet.</p>'; return; }
+  el.innerHTML = conLogs.map(l => `
+    <div class="log-entry">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="log-date">${l.date}</span>
+        <span class="log-weather">${l.weather || ''}</span>
+        <button class="btn btn-danger" style="padding:2px 8px;font-size:.75rem" onclick="deleteLog('${l.id}')">✕</button>
+      </div>
+      ${l.crew ? `<div class="small muted" style="margin-bottom:4px">👷 ${esc(l.crew)}</div>` : ''}
+      <div style="font-size:.88rem;margin-bottom:4px">${esc(l.notes || '')}</div>
+      ${l.issues ? `<div style="font-size:.82rem;color:#ef5350">⚠️ ${esc(l.issues)}</div>` : ''}
+      ${renderLogPhotos(l.photos)}
+      <div class="small muted" style="margin-top:6px">${l.createdBy ? 'Logged by: ' + esc(l.createdBy) : ''}</div>
+    </div>
+  `).join('');
+}
+
+// ── Patch openJobDetail to load Phase 2 subcollections ──
+const _origOpenJobDetail = window.openJobDetail;
+window.openJobDetail = function(jobId) {
+  _origOpenJobDetail(jobId);
+  conLoadEstimate(jobId);
+  conLoadCOs(jobId);
+  conLoadSubs(jobId);
+};
+
+// ── Extend switchDetailTab to handle new tabs ──
+const _origSwitchDetailTab = window.switchDetailTab;
+window.switchDetailTab = function(tab, btn) {
+  const allTabs = ['overview','financials','estimate','changeorders','subs','phases','logs'];
+  allTabs.forEach(t => {
+    const key = 'detail' + t.charAt(0).toUpperCase() + t.slice(1);
+    const el = document.getElementById(key);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#jobDetailModal .con-subtab').forEach(b => b.classList.remove('active'));
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    const btns = document.querySelectorAll('#jobDetailModal .con-subtab');
+    const idx = allTabs.indexOf(tab);
+    if (btns[idx]) btns[idx].classList.add('active');
+  }
+  // Trigger re-renders for new tabs
+  if (tab === 'estimate') renderEstimateList();
+  if (tab === 'changeorders') renderCOList();
+  if (tab === 'subs') renderSubList();
+  if (tab === 'phases') renderPhaseList();
+  if (tab === 'logs') renderLogList();
+};
+
+// ── Expose Phase 2 functions to window ──
+window.openAddEstItemModal = openAddEstItemModal;
+window.openEditEstItem = openEditEstItem;
+window.saveEstItem = saveEstItem;
+window.deleteEstItem = deleteEstItem;
+window.calcEstItemTotal = calcEstItemTotal;
+window.renderEstimateList = renderEstimateList;
+window.openAddCOModal = openAddCOModal;
+window.openEditCO = openEditCO;
+window.saveCO = saveCO;
+window.deleteCO = deleteCO;
+window.quickApproveCO = quickApproveCO;
+window.openAddSubModal = openAddSubModal;
+window.openEditSub = openEditSub;
+window.saveSub = saveSub;
+window.deleteSub = deleteSub;
+window.handleLogPhotoUpload = handleLogPhotoUpload;
+window.removeLogPhoto = removeLogPhoto;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+
+
+// Auto-load Firebase immediately on page open
+conLoadFirebase();
+
+// Patch conInitFirebase to use ktRevealSignIn and new auth wall IDs
+const _origConInitFirebase = conInitFirebase;
+function conInitFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      conApp = firebase.initializeApp(CON_FIREBASE_CONFIG);
+    } else {
+      conApp = firebase.apps[0];
+    }
+    conDb = firebase.firestore();
+    conAuth = firebase.auth();
+    conFirebaseReady = true;
+    ktRevealSignIn();
+    conAuth.onAuthStateChanged(user => {
+      if (user) {
+        const email = user.email || '';
+        if (CON_APPROVED_EMAILS.length > 0 && !CON_APPROVED_EMAILS.includes(email)) {
+          conAuth.signOut();
+          alert('Access denied. Contact your administrator to be added to the approved user list.');
+          return;
+        }
+        conCurrentUser = user;
+        conShowMain(user);
+        conLoadJobs();
+      } else {
+        conCurrentUser = null;
+        conShowAuthWall();
+      }
+    });
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    const loading = document.getElementById('ktAuthLoading');
+    if(loading) loading.innerHTML = '<span style="color:#ef5350">⚠️ Connection error. Reload to try again.</span>';
+  }
+}
+
+// conLoadJobs view patch consolidated below
+
+// Expose everything
+function deleteCurrentJob() {
+  if (!conCurrentJobId || !conDb) return;
+  if (!confirm('Delete this job? This cannot be undone.')) return;
+  conDb.collection('jobs').doc(conCurrentJobId).delete()
+    .then(() => {
+      kClose('jobDetailModal');
+      conCurrentJobId = null;
+    })
+    .catch(e => alert('Error deleting: ' + e.message));
+}
+window.deleteCurrentJob = deleteCurrentJob;
+
+window.ktNav = ktNav;
+
+function renderHomeDashboard() {
+  // Active jobs table
+  const tbody = document.getElementById('homeActiveJobsBody');
+  if (tbody) {
+    const activeStatuses = ['Work In Progress','Scheduled','Inspection Pending','Approved','Design Phase','Permitting','Invoicing'];
+    const active = conJobs.filter(j => activeStatuses.includes(j.status))
+      .sort((a,b) => (a.statusDate||'').localeCompare(b.statusDate||''));
+    if (!active.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;font-style:italic">No active jobs yet</td></tr>';
+    } else {
+      tbody.innerHTML = active.map(job => {
+        const s = KYTRAC_STATUSES.find(x => x.name === job.status) || {color:'var(--amber)'};
+        return `<tr onclick="openJobDetail('${job.id}')" style="cursor:pointer">
+          <td><div style="font-weight:700;font-size:.86rem">${esc(job.name)}</div><div style="font-size:.72rem;color:var(--amber)">${job.jobNumber||''}</div></td>
+          <td style="font-size:.84rem">${esc(job.client||'—')}</td>
+          <td><span style="background:${s.color}22;color:${s.color};padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap">${job.status}</span></td>
+          <td style="text-align:right;font-weight:700;color:#a3f2d2;font-size:.84rem">${job.contractValue?'$'+Number(job.contractValue).toLocaleString():'—'}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Pipeline summary — group by stage group
+  const pipeline = document.getElementById('homePipelineSummary');
+  if (pipeline) {
+    const groups = [
+      { label: 'Sales', color: '#f97316', statuses: ['New Lead','Hipshot Needed','Appointment Set','Estimating','Submitted'] },
+      { label: 'Active', color: '#0d9488', statuses: ['Approved','Design Phase','Permitting','Scheduled','Work In Progress','Inspection Pending'] },
+      { label: 'Finance', color: '#7c3aed', statuses: ['Invoicing','Pending Payment','Delinquent'] },
+      { label: 'Closed Won', color: '#db2777', statuses: ['Closed Won'] },
+      { label: 'Closed Lost', color: '#dc2626', statuses: ['Closed Lost','Closed Hipshot Sent'] },
+    ];
+    pipeline.innerHTML = groups.map(g => {
+      const jobs = conJobs.filter(j => g.statuses.includes(j.status));
+      const val = jobs.reduce((s,j) => s + (j.contractValue||0), 0);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(110,145,210,.07)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0"></div>
+          <span style="font-size:.82rem;font-weight:600">${g.label}</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.82rem;font-weight:700;color:${g.color}">${jobs.length} job${jobs.length!==1?'s':''}</div>
+          ${val > 0 ? `<div style="font-size:.7rem;color:var(--muted)">$${Math.round(val).toLocaleString()}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+window.renderHomeDashboard = renderHomeDashboard;
+
+// ── TODAY'S ACTIVITY ──
+function renderNeedsAttention() {
+  const el = document.getElementById('homeNeedsAttention');
+  if (!el) return;
+  const today = new Date().toISOString().split('T')[0];
+  const items = [];
+
+  conJobs.forEach(job => {
+    // Delinquent or Pending Payment
+    if (job.status === 'Delinquent') {
+      items.push({ color:'#ef5350', icon:'🔴', text: job.name, sub: 'Delinquent — needs follow-up', jobId: job.id });
+    }
+    if (job.status === 'Pending Payment') {
+      items.push({ color:'#f3b33d', icon:'💰', text: job.name, sub: 'Pending payment', jobId: job.id });
+    }
+    if (job.status === 'Inspection Pending') {
+      items.push({ color:'#2563eb', icon:'🔍', text: job.name, sub: 'Inspection pending', jobId: job.id });
+    }
+    // Jobs with no logs in 3+ days (active jobs only)
+    const activeStatuses = ['Work In Progress','Scheduled','Approved','Design Phase','Permitting'];
+    if (activeStatuses.includes(job.status)) {
+      const lastLog = job.lastLogDate || '';
+      if (!lastLog) {
+        items.push({ color:'#f97316', icon:'📋', text: job.name, sub: 'No daily logs yet', jobId: job.id });
+      } else {
+        const daysSince = Math.floor((new Date() - new Date(lastLog)) / 86400000);
+        if (daysSince >= 3) {
+          items.push({ color:'#f97316', icon:'📋', text: job.name, sub: `No log in ${daysSince} days`, jobId: job.id });
+        }
+      }
+    }
+  });
+
+  if (!items.length) {
+    el.innerHTML = '<div class="small muted" style="font-style:italic;padding:10px 0;text-align:center">✅ All jobs on track</div>';
+    return;
+  }
+
+  el.innerHTML = items.map(i => `
+    <div onclick="openJobDetail('${i.jobId}')" style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(110,145,210,.07);cursor:pointer">
+      <span style="font-size:1rem;flex-shrink:0">${i.icon}</span>
+      <div>
+        <div style="font-size:.84rem;font-weight:700;color:#eaf0fb">${esc(i.text)}</div>
+        <div style="font-size:.74rem;color:${i.color};margin-top:1px">${i.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRecentLogs() {
+  const el = document.getElementById('homeRecentLogs');
+  if (!el || !conDb) return;
+  // Query last 8 logs across all jobs
+  conDb.collectionGroup('logs')
+    .orderBy('date', 'desc')
+    .limit(8)
+    .get()
+    .then(snap => {
+      if (snap.empty) {
+        el.innerHTML = '<div class="small muted" style="font-style:italic;padding:10px 0;text-align:center">No daily logs yet</div>';
+        return;
+      }
+      el.innerHTML = snap.docs.map(doc => {
+        const log = doc.data();
+        const jobId = doc.ref.parent.parent.id;
+        const job = conJobs.find(j => j.id === jobId);
+        return `<div onclick="openJobDetail('${jobId}')" style="padding:8px 0;border-bottom:1px solid rgba(110,145,210,.07);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <div style="font-size:.82rem;font-weight:700;color:var(--amber)">${esc(job ? job.name : 'Unknown Job')}</div>
+            <div style="font-size:.7rem;color:var(--muted)">${log.date||''}</div>
+          </div>
+          <div style="font-size:.78rem;color:#eaf0fb;line-height:1.4">${esc((log.notes||'').slice(0,80))}${(log.notes||'').length>80?'…':''}</div>
+          ${log.crew?`<div style="font-size:.7rem;color:var(--muted);margin-top:2px">👷 ${esc(log.crew)}</div>`:''}
+          ${log.issues?`<div style="font-size:.72rem;color:#ef5350;margin-top:2px">⚠️ ${esc(log.issues.slice(0,60))}</div>`:''}
+        </div>`;
+      }).join('');
+    })
+    .catch(() => {
+      el.innerHTML = '<div class="small muted" style="font-style:italic;padding:10px 0">Could not load logs</div>';
+    });
+}
+
+function renderUpcomingPhases() {
+  const el = document.getElementById('homeUpcomingPhases');
+  if (!el || !conDb) return;
+  const today = new Date().toISOString().split('T')[0];
+  const in7 = new Date(Date.now() + 7*86400000).toISOString().split('T')[0];
+
+  // Query phases across all jobs starting in next 7 days
+  conDb.collectionGroup('phases')
+    .orderBy('startDate')
+    .startAt(today)
+    .endAt(in7)
+    .limit(10)
+    .get()
+    .then(snap => {
+      if (snap.empty) {
+        el.innerHTML = '<div class="small muted" style="font-style:italic;padding:10px 0;text-align:center">No phases in the next 7 days</div>';
+        return;
+      }
+      el.innerHTML = snap.docs.map(doc => {
+        const phase = doc.data();
+        const jobId = doc.ref.parent.parent.id;
+        const job = conJobs.find(j => j.id === jobId);
+        const statusColors = { 'not-started':'var(--muted)', 'in-progress':'var(--amber)', 'complete':'#1dbb87' };
+        const col = statusColors[phase.status] || 'var(--muted)';
+        const isToday = phase.startDate === today;
+        return `<div onclick="openJobDetail('${jobId}')" style="padding:8px 0;border-bottom:1px solid rgba(110,145,210,.07);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+            <div style="font-size:.82rem;font-weight:700;color:#eaf0fb">${esc(phase.name||'Phase')}</div>
+            <div style="font-size:.7rem;font-weight:700;color:${isToday?'var(--amber)':'var(--muted)'}">${isToday?'TODAY':phase.startDate||''}</div>
+          </div>
+          <div style="font-size:.74rem;color:var(--amber);margin-bottom:2px">${esc(job ? job.name : '')}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:7px;height:7px;border-radius:50%;background:${col}"></div>
+            <span style="font-size:.7rem;color:${col}">${phase.status||'not-started'}</span>
+            ${phase.assigned?`<span style="font-size:.7rem;color:var(--muted)">· ${esc(phase.assigned)}</span>`:''}
+          </div>
+        </div>`;
+      }).join('');
+    })
+    .catch(() => {
+      el.innerHTML = '<div class="small muted" style="font-style:italic;padding:10px 0">No upcoming phases found</div>';
+    });
+}
+
+// Patch renderHomeDashboard to also render activity sections
+const _origRenderHomeDashboard = renderHomeDashboard;
+function renderHomeDashboard() {
+  _origRenderHomeDashboard();
+  renderNeedsAttention();
+  renderRecentLogs();
+  renderUpcomingPhases();
+}
+window.renderHomeDashboard = renderHomeDashboard;
+window.renderNeedsAttention = renderNeedsAttention;
+window.renderRecentLogs = renderRecentLogs;
+window.renderUpcomingPhases = renderUpcomingPhases;
+window.ktFilterJobs = ktFilterJobs;
+window.conSignIn = conSignIn;
+window.conSignOut = conSignOut;
+window.openNewJobModal = openNewJobModal;
+// (window exposures consolidated below)
+window.renderJCDTable = renderJCDTable;
+window.jcdSort = jcdSort;
+window.filterJCDByStatus = filterJCDByStatus;
+window.saveJobCostActuals = saveJobCostActuals;
+window.updateJobCostActual = updateJobCostActual;
+window.openJCDJobDetail = openJCDJobDetail;
+
+// ════════════════════════════════════════════════════
+// ── COST CATALOG ──
+// ════════════════════════════════════════════════════
+let catalogItems = [];
+let catalogListener = null;
+
+const CAT_COLORS = {
+  'Labor':          '#4d8dff',
+  'Materials':      '#1dbb87',
+  'Subcontractor':  '#a855f7',
+  'Equipment':      '#f97316',
+  'Permits & Fees': '#f3b33d',
+  'Overhead':       '#98a7c4',
+};
+
+function catColor(cat) { return CAT_COLORS[cat] || 'var(--amber)'; }
+
+function loadCatalog() {
+  if (!conDb) return;
+  if (catalogListener) catalogListener(); // unsubscribe previous
+  catalogListener = conDb.collection('catalog')
+    .orderBy('category')
+    .onSnapshot(snap => {
+      catalogItems = [];
+      snap.forEach(doc => catalogItems.push({ id: doc.id, ...doc.data() }));
+      renderCatalog();
+      renderCatalogStats();
+    }, err => console.warn('Catalog load error:', err));
+}
+
+function renderCatalogStats() {
+  const total = catalogItems.length;
+  const labor = catalogItems.filter(i => i.category === 'Labor').length;
+  const mats = catalogItems.filter(i => i.category === 'Materials').length;
+  const subs = catalogItems.filter(i => i.category === 'Subcontractor').length;
+  const el = id => document.getElementById(id);
+  if(el('catStatTotal')) el('catStatTotal').textContent = total;
+  if(el('catStatLabor')) el('catStatLabor').textContent = labor;
+  if(el('catStatMaterials')) el('catStatMaterials').textContent = mats;
+  if(el('catStatSubs')) el('catStatSubs').textContent = subs;
+}
+
+function renderCatalog() {
+  const body = document.getElementById('catBody');
+  if (!body) return;
+
+  const q = (document.getElementById('catSearchInput')?.value || '').toLowerCase();
+  const catFilter = document.getElementById('catCategoryFilter')?.value || '';
+
+  let items = catalogItems;
+  if (q) items = items.filter(i =>
+    (i.desc||'').toLowerCase().includes(q) ||
+    (i.category||'').toLowerCase().includes(q) ||
+    (i.notes||'').toLowerCase().includes(q) ||
+    (i.supplier||'').toLowerCase().includes(q)
+  );
+  if (catFilter) items = items.filter(i => i.category === catFilter);
+
+  if (!items.length) {
+    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-style:italic">
+      ${catalogItems.length === 0 ? 'No items yet. Add your first catalog item to start building your cost library.' : 'No items match your search.'}
+    </div>`;
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  items.forEach(i => {
+    if (!groups[i.category]) groups[i.category] = [];
+    groups[i.category].push(i);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().forEach(cat => {
+    const col = catColor(cat);
+    html += `<div class="cat-group-header">
+      <span style="color:${col}">${esc(cat)}</span>
+      <span class="cat-badge" style="background:${col}18;color:${col};border-color:${col}44">${groups[cat].length} item${groups[cat].length!==1?'s':''}</span>
+    </div>`;
+    groups[cat].forEach(item => {
+      const cost = Number(item.unitCost || 0);
+      const markup = Number(item.markup || 0);
+      const sellPrice = cost * (1 + markup / 100);
+      const margin = sellPrice > 0 ? ((sellPrice - cost) / sellPrice * 100).toFixed(0) : 0;
+      html += `<div class="cat-item" onclick="openCatalogItemModal('${item.id}')">
+        <div>
+          <div style="font-weight:600;color:#eaf0fb">${esc(item.desc||'')}</div>
+          ${item.supplier ? `<div style="font-size:.74rem;color:var(--muted);margin-top:2px">📦 ${esc(item.supplier)}</div>` : ''}
+          ${item.notes ? `<div style="font-size:.74rem;color:var(--muted);margin-top:1px">${esc(item.notes)}</div>` : ''}
+        </div>
+        <div><span style="background:${col}18;color:${col};border:1px solid ${col}33;border-radius:999px;padding:2px 8px;font-size:.72rem;font-weight:700">${esc(item.category||'')}</span></div>
+        <div style="text-align:right;color:var(--muted);font-size:.82rem">${esc(item.unit||'ea')}</div>
+        <div style="text-align:right;font-weight:700">$${cost.toFixed(2)}</div>
+        <div style="text-align:right">
+          ${markup > 0 ? `<span style="color:#a3f2d2;font-weight:700">$${sellPrice.toFixed(2)}</span><span style="font-size:.72rem;color:var(--muted);margin-left:4px">(+${markup}%)</span>` : '<span style="color:var(--muted)">—</span>'}
+        </div>
+        <div style="text-align:right">
+          <button class="btn" style="padding:3px 10px;font-size:.74rem" onclick="event.stopPropagation();openCatalogItemModal('${item.id}')">Edit</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  body.innerHTML = html;
+}
+
+function openCatalogItemModal(id) {
+  const item = id ? catalogItems.find(i => i.id === id) : null;
+  document.getElementById('catalogModalTitle').textContent = item ? 'Edit Catalog Item' : 'Add Catalog Item';
+  document.getElementById('catItemId').value = item ? item.id : '';
+  document.getElementById('catItemDesc').value = item ? (item.desc||'') : '';
+  document.getElementById('catItemCategory').value = item ? (item.category||'Labor') : 'Labor';
+  document.getElementById('catItemUnit').value = item ? (item.unit||'ea') : 'ea';
+  document.getElementById('catItemCost').value = item ? (item.unitCost||'') : '';
+  document.getElementById('catItemMarkup').value = item ? (item.markup||0) : 0;
+  document.getElementById('catItemNotes').value = item ? (item.notes||'') : '';
+  document.getElementById('catItemSupplier').value = item ? (item.supplier||'') : '';
+  document.getElementById('deleteCatItemBtn').style.display = item ? 'inline-flex' : 'none';
+  calcCatPreview();
+  kOpen('catalogItemModal');
+}
+
+function calcCatPreview() {
+  const cost = parseFloat(document.getElementById('catItemCost')?.value) || 0;
+  const markup = parseFloat(document.getElementById('catItemMarkup')?.value) || 0;
+  const sell = cost * (1 + markup / 100);
+  const margin = sell > 0 ? ((sell - cost) / sell * 100).toFixed(1) : 0;
+  const prev = document.getElementById('catItemPreview');
+  const marg = document.getElementById('catItemMargin');
+  if (prev) prev.textContent = '$' + sell.toFixed(2);
+  if (marg) marg.textContent = margin + '%';
+}
+
+function saveCatalogItem() {
+  if (!conDb) return;
+  const desc = document.getElementById('catItemDesc').value.trim();
+  if (!desc) { alert('Description is required.'); return; }
+  const id = document.getElementById('catItemId').value;
+  const data = {
+    desc,
+    category: document.getElementById('catItemCategory').value,
+    unit: document.getElementById('catItemUnit').value,
+    unitCost: parseFloat(document.getElementById('catItemCost').value) || 0,
+    markup: parseFloat(document.getElementById('catItemMarkup').value) || 0,
+    notes: document.getElementById('catItemNotes').value.trim(),
+    supplier: document.getElementById('catItemSupplier').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: conCurrentUser ? conCurrentUser.email : 'unknown'
+  };
+  const col = conDb.collection('catalog');
+  if (id) {
+    col.doc(id).update(data)
+      .then(() => kClose('catalogItemModal'))
+      .catch(e => alert('Error: ' + e.message));
+  } else {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    data.createdBy = conCurrentUser ? conCurrentUser.email : 'unknown';
+    col.add(data)
+      .then(() => kClose('catalogItemModal'))
+      .catch(e => alert('Error: ' + e.message));
+  }
+}
+
+function deleteCatalogItem() {
+  const id = document.getElementById('catItemId').value;
+  if (!id || !confirm('Delete this catalog item?')) return;
+  conDb.collection('catalog').doc(id).delete()
+    .then(() => kClose('catalogItemModal'))
+    .catch(e => alert('Error: ' + e.message));
+}
+
+// conLoadJobs catalog patch consolidated below
+
+// ── Allow adding catalog items directly to a job estimate ──
+function addCatalogItemToEstimate(catItem) {
+  if (!conCurrentJobId) { alert('Open a job first.'); return; }
+  const qty = 1;
+  const data = {
+    category: catItem.category || 'Labor',
+    desc: catItem.desc || '',
+    qty,
+    unit: catItem.unit || 'ea',
+    unitCost: catItem.unitCost || 0,
+    markup: catItem.markup || 0,
+    notes: catItem.notes || '',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  conDb.collection('jobs').doc(conCurrentJobId).collection('estimate').add(data)
+    .then(() => {
+      // Brief confirmation
+      const btn = event.target;
+      if (btn) { const orig = btn.textContent; btn.textContent = '✓ Added'; setTimeout(()=>btn.textContent=orig, 1500); }
+    })
+    .catch(e => alert('Error: ' + e.message));
+}
+
+// Expose catalog functions
+window.openCatalogItemModal = openCatalogItemModal;
+window.saveCatalogItem = saveCatalogItem;
+window.deleteCatalogItem = deleteCatalogItem;
+window.calcCatPreview = calcCatPreview;
+window.renderCatalog = renderCatalog;
+window.addCatalogItemToEstimate = addCatalogItemToEstimate;
+
+// Boot
+conLoadFirebase();
+</script>
+</body>
+</html>
