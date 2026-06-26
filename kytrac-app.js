@@ -2670,9 +2670,95 @@ function renderInvLineItems() {
 }
 
 function addInvLineItem() {
+  // Show a searchable picker overlay
+  const existing = document.getElementById('invLinePicker');
+  if (existing) existing.remove();
+
+  const picker = document.createElement('div');
+  picker.id = 'invLinePicker';
+  picker.style.cssText = 'position:fixed;inset:0;background:rgba(0,5,14,.7);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px';
+  picker.innerHTML = `
+    <div style="background:rgba(6,14,28,.99);border:1px solid rgba(217,119,6,.35);border-radius:18px;padding:24px;max-width:520px;width:100%;max-height:80vh;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:1rem;font-weight:800;color:#eaf0fb">Add Line Item</div>
+        <button onclick="document.getElementById('invLinePicker').remove()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <input id="invLinePickerSearch" placeholder="Search catalog items..." autocomplete="off"
+        style="width:100%;padding:10px 14px;background:rgba(8,19,37,.8);border:1px solid rgba(217,119,6,.3);border-radius:10px;color:#eaf0fb;font-size:.88rem;margin-bottom:12px;box-sizing:border-box"
+        oninput="renderInvLinePicker(this.value)" />
+      <div id="invLinePickerList" style="overflow-y:auto;flex:1"></div>
+      <div style="border-top:1px solid rgba(110,145,210,.12);padding-top:12px;margin-top:10px">
+        <button onclick="addBlankInvLine()" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(217,119,6,.3);border-radius:10px;color:var(--amber);font-size:.84rem;font-weight:700;cursor:pointer">
+          ＋ Add blank custom line
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(picker);
+  renderInvLinePicker('');
+  setTimeout(() => document.getElementById('invLinePickerSearch')?.focus(), 100);
+}
+
+function renderInvLinePicker(q) {
+  const list = document.getElementById('invLinePickerList');
+  if (!list) return;
+  const val = q.trim().toLowerCase();
+
+  let items = catalogItems.filter(i => i.unitCost > 0);
+  if (val) items = items.filter(i => (i.desc||'').toLowerCase().includes(val) || (i.category||'').toLowerCase().includes(val));
+
+  if (!items.length) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:.84rem;font-style:italic;padding:16px;text-align:center">${val ? 'No matches — use blank line below' : 'No catalog items yet'}</div>`;
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  items.forEach(i => {
+    const cat = i.category || 'Other';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(i);
+  });
+
+  list.innerHTML = Object.entries(groups).map(([cat, catItems]) => `
+    <div style="margin-bottom:8px">
+      <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:4px 0 6px">${cat}</div>
+      ${catItems.map(item => {
+        const sell = (item.unitCost || 0) * (1 + (item.markup || 0) / 100);
+        return `<div onclick="pickInvLineItem('${item.id}')"
+          style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;cursor:pointer;margin-bottom:3px;border:1px solid transparent"
+          onmouseover="this.style.background='rgba(217,119,6,.1)';this.style.borderColor='rgba(217,119,6,.2)'"
+          onmouseout="this.style.background='';this.style.borderColor='transparent'">
+          <div>
+            <div style="font-size:.85rem;font-weight:600;color:#eaf0fb">${esc(item.desc||'')}</div>
+            <div style="font-size:.73rem;color:var(--muted)">${item.unit||'ea'}</div>
+          </div>
+          <div style="text-align:right;font-size:.84rem;font-weight:700;color:var(--amber)">$${sell.toFixed(2)}</div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function pickInvLineItem(itemId) {
+  const item = catalogItems.find(i => i.id === itemId);
+  if (!item) return;
+  const sell = (item.unitCost || 0) * (1 + (item.markup || 0) / 100);
+  _invLineItems.push({ desc: item.desc || '', qty: 1, rate: sell });
+  renderInvLineItems();
+  calcInvTotals();
+  document.getElementById('invLinePicker')?.remove();
+}
+
+function addBlankInvLine() {
   _invLineItems.push({ desc: '', qty: 1, rate: 0 });
   renderInvLineItems();
+  calcInvTotals();
+  document.getElementById('invLinePicker')?.remove();
 }
+
+window.addInvLineItem = addInvLineItem;
+window.renderInvLinePicker = renderInvLinePicker;
+window.pickInvLineItem = pickInvLineItem;
+window.addBlankInvLine = addBlankInvLine;
 
 function calcInvTotals() {
   const subtotal = _invLineItems.reduce((s,i) => s + (i.qty||1)*(i.rate||0), 0);
@@ -2699,19 +2785,52 @@ function calcInvBalance() {
 function importEstimateToInvoice() {
   const jobId = document.getElementById('invJobId')?.value;
   if (!jobId || !conDb) return;
-  coll('jobs').doc(jobId).collection('estimate').get()
-    .then(snap => {
-      snap.forEach(doc => {
-        const item = doc.data();
-        const qty = item.qty || 1;
-        const uc = item.unitCost || 0;
-        const markup = item.markup || 0;
-        const rate = uc * (1 + markup/100);
-        _invLineItems.push({ desc: item.desc || item.category || '', qty, rate });
-      });
+
+  const jobRef = coll('jobs').doc(jobId);
+  const allItems = [];
+
+  // Walk the full groups → subgroups → items tree
+  jobRef.collection('estimateGroups').orderBy('order').get()
+    .then(async groupSnap => {
+      for (const groupDoc of groupSnap.docs) {
+        const group = groupDoc.data();
+
+        // Direct items on group
+        const directSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id).collection('items').get();
+        directSnap.forEach(d => {
+          const item = d.data();
+          if (item.type === 'labor' || !item.unitCost) return; // skip labor lines
+          const qty = item.qty || 1;
+          const rate = (item.unitCost || 0) * (1 + (item.markup || 0) / 100);
+          if (rate > 0) allItems.push({ desc: item.desc || item.name || group.name || '', qty, rate });
+        });
+
+        // Subgroups
+        const subSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id).collection('subgroups').orderBy('order').get();
+        for (const subDoc of subSnap.docs) {
+          const sub = subDoc.data();
+          const itemSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id)
+            .collection('subgroups').doc(subDoc.id).collection('items').get();
+          itemSnap.forEach(d => {
+            const item = d.data();
+            if (item.type === 'labor' || !item.unitCost) return; // skip labor
+            const qty = item.qty || 1;
+            const rate = (item.unitCost || 0) * (1 + (item.markup || 0) / 100);
+            if (rate > 0) allItems.push({ desc: item.desc || item.name || sub.name || '', qty, rate });
+          });
+        }
+      }
+
+      if (!allItems.length) {
+        alert('No estimate line items found on this job. Add items in the Estimate tab first.');
+        return;
+      }
+
+      _invLineItems = [..._invLineItems, ...allItems];
       renderInvLineItems();
       calcInvTotals();
-    });
+    })
+    .catch(e => alert('Error importing estimate: ' + e.message));
 }
 
 // ── Save Invoice ──
