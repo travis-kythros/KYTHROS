@@ -5391,22 +5391,30 @@ function initPortalFirebase(jobId, token) {
 }
 
 function loadPortalJob(db, jobId, tokenData) {
+  const companyId = tokenData.companyId || null;
+
+  // Helper to get company-scoped collection
+  function portalColl(name) {
+    if (companyId) return db.collection('companies').doc(companyId).collection(name);
+    return db.collection(name); // fallback for old tokens
+  }
+
   // Load company profile for branding
-  db.collection('settings').doc('company').get()
+  portalColl('settings').doc('company').get()
     .then(doc => {
       const co = doc.exists ? doc.data() : {};
       renderPortalHeader(co);
     }).catch(() => renderPortalHeader({}));
 
   // Load job
-  db.collection('jobs').doc(jobId).get()
+  portalColl('jobs').doc(jobId).get()
     .then(doc => {
       if (!doc.exists) { showPortalNotFound(); return; }
       const job = { id: doc.id, ...doc.data() };
       renderPortalJob(job);
 
       // Load phases
-      db.collection('jobs').doc(jobId).collection('phases')
+      portalColl('jobs').doc(jobId).collection('phases')
         .orderBy('startDate').get()
         .then(snap => {
           const phases = [];
@@ -5415,7 +5423,7 @@ function loadPortalJob(db, jobId, tokenData) {
         }).catch(() => renderPortalPhases([]));
 
       // Load shared daily logs (last 20)
-      db.collection('jobs').doc(jobId).collection('logs')
+      portalColl('jobs').doc(jobId).collection('logs')
         .orderBy('date','desc').limit(20).get()
         .then(snap => {
           const logs = [];
@@ -5425,7 +5433,7 @@ function loadPortalJob(db, jobId, tokenData) {
 
       // Load invoices if sharing enabled
       if (tokenData.shareInvoices !== false) {
-        db.collection('jobs').doc(jobId).collection('invoices')
+        portalColl('jobs').doc(jobId).collection('invoices')
           .orderBy('date','desc').get()
           .then(snap => {
             const invs = [];
@@ -5435,7 +5443,7 @@ function loadPortalJob(db, jobId, tokenData) {
       }
 
       // Load approved change orders
-      db.collection('jobs').doc(jobId).collection('changeorders')
+      portalColl('jobs').doc(jobId).collection('changeorders')
         .where('status','==','Approved').get()
         .then(snap => {
           const cos = [];
@@ -5638,13 +5646,14 @@ function shareCustomerPortal() {
   const token = conCurrentJobId + '-hash-' + Math.random().toString(36).slice(2,10);
   const portalUrl = window.location.origin + window.location.pathname + '?portal=' + token;
 
-  // Save token to Firestore
+  // Save token to Firestore — include companyId for multi-tenant portal access
   conDb.collection('portalTokens').doc(token).set({
     jobId: conCurrentJobId,
     jobName: job.name || '',
+    companyId: currentCompanyId,
     created: Date.now(),
     createdBy: conCurrentUser?.email || '',
-    expires: null, // no expiry
+    expires: null,
     shareInvoices: true,
   }).then(() => {
     // Copy to clipboard
