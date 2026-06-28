@@ -854,7 +854,7 @@
     <div class="kt-logo">
       <div class="kt-logo-mark">⚡ KYTRAC</div>
       <div class="kt-logo-tag" id="ktCompanyTag">7 Pillars Contracting</div>
-      <div class="kt-logo-version" id="ktVersionTag">Version 1.7.6 · 26/Jun/2026</div>
+      <div class="kt-logo-version" id="ktVersionTag">Version 1.7.9 · 26/Jun/2026</div>
     </div>
 
     <nav class="kt-nav">
@@ -1936,6 +1936,11 @@
         <label class="small muted" style="display:block;margin-bottom:5px">Notes / Terms</label>
         <textarea id="invNotes" rows="3" placeholder="Payment terms, notes, thank you message..."></textarea>
       </div>
+      <div style="margin-top:14px">
+        <label class="small muted" style="display:block;margin-bottom:5px">💳 QuickBooks Payment Link</label>
+        <input id="invPaymentLink" placeholder="https://qbo.intuit.com/..." style="width:100%;font-size:.84rem" />
+        <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Paste your QuickBooks Pay Now link — appears as a Pay Now button on the invoice and customer portal</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-danger" id="deleteInvBtn" onclick="deleteInvoice()" style="display:none">Delete</button>
@@ -2560,7 +2565,7 @@
             <div style="font-weight:700">Select items to add</div>
             <div class="small muted" id="wizardSelCount">0 items selected</div>
           </div>
-          <div style="display:flex;gap:6px">
+          <div style="display:flex;gap:6px" id="wizardSearchRow">
             <input id="wizardSearchInput" placeholder="Search..." style="padding:6px 10px;font-size:.78rem;width:140px" oninput="wizardFilterItems()" />
             <button class="btn" onclick="wizardSelectAll()" style="font-size:.72rem;padding:4px 8px">All</button>
             <button class="btn" onclick="wizardClearAll()" style="font-size:.72rem;padding:4px 8px">None</button>

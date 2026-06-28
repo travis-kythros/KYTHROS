@@ -2640,6 +2640,7 @@ function openEditInvoice(jobId, invId) {
       document.getElementById('invPaidDate').value = inv.paidDate || '';
       document.getElementById('invPayMethod').value = inv.payMethod || '';
       document.getElementById('invNotes').value = inv.notes || '';
+      document.getElementById('invPaymentLink').value = inv.paymentLink || '';
       document.getElementById('deleteInvBtn').style.display = 'inline-flex';
       _invLineItems = inv.lineItems || [];
       renderInvLineItems();
@@ -3002,6 +3003,7 @@ function saveInvoice() {
     paidDate: document.getElementById('invPaidDate').value,
     payMethod: document.getElementById('invPayMethod').value,
     notes: document.getElementById('invNotes').value.trim(),
+    paymentLink: document.getElementById('invPaymentLink')?.value.trim() || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: conCurrentUser?.email || 'unknown'
   };
@@ -3293,74 +3295,107 @@ const _origPrintInvoiceData = printInvoiceData;
 function printInvoiceData(inv, job) {
   const co = companyProfile;
   const win = window.open('', '_blank');
-  const lineRows = (inv.lineItems||[]).map(item =>
-    `<tr><td style="padding:8px 4px;border-bottom:1px solid #e5e7eb">${item.desc||''}</td>
-     <td style="padding:8px 4px;border-bottom:1px solid #e5e7eb;text-align:right">${item.qty||1}</td>
-     <td style="padding:8px 4px;border-bottom:1px solid #e5e7eb;text-align:right">$${(item.rate||0).toFixed(2)}</td>
-     <td style="padding:8px 4px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:700">$${((item.qty||1)*(item.rate||0)).toFixed(2)}</td></tr>`
-  ).join('');
+  const fmt = v => '$' + Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  const logoHtml = co.logo
-    ? `<img src="${co.logo}" style="height:60px;object-fit:contain;margin-bottom:6px" /><br>`
-    : '';
+  // Determine if this is a payment schedule invoice
+  const isScheduled = (inv.type||'').toLowerCase().includes('deposit') ||
+    (inv.lineItems||[]).some(li => /deposit|progress|final|payment/i.test(li.desc||''));
 
-  win.document.write(`<!DOCTYPE html><html><head><title>Invoice ${inv.number||''}</title>
-  <style>body{font-family:Inter,Arial,sans-serif;color:#1a1a1a;max-width:720px;margin:40px auto;padding:0 24px}
-  table{width:100%;border-collapse:collapse}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #d97706;padding-bottom:20px;margin-bottom:24px}
-  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;font-weight:700}
-  .total-row td{font-weight:900;font-size:1.1rem;border-top:2px solid #d97706;padding-top:10px}
-  @media print{body{margin:20px}}</style></head><body>
-  <div class="header">
-    <div>
-      ${logoHtml}
-      <div style="font-size:1.3rem;font-weight:900;color:#1a1a1a">${esc(co.companyName||'')}</div>
-      ${co.address?`<div style="color:#6b7280;font-size:.85rem">${esc(co.address)}</div>`:''}
-      ${co.phone?`<div style="color:#6b7280;font-size:.85rem">${esc(co.phone)}</div>`:''}
-      ${co.email?`<div style="color:#6b7280;font-size:.85rem">${esc(co.email)}</div>`:''}
-      ${co.license?`<div style="color:#6b7280;font-size:.78rem">License: ${esc(co.license)}</div>`:''}
-    </div>
-    <div style="text-align:right">
-      <div style="font-size:1.5rem;font-weight:900;color:#d97706">INVOICE</div>
-      <div style="font-size:1.1rem;font-weight:700">${esc(inv.number||'')}</div>
-      <div style="color:#6b7280">${inv.status||''}</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">
-    <div>
-      <div class="label" style="margin-bottom:4px">Bill To</div>
-      <div style="font-weight:700;font-size:1.05rem">${esc(job?.client||'')}</div>
-      <div style="color:#6b7280">${esc(job?.name||'')}</div>
-      <div style="color:#6b7280;font-size:.88rem">${esc(job?.address||'')}</div>
-    </div>
-    <div style="text-align:right">
-      <div style="margin-bottom:4px"><span class="label">Invoice Date: </span>${inv.date||''}</div>
-      <div style="margin-bottom:4px"><span class="label">Due Date: </span><strong>${inv.dueDate||''}</strong></div>
-      <div><span class="label">Type: </span>${inv.type||''}</div>
-    </div>
-  </div>
-  <table style="margin-bottom:24px">
-    <thead><tr style="background:#f9fafb">
-      <th style="padding:10px 4px;text-align:left;font-size:.78rem;text-transform:uppercase;color:#6b7280">Description</th>
-      <th style="padding:10px 4px;text-align:right;font-size:.78rem;text-transform:uppercase;color:#6b7280">Qty</th>
-      <th style="padding:10px 4px;text-align:right;font-size:.78rem;text-transform:uppercase;color:#6b7280">Rate</th>
-      <th style="padding:10px 4px;text-align:right;font-size:.78rem;text-transform:uppercase;color:#6b7280">Amount</th>
-    </tr></thead>
-    <tbody>${lineRows}</tbody>
-    <tfoot>
-      <tr><td colspan="3" style="padding:8px 4px;text-align:right;color:#6b7280">Subtotal</td><td style="padding:8px 4px;text-align:right">$${(inv.subtotal||0).toFixed(2)}</td></tr>
-      ${inv.taxAmt>0?`<tr><td colspan="3" style="padding:4px;text-align:right;color:#6b7280">Tax (${inv.taxRate||0}%)</td><td style="padding:4px;text-align:right">$${(inv.taxAmt||0).toFixed(2)}</td></tr>`:''}
-      <tr class="total-row"><td colspan="3" style="padding:10px 4px;text-align:right">TOTAL DUE</td><td style="padding:10px 4px;text-align:right;color:#d97706">$${(inv.total||0).toFixed(2)}</td></tr>
-      ${(inv.amtPaid||0)>0?`<tr><td colspan="3" style="padding:4px;text-align:right;color:#059669">Amount Paid</td><td style="padding:4px;text-align:right;color:#059669">-$${(inv.amtPaid||0).toFixed(2)}</td></tr>
-      <tr><td colspan="3" style="padding:4px;text-align:right;font-weight:700">Balance Due</td><td style="padding:4px;text-align:right;font-weight:700;color:#d97706">$${Math.max(0,(inv.total||0)-(inv.amtPaid||0)).toFixed(2)}</td></tr>`:''}
-    </tfoot>
-  </table>
-  ${inv.notes?`<div style="background:#f9fafb;border-radius:8px;padding:14px;font-size:.85rem;color:#4b5563;margin-bottom:20px"><strong>Notes & Terms:</strong><br><br>${esc(inv.notes)}</div>`:''}
-  <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;color:#9ca3af;font-size:.75rem">
-    ${co.companyName||''} ${co.phone?'· '+co.phone:''} ${co.email?'· '+co.email:''}
-    <br>Powered by KYTRAC Construction Tracking
-  </div>
-  <script>window.print();<\/script></body></html>`);
+  // Project total from job
+  const projectTotal = job?.contractValue || job?.approvedOrders || 0;
+
+  // Build line rows
+  const lineRows = (inv.lineItems||[]).map(item => {
+    const amt = (item.qty||1) * (item.rate||0);
+    const pct = projectTotal > 0 ? ' (' + Math.round(amt/projectTotal*100) + '% of project)' : '';
+    return '<tr>' +
+      '<td style="padding:10px 6px;border-bottom:1px solid #e5e7eb;font-size:.92rem">' + esc(item.desc||'') + '<span style="color:#9ca3af;font-size:.8rem">' + pct + '</span></td>' +
+      '<td style="padding:10px 6px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:.92rem">' + (item.qty||1) + '</td>' +
+      '<td style="padding:10px 6px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:800;font-size:.95rem">' + fmt(amt) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  const logoHtml = co.logo ? '<img src="' + co.logo + '" style="height:64px;object-fit:contain;margin-bottom:8px" /><br>' : '';
+
+  // Project summary block for scheduled payments
+  const projectSummary = projectTotal > 0 ? (
+    '<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:10px;padding:16px;margin-bottom:24px">' +
+    '<div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#92400e;margin-bottom:8px">Project Summary</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">' +
+    '<div><div style="font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Total Project Value</div><div style="font-size:1.1rem;font-weight:900;color:#1a1a1a">' + fmt(projectTotal) + '</div></div>' +
+    '<div><div style="font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">This Invoice</div><div style="font-size:1.1rem;font-weight:900;color:#d97706">' + fmt(inv.total||0) + '</div></div>' +
+    '<div><div style="font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Remaining Balance</div><div style="font-size:1.1rem;font-weight:900;color:#374151">' + fmt(Math.max(0, projectTotal - (inv.total||0))) + '</div></div>' +
+    '</div></div>'
+  ) : '';
+
+  win.document.write('<!DOCTYPE html><html><head><title>Invoice ' + (inv.number||'') + '</title>' +
+    '<style>' +
+    'body{font-family:Inter,Arial,sans-serif;color:#1a1a1a;max-width:740px;margin:40px auto;padding:0 28px}' +
+    'table{width:100%;border-collapse:collapse}' +
+    '.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #d97706;padding-bottom:20px;margin-bottom:24px}' +
+    '.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;font-weight:700}' +
+    '@media print{body{margin:16px}}' +
+    '</style></head><body>' +
+
+    // Header
+    '<div class="header">' +
+    '<div>' + logoHtml +
+    '<div style="font-size:1.4rem;font-weight:900;color:#1a1a1a">' + esc(co.companyName||'') + '</div>' +
+    (co.address ? '<div style="color:#6b7280;font-size:.84rem">' + esc(co.address) + '</div>' : '') +
+    (co.phone ? '<div style="color:#6b7280;font-size:.84rem">' + esc(co.phone) + '</div>' : '') +
+    (co.email ? '<div style="color:#6b7280;font-size:.84rem">' + esc(co.email) + '</div>' : '') +
+    (co.license ? '<div style="color:#6b7280;font-size:.76rem">License: ' + esc(co.license) + '</div>' : '') +
+    '</div>' +
+    '<div style="text-align:right">' +
+    '<div style="font-size:1.8rem;font-weight:900;color:#d97706">INVOICE</div>' +
+    '<div style="font-size:1.1rem;font-weight:800">' + esc(inv.number||'') + '</div>' +
+    '<div style="margin-top:4px;background:' + (inv.status==='Paid'?'#dcfce7':inv.status==='Overdue'?'#fee2e2':'#fef9c3') + ';color:' + (inv.status==='Paid'?'#166534':inv.status==='Overdue'?'#991b1b':'#854d0e') + ';padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:800;display:inline-block">' + (inv.status||'Draft') + '</div>' +
+    '</div></div>' +
+
+    // Bill to / Invoice details
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">' +
+    '<div><div class="label" style="margin-bottom:6px">Bill To</div>' +
+    '<div style="font-weight:800;font-size:1.05rem">' + esc(job?.client||'') + '</div>' +
+    '<div style="color:#374151;font-size:.9rem;margin-top:2px">' + esc(job?.name||'') + '</div>' +
+    '<div style="color:#6b7280;font-size:.84rem">' + esc(job?.address||'') + '</div>' +
+    '</div>' +
+    '<div style="text-align:right">' +
+    '<div style="margin-bottom:5px"><span class="label">Invoice Date: </span>' + (inv.date||'') + '</div>' +
+    '<div style="margin-bottom:5px"><span class="label">Due Date: </span><strong>' + (inv.dueDate||'') + '</strong></div>' +
+    '<div><span class="label">Type: </span>' + (inv.type||'') + '</div>' +
+    (job?.jobNumber ? '<div style="margin-top:5px"><span class="label">Job #: </span>' + esc(job.jobNumber) + '</div>' : '') +
+    '</div></div>' +
+
+    // Project summary (for deposit/progress invoices)
+    projectSummary +
+
+    // Line items
+    '<table style="margin-bottom:24px">' +
+    '<thead><tr style="background:#f9fafb">' +
+    '<th style="padding:10px 6px;text-align:left;font-size:.72rem;text-transform:uppercase;color:#6b7280;letter-spacing:.05em">Description</th>' +
+    '<th style="padding:10px 6px;text-align:right;font-size:.72rem;text-transform:uppercase;color:#6b7280;letter-spacing:.05em">Qty</th>' +
+    '<th style="padding:10px 6px;text-align:right;font-size:.72rem;text-transform:uppercase;color:#6b7280;letter-spacing:.05em">Amount</th>' +
+    '</tr></thead>' +
+    '<tbody>' + lineRows + '</tbody>' +
+    '<tfoot>' +
+    (inv.taxAmt>0 ? '<tr><td colspan="2" style="padding:8px 6px;text-align:right;color:#6b7280">Tax (' + (inv.taxRate||0) + '%)</td><td style="padding:8px 6px;text-align:right">' + fmt(inv.taxAmt) + '</td></tr>' : '') +
+    '<tr style="border-top:2px solid #d97706"><td colspan="2" style="padding:12px 6px;text-align:right;font-weight:900;font-size:1.1rem">AMOUNT DUE</td><td style="padding:12px 6px;text-align:right;font-weight:900;font-size:1.2rem;color:#d97706">' + fmt(inv.total||0) + '</td></tr>' +
+    ((inv.amtPaid||0)>0 ? '<tr><td colspan="2" style="padding:6px;text-align:right;color:#059669">Amount Paid</td><td style="padding:6px;text-align:right;color:#059669">-' + fmt(inv.amtPaid) + '</td></tr><tr><td colspan="2" style="padding:6px;text-align:right;font-weight:700">Balance Due</td><td style="padding:6px;text-align:right;font-weight:800;color:#d97706">' + fmt(Math.max(0,(inv.total||0)-(inv.amtPaid||0))) + '</td></tr>' : '') +
+    '</tfoot></table>' +
+
+    (inv.notes ? '<div style="background:#f9fafb;border-radius:8px;padding:14px;font-size:.85rem;color:#4b5563;margin-bottom:20px"><strong>Notes & Terms:</strong><br><br>' + esc(inv.notes) + '</div>' : '') +
+
+    (inv.paymentLink ? 
+      '<div style="text-align:center;margin:24px 0">' +
+      '<a href="' + inv.paymentLink + '" style="display:inline-block;background:#d97706;color:#fff;font-size:1.1rem;font-weight:800;padding:16px 48px;border-radius:12px;text-decoration:none;letter-spacing:.02em">💳 Pay Now</a>' +
+      '<div style="font-size:.76rem;color:#9ca3af;margin-top:8px">Click to pay securely via QuickBooks</div>' +
+      '</div>' : '') +
+
+    '<div style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;color:#9ca3af;font-size:.75rem">' +
+    (co.companyName||'') + (co.phone?' · '+co.phone:'') + (co.email?' · '+co.email:'') +
+    '<br>Powered by KYTRAC Construction Tracking' +
+    '</div>' +
+    '<script>window.print();<\/script></body></html>');
   win.document.close();
 }
 window.printInvoiceData = printInvoiceData;
@@ -5861,16 +5896,23 @@ function renderPortalInvoices(invs) {
   el.innerHTML = invs.map(inv => {
     const bal = (inv.total||0) - (inv.amtPaid||0);
     const sColor = statusColors[inv.status] || 'var(--muted)';
-    return `<div class="portal-invoice-row">
-      <div>
-        <div style="font-weight:700;color:var(--amber)">${esc(inv.number||'Invoice')}</div>
-        <div style="font-size:.76rem;color:var(--muted)">${inv.date||''} · Due: ${inv.dueDate||'—'}</div>
+    const payBtn = inv.paymentLink && bal > 0 && inv.status !== 'Paid'
+      ? `<a href="${inv.paymentLink}" target="_blank" style="display:inline-block;margin-top:8px;background:#d97706;color:#fff;font-size:.78rem;font-weight:800;padding:7px 18px;border-radius:8px;text-decoration:none">💳 Pay Now</a>`
+      : '';
+    return `<div class="portal-invoice-row" style="flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700;color:var(--amber)">${esc(inv.number||'Invoice')}</div>
+          <div style="font-size:.76rem;color:var(--muted)">${inv.date||''} · Due: ${inv.dueDate||'—'}</div>
+          ${inv.type ? `<div style="font-size:.74rem;color:var(--muted)">${esc(inv.type)}</div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:800;font-size:1rem">$${(inv.total||0).toLocaleString()}</div>
+          <div style="font-size:.76rem;color:${sColor};font-weight:700">${inv.status||'Draft'}</div>
+          ${bal > 0 ? `<div style="font-size:.74rem;color:var(--muted)">Balance: $${bal.toFixed(2)}</div>` : ''}
+        </div>
       </div>
-      <div style="text-align:right">
-        <div style="font-weight:800;font-size:1rem">$${(inv.total||0).toLocaleString()}</div>
-        <div style="font-size:.76rem;color:${sColor};font-weight:700">${inv.status||'Draft'}</div>
-        ${bal > 0 ? `<div style="font-size:.74rem;color:var(--muted)">Balance: $${bal.toLocaleString()}</div>` : ''}
-      </div>
+      ${payBtn}
     </div>`;
   }).join('');
 }
@@ -8449,9 +8491,51 @@ function wizardSelectTrade(trade) {
   _wizardSelectedItems = new Set();
   _wizardCurrentItems = CATALOG_DATA[trade] || [];
   document.getElementById('wizardSearchInput').value = '';
-  wizardRenderItems(_wizardCurrentItems);
   wizardSetStep(4);
   updateWizardBreadcrumb();
+
+  // Render step 4 with Templates + Items tabs
+  const itemListEl = document.getElementById('wizardItemList');
+  if (itemListEl) {
+    itemListEl.innerHTML = `
+      <div style="display:flex;gap:0;background:rgba(8,18,36,.8);border:1px solid rgba(110,145,210,.15);border-radius:10px;overflow:hidden;margin-bottom:12px">
+        <button id="wizTabTemplates" onclick="wizShowTab('templates')"
+          style="flex:1;padding:8px;border:none;cursor:pointer;font-size:.8rem;font-weight:700;background:linear-gradient(135deg,var(--amber),var(--amber2));color:#fff">
+          ⚡ Templates
+        </button>
+        <button id="wizTabItems" onclick="wizShowTab('items')"
+          style="flex:1;padding:8px;border:none;cursor:pointer;font-size:.8rem;font-weight:600;background:transparent;color:var(--muted)">
+          📦 Catalog Items
+        </button>
+      </div>
+      <div id="wizPanelTemplates"></div>
+      <div id="wizPanelItems" style="display:none"></div>
+    `;
+  }
+
+  // Load templates for this trade
+  wizLoadTemplates(trade);
+
+  // Render catalog items into hidden panel
+  const itemsPanel = document.getElementById('wizPanelItems');
+  if (itemsPanel) {
+    itemsPanel.innerHTML = _wizardCurrentItems.length ? _wizardCurrentItems.map((item, idx) => {
+      const matPrice = item.materials?.unitPrice || 0;
+      const labPrice = item.labor?.unitPrice || 0;
+      const totalPrice = matPrice + labPrice;
+      return `<div class="wizard-item" onclick="wizardToggleItem('${item.name.replace(/'/g,"\\'")}',this)">
+        <div class="wizard-item-check"></div>
+        <div class="wizard-item-info">
+          <div class="wizard-item-name">${esc(item.name)}</div>
+          <div class="wizard-item-meta">
+            ${item.materials?'📦 Mat: $'+matPrice.toFixed(2):''}
+            ${item.labor?' · 👷 Labor: $'+labPrice.toFixed(2)+'/hr':''}
+          </div>
+        </div>
+        <div class="wizard-item-price">${totalPrice>0?'$'+totalPrice.toFixed(2):''}</div>
+      </div>`;
+    }).join('') : '<div class="small muted" style="text-align:center;padding:20px">No items for this trade</div>';
+  }
 
   // Show Add button
   const footer = document.getElementById('wizardFooter');
@@ -8460,6 +8544,261 @@ function wizardSelectTrade(trade) {
     <button class="btn-amber" onclick="wizardAddToEstimate()" style="min-width:140px">➕ Add to Estimate</button>
   `;
 }
+
+function wizShowTab(tab) {
+  const tBtn = document.getElementById('wizTabTemplates');
+  const iBtn = document.getElementById('wizTabItems');
+  const tPanel = document.getElementById('wizPanelTemplates');
+  const iPanel = document.getElementById('wizPanelItems');
+  const searchRow = document.getElementById('wizardSearchRow');
+  if (tab === 'templates') {
+    if (tPanel) tPanel.style.display = 'block';
+    if (iPanel) iPanel.style.display = 'none';
+    if (tBtn) { tBtn.style.background = 'linear-gradient(135deg,var(--amber),var(--amber2))'; tBtn.style.color='#fff'; }
+    if (iBtn) { iBtn.style.background = 'transparent'; iBtn.style.color='var(--muted)'; }
+    if (searchRow) searchRow.style.display = 'none';
+  } else {
+    if (tPanel) tPanel.style.display = 'none';
+    if (iPanel) iPanel.style.display = 'block';
+    if (iBtn) { iBtn.style.background = 'linear-gradient(135deg,var(--amber),var(--amber2))'; iBtn.style.color='#fff'; }
+    if (tBtn) { tBtn.style.background = 'transparent'; tBtn.style.color='var(--muted)'; }
+    if (searchRow) searchRow.style.display = 'flex';
+  }
+}
+
+function wizLoadTemplates(trade) {
+  const panel = document.getElementById('wizPanelTemplates');
+  if (!panel) return;
+  panel.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:8px">Loading templates...</div>';
+
+  coll('templates').where('trade','==',trade).orderBy('name').get()
+    .then(snap => {
+      const templates = [];
+      snap.forEach(d => templates.push({ id: d.id, ...d.data() }));
+      wizRenderTemplates(templates, trade);
+    })
+    .catch(() => wizRenderTemplates([], trade));
+}
+
+function wizRenderTemplates(templates, trade) {
+  const panel = document.getElementById('wizPanelTemplates');
+  if (!panel) return;
+
+  let html = '';
+
+  if (templates.length) {
+    html += templates.map(t => {
+      const lineCount = (t.lines||[]).length;
+      const total = (t.lines||[]).reduce((s,l) => s + (l.qty||1)*(l.unitPrice||0), 0);
+      return `<div style="border:1px solid rgba(110,145,210,.15);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer"
+        onclick="wizSelectTemplate('${t.id}')"
+        onmouseover="this.style.borderColor='rgba(217,119,6,.4)';this.style.background='rgba(217,119,6,.05)'"
+        onmouseout="this.style.borderColor='rgba(110,145,210,.15)';this.style.background=''">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:800;font-size:.9rem;color:#eaf0fb">${esc(t.name)}</div>
+            <div style="font-size:.74rem;color:var(--muted);margin-top:3px">${lineCount} line${lineCount!==1?'s':''} · ${esc(t.description||'')}</div>
+          </div>
+          <div style="font-weight:900;color:var(--amber);font-size:.95rem">$${total.toFixed(2)}</div>
+        </div>
+        <div style="margin-top:8px;font-size:.75rem;color:var(--muted)">
+          ${(t.lines||[]).slice(0,3).map(l => `${esc(l.desc||'')} (${l.qty||1})`).join(' · ')}${(t.lines||[]).length>3?' · ...':''}
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    html += `<div style="text-align:center;padding:20px 10px;color:var(--muted)">
+      <div style="font-size:1.5rem;margin-bottom:8px">⚡</div>
+      <div style="font-size:.85rem;font-weight:600;margin-bottom:4px">No templates yet for this trade</div>
+      <div style="font-size:.76rem">Create a template to quickly add bundles of items (e.g. "Kitchen Faucet Replacement" with faucet + labor + supply lines)</div>
+    </div>`;
+  }
+
+  html += `<button onclick="wizOpenCreateTemplate('${trade}')"
+    style="width:100%;margin-top:8px;padding:10px;background:transparent;border:1px dashed rgba(217,119,6,.4);border-radius:10px;color:var(--amber);font-size:.83rem;font-weight:700;cursor:pointer">
+    ＋ Create New Template
+  </button>`;
+
+  panel.innerHTML = html;
+}
+
+function wizSelectTemplate(templateId) {
+  if (!conCurrentJobId || !conDb) return;
+  coll('templates').doc(templateId).get().then(doc => {
+    if (!doc.exists) return;
+    const t = { id: doc.id, ...doc.data() };
+
+    // Show qty selector overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'wizTemplateOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,5,14,.8);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px';
+
+    const lines = t.lines || [];
+    const linesHtml = lines.map(l =>
+      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(110,145,210,.07);font-size:.82rem">
+        <div style="color:#eaf0fb">${esc(l.desc||'')} × <span id="lineQty_${l.id||Math.random().toString(36).slice(2)}" class="tmpl-scaled-qty">${l.qty||1}</span></div>
+        <div style="color:var(--amber)">$<span class="tmpl-scaled-price">${((l.qty||1)*(l.unitPrice||0)).toFixed(2)}</span></div>
+      </div>`
+    ).join('');
+
+    overlay.innerHTML = `
+      <div style="background:rgba(6,14,28,.99);border:1px solid rgba(217,119,6,.35);border-radius:18px;padding:26px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:1rem;font-weight:800;color:#eaf0fb">${esc(t.name)}</div>
+          <button onclick="document.getElementById('wizTemplateOverlay').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px">${esc(t.description||'')}</div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.2);border-radius:10px;padding:12px">
+          <div style="font-size:.82rem;font-weight:700;color:#eaf0fb">Quantity:</div>
+          <button onclick="wizChangeQty(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--amber-border);background:transparent;color:var(--amber);font-size:1.2rem;cursor:pointer;line-height:1">−</button>
+          <div id="wizTmplQty" style="font-size:1.4rem;font-weight:900;color:var(--amber);min-width:32px;text-align:center">1</div>
+          <button onclick="wizChangeQty(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--amber-border);background:transparent;color:var(--amber);font-size:1.2rem;cursor:pointer;line-height:1">＋</button>
+          <div style="font-size:.76rem;color:var(--muted);margin-left:4px">× all quantities</div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Lines to add:</div>
+          ${linesHtml}
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button onclick="document.getElementById('wizTemplateOverlay').remove()" style="flex:1;padding:12px;background:transparent;border:1px solid rgba(110,145,210,.2);border-radius:10px;color:var(--muted);font-weight:700;cursor:pointer">Cancel</button>
+          <button onclick="wizAddTemplateToEstimate('${templateId}')" style="flex:2;padding:12px;background:#d97706;border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer">➕ Add to Estimate</button>
+        </div>
+      </div>`;
+
+    window._wizTemplateData = t;
+    window._wizTemplateQty = 1;
+    document.body.appendChild(overlay);
+  });
+}
+
+function wizChangeQty(delta) {
+  const qty = Math.max(1, (window._wizTemplateQty || 1) + delta);
+  window._wizTemplateQty = qty;
+  document.getElementById('wizTmplQty').textContent = qty;
+}
+
+async function wizAddTemplateToEstimate(templateId) {
+  const t = window._wizTemplateData;
+  const qty = window._wizTemplateQty || 1;
+  if (!t || !conCurrentJobId) return;
+
+  document.getElementById('wizTemplateOverlay')?.remove();
+  kClose('smartAddModal');
+
+  const lines = t.lines || [];
+  for (const line of lines) {
+    const lineQty = (line.qty || 1) * qty;
+    const data = {
+      desc: line.desc || '',
+      category: line.category || t.trade || '',
+      unitCost: line.unitCost || 0,
+      unitPrice: line.unitPrice || 0,
+      markup: line.markup || 0,
+      qty: lineQty,
+      unit: line.unit || 'ea',
+      type: line.type || 'material',
+      companyId: currentCompanyId,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await coll('jobs').doc(conCurrentJobId).collection('estimate').add(data);
+  }
+
+  // Refresh estimate
+  if (typeof conLoadJobDetail === 'function') conLoadJobDetail(conCurrentJobId);
+  if (typeof renderEstimateTab === 'function') renderEstimateTab();
+}
+
+function wizOpenCreateTemplate(trade) {
+  const overlay = document.createElement('div');
+  overlay.id = 'wizCreateTemplateOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,5,14,.8);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `
+    <div style="background:rgba(6,14,28,.99);border:1px solid rgba(217,119,6,.35);border-radius:18px;padding:26px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:1rem;font-weight:800;color:#eaf0fb">Create Template — ${esc(trade)}</div>
+        <button onclick="document.getElementById('wizCreateTemplateOverlay').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Template Name *</label>
+        <input id="tmplName" placeholder="e.g. Kitchen Faucet Replacement" style="width:100%;padding:10px;background:rgba(8,19,37,.8);border:1px solid rgba(217,119,6,.3);border-radius:8px;color:#eaf0fb;font-size:.88rem;box-sizing:border-box" />
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:.78rem;color:var(--muted);display:block;margin-bottom:4px">Description</label>
+        <input id="tmplDesc" placeholder="e.g. Standard kitchen faucet swap with supply lines and shutoffs" style="width:100%;padding:10px;background:rgba(8,19,37,.8);border:1px solid rgba(217,119,6,.3);border-radius:8px;color:#eaf0fb;font-size:.88rem;box-sizing:border-box" />
+      </div>
+      <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Line Items</div>
+      <div id="tmplLines"></div>
+      <button onclick="wizAddTemplateLine()" style="width:100%;padding:9px;background:transparent;border:1px dashed rgba(110,145,210,.3);border-radius:8px;color:var(--muted);font-size:.82rem;cursor:pointer;margin-bottom:16px">＋ Add Line Item</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('wizCreateTemplateOverlay').remove()" style="flex:1;padding:12px;background:transparent;border:1px solid rgba(110,145,210,.2);border-radius:10px;color:var(--muted);font-weight:700;cursor:pointer">Cancel</button>
+        <button onclick="wizSaveTemplate('${trade}')" style="flex:2;padding:12px;background:#d97706;border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer">Save Template</button>
+      </div>
+    </div>`;
+  window._tmplLines = [];
+  document.body.appendChild(overlay);
+  wizAddTemplateLine(); // Start with one line
+}
+
+function wizAddTemplateLine() {
+  const id = 'tl_' + Date.now();
+  window._tmplLines = window._tmplLines || [];
+  window._tmplLines.push(id);
+  const container = document.getElementById('tmplLines');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.id = id;
+  div.style.cssText = 'display:grid;grid-template-columns:2fr 60px 80px 80px 24px;gap:6px;align-items:center;margin-bottom:8px';
+  div.innerHTML = `
+    <input placeholder="Description" style="padding:8px;background:rgba(8,19,37,.8);border:1px solid rgba(110,145,210,.15);border-radius:6px;color:#eaf0fb;font-size:.8rem" data-field="desc" />
+    <input type="number" placeholder="Qty" value="1" min="0.1" step="0.1" style="padding:8px;background:rgba(8,19,37,.8);border:1px solid rgba(110,145,210,.15);border-radius:6px;color:#eaf0fb;font-size:.8rem;text-align:center" data-field="qty" />
+    <input type="number" placeholder="Cost $" min="0" step="0.01" style="padding:8px;background:rgba(8,19,37,.8);border:1px solid rgba(110,145,210,.15);border-radius:6px;color:#eaf0fb;font-size:.8rem" data-field="unitCost" />
+    <input type="number" placeholder="Price $" min="0" step="0.01" style="padding:8px;background:rgba(8,19,37,.8);border:1px solid rgba(110,145,210,.15);border-radius:6px;color:#eaf0fb;font-size:.8rem" data-field="unitPrice" />
+    <button onclick="this.closest('div').remove()" style="background:none;border:none;color:#f87171;font-size:1rem;cursor:pointer;padding:0">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+async function wizSaveTemplate(trade) {
+  const name = document.getElementById('tmplName')?.value.trim();
+  if (!name) { alert('Template name is required.'); return; }
+  const desc = document.getElementById('tmplDesc')?.value.trim() || '';
+
+  const lineEls = document.getElementById('tmplLines')?.children || [];
+  const lines = [];
+  for (const el of lineEls) {
+    const lineDesc = el.querySelector('[data-field="desc"]')?.value.trim();
+    const qty = parseFloat(el.querySelector('[data-field="qty"]')?.value) || 1;
+    const unitCost = parseFloat(el.querySelector('[data-field="unitCost"]')?.value) || 0;
+    const unitPrice = parseFloat(el.querySelector('[data-field="unitPrice"]')?.value) || 0;
+    if (lineDesc) lines.push({ id: 'l_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), desc: lineDesc, qty, unitCost, unitPrice, unit: 'ea' });
+  }
+
+  if (!lines.length) { alert('Add at least one line item.'); return; }
+
+  await coll('templates').add({
+    name, description: desc, trade,
+    lines,
+    companyId: currentCompanyId,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdBy: conCurrentUser?.email || '',
+  });
+
+  document.getElementById('wizCreateTemplateOverlay')?.remove();
+  // Reload templates
+  wizLoadTemplates(trade);
+}
+
+window.wizShowTab = wizShowTab;
+window.wizLoadTemplates = wizLoadTemplates;
+window.wizSelectTemplate = wizSelectTemplate;
+window.wizChangeQty = wizChangeQty;
+window.wizAddTemplateToEstimate = wizAddTemplateToEstimate;
+window.wizOpenCreateTemplate = wizOpenCreateTemplate;
+window.wizAddTemplateLine = wizAddTemplateLine;
+window.wizSaveTemplate = wizSaveTemplate;
 
 function wizardRenderItems(items) {
   const el = document.getElementById('wizardItemList');
