@@ -1,4 +1,4 @@
-// KYTRAC Application JavaScript v1.9.9 · 05/Jul/2026
+// KYTRAC Application JavaScript v1.9.10 · 05/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -5138,7 +5138,7 @@ function applyRolePermissions() {
   const canSeeCosting = hasPermission('costing') || hasPermission('invoicing');
   const canSeeInvoicing = hasPermission('invoicing');
   const canSeeCatalog = hasPermission('catalog') || hasPermission('catalog_read');
-  const canSeeSettings = role === 'Owner';
+  const canSeeSettings = isOwnerOrAdmin(); // Owner or Project Manager — team mgmt inside stays Owner-only
 
   // Nav items
   const navItems = {
