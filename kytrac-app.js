@@ -8778,25 +8778,31 @@ const TIERED_BUNDLES = {
     {
       name: 'Faucet Replacement',
       icon: '🚿',
-      desc: 'Kitchen or bath faucet swap with supply lines and shutoffs',
+      desc: 'Bath faucet swap with supply lines and shutoffs',
       tiers: {
-        low:  { label: 'Standard', priceRange: 'Under $159', lines: [
-          { desc: 'Standard Faucet (2-handle)', qty: 1, unitCost: 89, unitPrice: 129, unit: 'ea', type: 'material' },
-          { desc: 'Faucet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Braided Supply Line 20"', qty: 2, unitCost: 8, unitPrice: 14, unit: 'ea', type: 'material' },
-          { desc: 'Quarter-Turn Angle Stop (Shutoff)', qty: 2, unitCost: 13, unitPrice: 22, unit: 'ea', type: 'material' },
+        low: { label: 'Standard', priceRange: 'Glacier Bay 2-Handle ~$37', lines: [
+          { desc: 'Glacier Bay Constructor 4 in. Centerset 2-Handle Low-Arc Bathroom Faucet in Chrome', qty: 1, unitCost: 29.98, unitPrice: 37.48, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay Constructor 4 in. Centerset 2-Handle Low-Arc Bathroom Faucet in Chrome', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
+          { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+          { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
+          { desc: 'Sharkbite Shutoff Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Mid-Grade', priceRange: '$160–$259', lines: [
-          { desc: 'Mid-Grade Single-Handle Faucet', qty: 1, unitCost: 139, unitPrice: 209, unit: 'ea', type: 'material' },
-          { desc: 'Faucet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Braided Supply Line 20"', qty: 2, unitCost: 8, unitPrice: 14, unit: 'ea', type: 'material' },
-          { desc: 'Quarter-Turn Angle Stop (Shutoff)', qty: 2, unitCost: 13, unitPrice: 22, unit: 'ea', type: 'material' },
+        med: { label: 'Mid-Grade', priceRange: 'Glacier Bay Pull-Out ~$136', lines: [
+          { desc: 'Glacier Bay Market Single-Handle Pull-Out Sprayer Kitchen Faucet in Chrome', qty: 1, unitCost: 109, unitPrice: 136.25, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay Market Single-Handle Pull-Out Sprayer Kitchen Faucet - Install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
+          { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+          { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
+          { desc: 'Sharkbite Shutoff Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Premium', priceRange: '$260+', lines: [
-          { desc: 'Premium Pull-Down Faucet (Moen/Delta)', qty: 1, unitCost: 219, unitPrice: 319, unit: 'ea', type: 'material' },
-          { desc: 'Faucet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Braided Supply Line 20"', qty: 2, unitCost: 8, unitPrice: 14, unit: 'ea', type: 'material' },
-          { desc: 'Quarter-Turn Angle Stop (Shutoff)', qty: 2, unitCost: 13, unitPrice: 22, unit: 'ea', type: 'material' },
+        high: { label: 'Premium', priceRange: 'Moen/Delta Premium ~$200+', lines: [
+          { desc: 'MOEN Adler Single-Handle 4-Spray Tub and Shower Faucet in Chrome', qty: 1, unitCost: 99, unitPrice: 123.75, unit: 'ea', type: 'material' },
+          { desc: 'MOEN Adler Faucet Install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
+          { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+          { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
+          { desc: 'Sharkbite Shutoff Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -8805,52 +8811,51 @@ const TIERED_BUNDLES = {
       icon: '🚽',
       desc: 'Full toilet swap with wax ring, supply line, and seat',
       tiers: {
-        low:  { label: 'Standard', priceRange: 'Under $199', lines: [
-          { desc: 'Round Toilet 1.28 GPF (Glacier Bay)', qty: 1, unitCost: 89, unitPrice: 139, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Seat', qty: 1, unitCost: 17, unitPrice: 28, unit: 'ea', type: 'material' },
-          { desc: 'Wax Ring with Horn + Bolts', qty: 1, unitCost: 7, unitPrice: 12, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Supply Line 12"', qty: 1, unitCost: 12, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Round Standard', priceRange: 'Glacier Bay 1.28 GPF ~$111', lines: [
+          { desc: 'Glacier Bay 2-Piece 1.28 GPF High Efficiency Single Flush Round Toilet in White', qty: 1, unitCost: 89, unitPrice: 111.25, unit: 'ea', type: 'material' },
+          { desc: 'Lift-Off Round Closed Front Toilet Seat in White', qty: 1, unitCost: 16.97, unitPrice: 21.21, unit: 'ea', type: 'material' },
+          { desc: 'Everbilt Extra Thick Reinforced Toilet Wax Ring with Plastic Horn and Bolts', qty: 1, unitCost: 6.98, unitPrice: 8.72, unit: 'ea', type: 'material' },
+          { desc: '3/8 in. Compression x 7/8 in. Ballcock Nut x 12 in. Braided Polymer Toilet Supply Line', qty: 1, unitCost: 12, unitPrice: 15, unit: 'ea', type: 'material' },
+          { desc: 'Labor to replace toilet', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Mid-Grade', priceRange: '$200–$349', lines: [
-          { desc: 'Elongated Toilet Dual-Flush 1.1/1.6 GPF', qty: 1, unitCost: 149, unitPrice: 229, unit: 'ea', type: 'material' },
-          { desc: 'Soft-Close Toilet Seat', qty: 1, unitCost: 29, unitPrice: 45, unit: 'ea', type: 'material' },
-          { desc: 'Wax Ring with Horn + Bolts', qty: 1, unitCost: 7, unitPrice: 12, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Supply Line 12"', qty: 1, unitCost: 12, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: 'Dual Flush', priceRange: 'Glacier Bay Dual Flush ~$124', lines: [
+          { desc: 'Glacier Bay 2-piece 1.1 GPF/1.6 GPF High Efficiency Dual Flush Complete Toilet in White', qty: 1, unitCost: 99, unitPrice: 123.75, unit: 'ea', type: 'material' },
+          { desc: 'Lift-Off Round Closed Front Toilet Seat in White', qty: 1, unitCost: 16.97, unitPrice: 21.21, unit: 'ea', type: 'material' },
+          { desc: 'Everbilt Extra Thick Reinforced Toilet Wax Ring with Plastic Horn and Bolts', qty: 1, unitCost: 6.98, unitPrice: 8.72, unit: 'ea', type: 'material' },
+          { desc: '3/8 in. Compression x 7/8 in. Ballcock Nut x 12 in. Braided Polymer Toilet Supply Line', qty: 1, unitCost: 12, unitPrice: 15, unit: 'ea', type: 'material' },
+          { desc: 'Labor to replace toilet', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Premium', priceRange: '$350+', lines: [
-          { desc: 'Power Flush Elongated Toilet Extra Tall', qty: 1, unitCost: 229, unitPrice: 349, unit: 'ea', type: 'material' },
-          { desc: 'Soft-Close Toilet Seat', qty: 1, unitCost: 29, unitPrice: 45, unit: 'ea', type: 'material' },
-          { desc: 'Wax Ring with Horn + Bolts', qty: 1, unitCost: 7, unitPrice: 12, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Supply Line 12"', qty: 1, unitCost: 12, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'Toilet Installation Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Power Flush Elongated', priceRange: 'Power Flush Tall ~$229', lines: [
+          { desc: 'Power Flush 2-Piece 1.28 GPF Single Flush Extra Tall Elongated Toilet in White', qty: 1, unitCost: 183.08, unitPrice: 228.85, unit: 'ea', type: 'material' },
+          { desc: 'Lift-Off Round Closed Front Toilet Seat in White', qty: 1, unitCost: 16.97, unitPrice: 21.21, unit: 'ea', type: 'material' },
+          { desc: 'Everbilt Extra Thick Reinforced Toilet Wax Ring with Plastic Horn and Bolts', qty: 1, unitCost: 6.98, unitPrice: 8.72, unit: 'ea', type: 'material' },
+          { desc: '3/8 in. Compression x 7/8 in. Ballcock Nut x 12 in. Braided Polymer Toilet Supply Line', qty: 1, unitCost: 12, unitPrice: 15, unit: 'ea', type: 'material' },
+          { desc: 'Labor to replace toilet', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
       name: 'Kitchen Sink Install',
       icon: '🏠',
-      desc: 'Drop-in sink with drain basket, P-trap, and supply connections',
+      desc: 'Drop-in sink with strainer, P-trap, and labor',
       tiers: {
-        low:  { label: 'Single Bowl', priceRange: 'Under $149', lines: [
-          { desc: 'Single Bowl Stainless Steel Sink 25"', qty: 1, unitCost: 69, unitPrice: 109, unit: 'ea', type: 'material' },
-          { desc: 'Kitchen Sink Strainer', qty: 1, unitCost: 11, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'P-Trap White Plastic 1-1/2"', qty: 1, unitCost: 5, unitPrice: 9, unit: 'ea', type: 'material' },
-          { desc: 'Kitchen Sink Installation Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Single Bowl 25"', priceRange: 'Glacier Bay Single ~$86', lines: [
+          { desc: 'Glacier Bay 25 in. Drop-in Single Bowl 22 Gauge Stainless Steel Kitchen Sink', qty: 1, unitCost: 69, unitPrice: 86.25, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay Fixed Post Kitchen Sink Strainer - Stainless steel with Chrome Finish', qty: 1, unitCost: 10.77, unitPrice: 13.46, unit: 'ea', type: 'material' },
+          { desc: '1-1/2 in. White Plastic Sink Drain P-Trap', qty: 1, unitCost: 4.68, unitPrice: 5.85, unit: 'ea', type: 'material' },
+          { desc: 'Kitchen Sink Install Labor', qty: 1, unitCost: 300, unitPrice: 345, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Double Bowl', priceRange: '$150–$299', lines: [
-          { desc: 'Double Bowl Stainless Steel Sink 33"', qty: 1, unitCost: 119, unitPrice: 179, unit: 'ea', type: 'material' },
-          { desc: 'Kitchen Sink Strainer', qty: 2, unitCost: 11, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'P-Trap White Plastic 1-1/2"', qty: 1, unitCost: 5, unitPrice: 9, unit: 'ea', type: 'material' },
-          { desc: 'Double Sink Drain Line Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Kitchen Sink Installation Labor', qty: 2.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: 'Double Bowl 33"', priceRange: 'Glacier Bay Double ~$99', lines: [
+          { desc: 'GLACIER BAY 33 in. Drop-in Double Bowl 22 Gauge Stainless Steel Kitchen Sink', qty: 1, unitCost: 79, unitPrice: 98.75, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay Fixed Post Kitchen Sink Strainer - Stainless steel with Chrome Finish', qty: 2, unitCost: 10.77, unitPrice: 13.46, unit: 'ea', type: 'material' },
+          { desc: '1-1/2 in. White Plastic Sink Drain P-Trap', qty: 1, unitCost: 4.68, unitPrice: 5.85, unit: 'ea', type: 'material' },
+          { desc: 'Kitchen Sink Install Labor', qty: 1, unitCost: 300, unitPrice: 345, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Undermount/Farmhouse', priceRange: '$300+', lines: [
-          { desc: 'Undermount/Farmhouse Sink', qty: 1, unitCost: 259, unitPrice: 389, unit: 'ea', type: 'material' },
-          { desc: 'Kitchen Sink Strainer', qty: 1, unitCost: 11, unitPrice: 18, unit: 'ea', type: 'material' },
-          { desc: 'P-Trap White Plastic 1-1/2"', qty: 1, unitCost: 5, unitPrice: 9, unit: 'ea', type: 'material' },
-          { desc: 'Kitchen Sink Installation Labor (undermount)', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Pedestal Sink', priceRange: 'Glacier Bay Pedestal ~$92', lines: [
+          { desc: 'Pedestal Sink (Glacier Bay Shelburne/Petite Aragon Pedestal in White)', qty: 1, unitCost: 73.75, unitPrice: 92.19, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay Fixed Post Kitchen Sink Strainer - Stainless steel with Chrome Finish', qty: 1, unitCost: 10.77, unitPrice: 13.46, unit: 'ea', type: 'material' },
+          { desc: '1-1/2 in. White Plastic Sink Drain P-Trap', qty: 1, unitCost: 4.68, unitPrice: 5.85, unit: 'ea', type: 'material' },
+          { desc: 'Kitchen Sink Install Labor', qty: 1, unitCost: 300, unitPrice: 345, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -8859,39 +8864,39 @@ const TIERED_BUNDLES = {
       icon: '🛁',
       desc: 'Tub or shower valve replacement with trim kit',
       tiers: {
-        low:  { label: 'Standard Chrome', priceRange: 'Under $149', lines: [
-          { desc: 'Tub/Shower Faucet 1-Handle Chrome', qty: 1, unitCost: 89, unitPrice: 139, unit: 'ea', type: 'material' },
-          { desc: 'Shower Valve Replacement Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Glacier Bay Aragon Chrome', priceRange: '~$124', lines: [
+          { desc: 'Glacier Bay Aragon 3 Handle 1-Spray Tub and Shower Faucet 1.8 GPM in Chrome', qty: 1, unitCost: 99, unitPrice: 123.75, unit: 'ea', type: 'material' },
+          { desc: 'Shower Valve Replacement Labor', qty: 1, unitCost: 150, unitPrice: 172.50, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Matte Black / BN', priceRange: '$150–$249', lines: [
-          { desc: 'Tub/Shower Faucet Matte Black (Moen/Delta)', qty: 1, unitCost: 149, unitPrice: 229, unit: 'ea', type: 'material' },
-          { desc: 'Shower Valve Replacement Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: 'Moen Adler Chrome', priceRange: '~$124', lines: [
+          { desc: 'MOEN Adler Single-Handle 4-Spray Tub and Shower Faucet in Chrome', qty: 1, unitCost: 99, unitPrice: 123.75, unit: 'ea', type: 'material' },
+          { desc: 'Shower Valve Replacement Labor', qty: 1, unitCost: 150, unitPrice: 172.50, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Full System', priceRange: '$250+', lines: [
-          { desc: 'Premium Shower System with Rainhead', qty: 1, unitCost: 259, unitPrice: 389, unit: 'ea', type: 'material' },
-          { desc: 'Shower Valve Replacement Labor', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Banbury Trim Kit Matte Black', priceRange: '~$207', lines: [
+          { desc: 'Banbury 1-Handle 1-Spray Trim Kit Tub and Shower Faucet 1.75 GPM in Matte Black', qty: 1, unitCost: 165.62, unitPrice: 207.03, unit: 'ea', type: 'material' },
+          { desc: 'Shower Valve Replacement Labor', qty: 1, unitCost: 150, unitPrice: 172.50, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
       name: 'Water Heater Replace',
       icon: '🔥',
-      desc: 'Water heater swap, disconnect old unit, connect new',
+      desc: 'Water heater swap with expansion tank',
       tiers: {
-        low:  { label: '30 Gal Electric', priceRange: 'Under $749', lines: [
-          { desc: 'Water Heater 30 gal Electric', qty: 1, unitCost: 419, unitPrice: 579, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 30, unitPrice: 48, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Installation Labor', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '40 gal Electric', priceRange: '~$524 + labor', lines: [
+          { desc: 'Water heater - 40 gal, tall, electric', qty: 1, unitCost: 419, unitPrice: 523.75, unit: 'ea', type: 'material' },
+          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 29.88, unitPrice: 37.35, unit: 'ea', type: 'material' },
+          { desc: 'Water heater - 40 gal, tall, electric Install Labor', qty: 3, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '40 Gal Gas', priceRange: '$750–$1,099', lines: [
-          { desc: 'Water Heater 40 gal Natural Gas', qty: 1, unitCost: 549, unitPrice: 749, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 30, unitPrice: 48, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Installation Labor', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '40 gal Natural Gas', priceRange: '~$874 + labor', lines: [
+          { desc: 'Water heater - 40 gal, tall, natural gas', qty: 1, unitCost: 699, unitPrice: 873.75, unit: 'ea', type: 'material' },
+          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 29.88, unitPrice: 37.35, unit: 'ea', type: 'material' },
+          { desc: 'Water heater - 40 gal, tall, natural gas Install Labor', qty: 3, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '50 Gal Gas', priceRange: '$1,100+', lines: [
-          { desc: 'Water Heater 50 gal Natural Gas', qty: 1, unitCost: 699, unitPrice: 949, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 30, unitPrice: 48, unit: 'ea', type: 'material' },
-          { desc: 'Water Heater Installation Labor', qty: 3.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '50 gal Natural Gas', priceRange: '~$999 + labor', lines: [
+          { desc: 'Water heater - 50 gal, tall, natural gas', qty: 1, unitCost: 799, unitPrice: 998.75, unit: 'ea', type: 'material' },
+          { desc: 'Water Heater Expansion Tank', qty: 1, unitCost: 29.88, unitPrice: 37.35, unit: 'ea', type: 'material' },
+          { desc: 'Water heater - 50 gal, tall, natural gas Install Labor', qty: 3, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -8900,38 +8905,38 @@ const TIERED_BUNDLES = {
     {
       name: 'Ceiling Fan Install',
       icon: '🌀',
-      desc: 'Fan install with light kit at existing junction box',
+      desc: 'Fan install at existing junction box',
       tiers: {
-        low:  { label: '42" Basic', priceRange: 'Under $149', lines: [
-          { desc: 'Ceiling Fan 42" with Light Kit', qty: 1, unitCost: 75, unitPrice: 119, unit: 'ea', type: 'material' },
-          { desc: 'Ceiling Fan Install Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '42" Littleton White', priceRange: '~$56', lines: [
+          { desc: 'Littleton 42 in. LED Indoor White Ceiling Fan with Light Kit', qty: 1, unitCost: 44.97, unitPrice: 56.21, unit: 'ea', type: 'material' },
+          { desc: 'Ceiling fan install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '52" Mid-Grade', priceRange: '$150–$299', lines: [
-          { desc: 'Ceiling Fan 52" LED with Remote', qty: 1, unitCost: 149, unitPrice: 229, unit: 'ea', type: 'material' },
-          { desc: 'Ceiling Fan Install Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '44" Hampton Bay Bronze', priceRange: '~$94', lines: [
+          { desc: 'Hampton Bay Wellston II 44 in. Indoor LED Bronze Dry Rated Downrod Ceiling Fan with Light', qty: 1, unitCost: 74.97, unitPrice: 93.71, unit: 'ea', type: 'material' },
+          { desc: 'Ceiling fan install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '52" Premium', priceRange: '$300+', lines: [
-          { desc: 'Ceiling Fan 52" Premium Hampton Bay w/ Remote', qty: 1, unitCost: 229, unitPrice: 349, unit: 'ea', type: 'material' },
-          { desc: 'Ceiling Fan Install Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '52" Hampton Bay Menage', priceRange: '~$136', lines: [
+          { desc: 'Hampton Bay Menage 52 in. Integrated LED Indoor Low Profile Oil Rubbed Bronze Ceiling Fan', qty: 1, unitCost: 109, unitPrice: 136.25, unit: 'ea', type: 'material' },
+          { desc: 'Ceiling fan install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
-      name: 'Light Fixture Replace',
+      name: 'Flush Mount Light',
       icon: '💡',
-      desc: 'Swap existing fixture at existing box',
+      desc: 'Swap flush mount light at existing box',
       tiers: {
-        low:  { label: 'Flush Mount Basic', priceRange: 'Under $79', lines: [
-          { desc: 'LED Flush Mount Light Fixture', qty: 1, unitCost: 28, unitPrice: 55, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 0.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '11" Brushed Nickel', priceRange: '~$28', lines: [
+          { desc: '11 in. 1-Light Brushed Nickel Flush Mount with Frosted Glass', qty: 1, unitCost: 22.47, unitPrice: 28.09, unit: 'ea', type: 'material' },
+          { desc: 'Flush mount light install labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Mid-Grade Fixture', priceRange: '$80–$179', lines: [
-          { desc: 'LED Flush Mount 15" Mid-Grade (2-Pack)', qty: 1, unitCost: 60, unitPrice: 99, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 0.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '15" Mid-Grade', priceRange: '~$47', lines: [
+          { desc: '11 in. 1-Light Brushed Nickel Flush Mount with Frosted Glass', qty: 1, unitCost: 37.98, unitPrice: 47.47, unit: 'ea', type: 'material' },
+          { desc: 'Flush mount light install labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Chandelier/Pendant', priceRange: '$180+', lines: [
-          { desc: 'Chandelier or Pendant Light Premium', qty: 1, unitCost: 149, unitPrice: 229, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Sconce/Premium', priceRange: '~$57+', lines: [
+          { desc: '1-Light Oil Rubbed Bronze Sconce with Tea Stained Glass Shade', qty: 1, unitCost: 25.97, unitPrice: 32.46, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Sconce', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -8940,59 +8945,67 @@ const TIERED_BUNDLES = {
       icon: '🪞',
       desc: 'Bathroom vanity bar light swap',
       tiers: {
-        low:  { label: '3-Light Bar', priceRange: 'Under $79', lines: [
-          { desc: 'Vanity Light 3-Bar Brushed Nickel 18"', qty: 1, unitCost: 35, unitPrice: 59, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 0.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '3-Light Raceway BN', priceRange: '~$19', lines: [
+          { desc: 'Hampton Bay 18 in. Raceway 3-Light Brushed Nickel Retro Bathroom Vanity Light', qty: 1, unitCost: 14.97, unitPrice: 18.71, unit: 'ea', type: 'material' },
+          { desc: 'Flush mount light install labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '3-Light Mid-Grade', priceRange: '$80–$159', lines: [
-          { desc: 'Vanity Light 3-Light Oil Rubbed Bronze', qty: 1, unitCost: 80, unitPrice: 125, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 0.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '3-Light Oil Rubbed Bronze', priceRange: '~$100', lines: [
+          { desc: 'Hampton Bay 3-Light 21 in. Oil-Rubbed Bronze Contemporary Bathroom Vanity Light', qty: 1, unitCost: 79.97, unitPrice: 99.96, unit: 'ea', type: 'material' },
+          { desc: 'Flush mount light install labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '4-Light Premium', priceRange: '$160+', lines: [
-          { desc: 'Vanity Light 4-Light Premium Hampton Bay', qty: 1, unitCost: 130, unitPrice: 199, unit: 'ea', type: 'material' },
-          { desc: 'Flush Mount Light Install Labor', qty: 0.75, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '3-Light Regan BN', priceRange: '~$112', lines: [
+          { desc: 'Hampton Bay Regan 21 in. 3-Light Brushed Nickel Bathroom Vanity Light', qty: 1, unitCost: 89.97, unitPrice: 112.46, unit: 'ea', type: 'material' },
+          { desc: 'Flush mount light install labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
       name: 'GFCI Outlet Install',
       icon: '🔌',
-      desc: 'GFCI outlet install at existing box',
+      desc: 'GFCI outlet install at existing box with wall plate',
       tiers: {
-        low:  { label: 'Single GFCI', priceRange: 'Single outlet', lines: [
-          { desc: '15A GFCI Outlet Self-Test White', qty: 1, unitCost: 14, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'GFCI Install Labor', qty: 0.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Wall Plate White 1-Gang', qty: 1, unitCost: 1, unitPrice: 3, unit: 'ea', type: 'material' },
+        low: { label: '1 Outlet', priceRange: '1 location', lines: [
+          { desc: '15 Amp Self-Test SmartlockPro Slim Duplex GFCI Outlet, White', qty: 1, unitCost: 13.98, unitPrice: 17.48, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Duplex Outlet Wall Plate, White', qty: 1, unitCost: 0.48, unitPrice: 0.60, unit: 'ea', type: 'material' },
+          { desc: 'GFCI Install Labor', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install wall plate', qty: 1, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '2 Outlets', priceRange: '2 outlets', lines: [
-          { desc: '15A GFCI Outlet Self-Test White', qty: 2, unitCost: 14, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'GFCI Install Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Wall Plate White 1-Gang', qty: 2, unitCost: 1, unitPrice: 3, unit: 'ea', type: 'material' },
+        med: { label: '2 Outlets', priceRange: '2 locations', lines: [
+          { desc: '15 Amp Self-Test SmartlockPro Slim Duplex GFCI Outlet, White', qty: 2, unitCost: 13.98, unitPrice: 17.48, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Duplex Outlet Wall Plate, White', qty: 2, unitCost: 0.48, unitPrice: 0.60, unit: 'ea', type: 'material' },
+          { desc: 'GFCI Install Labor', qty: 2, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install wall plate', qty: 2, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '4 Outlets', priceRange: '4 outlets', lines: [
-          { desc: '15A GFCI Outlet Self-Test White', qty: 4, unitCost: 14, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'GFCI Install Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Wall Plate White 1-Gang', qty: 4, unitCost: 1, unitPrice: 3, unit: 'ea', type: 'material' },
+        high: { label: '4 Outlets', priceRange: '4 locations', lines: [
+          { desc: '15 Amp Self-Test SmartlockPro Slim Duplex GFCI Outlet, White', qty: 4, unitCost: 13.98, unitPrice: 17.48, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Duplex Outlet Wall Plate, White', qty: 4, unitCost: 0.48, unitPrice: 0.60, unit: 'ea', type: 'material' },
+          { desc: 'GFCI Install Labor', qty: 4, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install wall plate', qty: 4, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
-      name: 'Smoke Detector Install',
-      icon: '🔴',
-      desc: 'Battery smoke detector install',
+      name: 'Light Switch Install',
+      icon: '🔆',
+      desc: 'Toggle switch replacement with wall plate',
       tiers: {
-        low:  { label: '1 Detector', priceRange: '1 unit', lines: [
-          { desc: 'Kidde Battery Smoke Detector', qty: 1, unitCost: 16, unitPrice: 28, unit: 'ea', type: 'material' },
-          { desc: 'Smoke Detector Install Labor', qty: 0.25, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '1 Switch', priceRange: '1 location', lines: [
+          { desc: '15 Amp Single-Pole Toggle Light Switch, White', qty: 1, unitCost: 0.85, unitPrice: 1.06, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Midway Toggle Nylon Wall Plate, White', qty: 1, unitCost: 0.58, unitPrice: 0.73, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install switch', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install switch wall plate', qty: 1, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '3 Detectors', priceRange: '3 units', lines: [
-          { desc: 'Kidde Battery Smoke Detector', qty: 3, unitCost: 16, unitPrice: 28, unit: 'ea', type: 'material' },
-          { desc: 'Smoke Detector Install Labor', qty: 0.75, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '3 Switches', priceRange: '3 locations', lines: [
+          { desc: '15 Amp Single-Pole Toggle Light Switch, White', qty: 3, unitCost: 0.85, unitPrice: 1.06, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Midway Toggle Nylon Wall Plate, White', qty: 3, unitCost: 0.58, unitPrice: 0.73, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install switch', qty: 3, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install switch wall plate', qty: 3, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '6 Detectors', priceRange: '6 units', lines: [
-          { desc: 'Kidde Battery Smoke Detector', qty: 6, unitCost: 16, unitPrice: 28, unit: 'ea', type: 'material' },
-          { desc: 'CO Detector Battery Operated', qty: 1, unitCost: 19, unitPrice: 32, unit: 'ea', type: 'material' },
-          { desc: 'Smoke Detector Install Labor', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '6 Switches', priceRange: '6 locations', lines: [
+          { desc: '15 Amp Single-Pole Toggle Light Switch, White', qty: 6, unitCost: 0.85, unitPrice: 1.06, unit: 'ea', type: 'material' },
+          { desc: '1-Gang Midway Toggle Nylon Wall Plate, White', qty: 6, unitCost: 0.58, unitPrice: 0.73, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install switch', qty: 6, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install switch wall plate', qty: 6, unitCost: 5, unitPrice: 5.75, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -9003,42 +9016,41 @@ const TIERED_BUNDLES = {
       icon: '🪵',
       desc: 'Luxury vinyl plank install per room, includes transition strip',
       tiers: {
-        low:  { label: '4.5mm/12mil', priceRange: '$1.89/sqft material', lines: [
-          { desc: 'LVP 4.5mm/12mil (sqft)', qty: 200, unitCost: 1.89, unitPrice: 2.99, unit: 'sqft', type: 'material' },
-          { desc: 'LVP Flooring Labor (sqft)', qty: 200, unitCost: 5, unitPrice: 7, unit: 'sqft', type: 'labor' },
-          { desc: 'Transition Strip', qty: 1, unitCost: 40, unitPrice: 65, unit: 'ea', type: 'material' },
-          { desc: 'Transition Strip Labor', qty: 1, unitCost: 35, unitPrice: 55, unit: 'hr', type: 'labor' },
+        low: { label: 'LVP Aspen 4.5mm/12mil', priceRange: '$2.36/sqft material', lines: [
+          { desc: 'LVP: Aspen, 7"x48"x4.5mm/12mil', qty: 200, unitCost: 1.89, unitPrice: 2.36, unit: 'sqft', type: 'material' },
+          { desc: 'LVP Flooring Labor', qty: 200, unitCost: 5, unitPrice: 5.75, unit: 'sqft', type: 'labor' },
+          { desc: 'CAP A TREAD Burnt Oak 47 in. L x 12.15 in. W x 1.69 in. T Vinyl Transition Strip', qty: 1, unitCost: 63, unitPrice: 78.75, unit: 'ea', type: 'material' },
+          { desc: 'Transition Strip Labor', qty: 1, unitCost: 35, unitPrice: 40.25, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '5mm/20mil', priceRange: '$2.09/sqft material', lines: [
-          { desc: 'LVP 5mm/20mil (sqft)', qty: 200, unitCost: 2.09, unitPrice: 3.29, unit: 'sqft', type: 'material' },
-          { desc: 'LVP Flooring Labor (sqft)', qty: 200, unitCost: 5, unitPrice: 7, unit: 'sqft', type: 'labor' },
-          { desc: 'Transition Strip', qty: 1, unitCost: 40, unitPrice: 65, unit: 'ea', type: 'material' },
-          { desc: 'Transition Strip Labor', qty: 1, unitCost: 35, unitPrice: 55, unit: 'hr', type: 'labor' },
+        med: { label: 'LVP Ash Gray 5mm/20mil', priceRange: '$2.61/sqft material', lines: [
+          { desc: 'LVP: Ash Gray, 7"x48"x5mm/20mil', qty: 200, unitCost: 2.09, unitPrice: 2.61, unit: 'sqft', type: 'material' },
+          { desc: 'LVP Flooring Labor', qty: 200, unitCost: 5, unitPrice: 5.75, unit: 'sqft', type: 'labor' },
+          { desc: 'CAP A TREAD Burnt Oak 47 in. L x 12.15 in. W x 1.69 in. T Vinyl Transition Strip', qty: 1, unitCost: 63, unitPrice: 78.75, unit: 'ea', type: 'material' },
+          { desc: 'Transition Strip Labor', qty: 1, unitCost: 35, unitPrice: 40.25, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '6.5mm/24mil', priceRange: '$2.39/sqft material', lines: [
-          { desc: 'LVP 6.5mm/24mil (sqft)', qty: 200, unitCost: 2.39, unitPrice: 3.79, unit: 'sqft', type: 'material' },
-          { desc: 'LVP Flooring Labor (sqft)', qty: 200, unitCost: 5, unitPrice: 7, unit: 'sqft', type: 'labor' },
-          { desc: 'Transition Strip', qty: 2, unitCost: 40, unitPrice: 65, unit: 'ea', type: 'material' },
-          { desc: 'Transition Strip Labor', qty: 2, unitCost: 35, unitPrice: 55, unit: 'hr', type: 'labor' },
+        high: { label: 'LVP Ash Gray 6.5mm/24mil', priceRange: '$2.99/sqft material', lines: [
+          { desc: 'LVP: Ash Gray, 7"x48"x6.5mm/24mil', qty: 200, unitCost: 2.39, unitPrice: 2.99, unit: 'sqft', type: 'material' },
+          { desc: 'LVP Flooring Labor', qty: 200, unitCost: 5, unitPrice: 5.75, unit: 'sqft', type: 'labor' },
+          { desc: 'CAP A TREAD Burnt Oak 47 in. L x 12.15 in. W x 1.69 in. T Vinyl Transition Strip', qty: 2, unitCost: 63, unitPrice: 78.75, unit: 'ea', type: 'material' },
+          { desc: 'Transition Strip Labor', qty: 2, unitCost: 35, unitPrice: 40.25, unit: 'hr', type: 'labor' },
         ]},
       }
     },
     {
       name: 'Carpet Remove & Replace',
       icon: '🏠',
-      desc: 'Pull existing carpet, install new carpet',
+      desc: 'Pull existing carpet, install new',
       tiers: {
-        low:  { label: 'Budget Carpet', priceRange: '$2.50/sqft', lines: [
-          { desc: 'Carpet Removal Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Carpet Replacement (sqft)', qty: 200, unitCost: 2.50, unitPrice: 3.99, unit: 'sqft', type: 'material' },
+        low: { label: 'Carpet Removal Only', priceRange: 'Labor per hour', lines: [
+          { desc: 'Carpet removal', qty: 4, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Standard Carpet', priceRange: '$3.50/sqft', lines: [
-          { desc: 'Carpet Removal Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Carpet Replacement (sqft)', qty: 200, unitCost: 3.50, unitPrice: 5.49, unit: 'sqft', type: 'material' },
+        med: { label: 'Remove + Replace', priceRange: '$4.43/sqft installed', lines: [
+          { desc: 'Carpet removal', qty: 2, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Carpet replacement (sqft)', qty: 200, unitCost: 3.54, unitPrice: 4.43, unit: 'sqft', type: 'material' },
         ]},
-        high: { label: 'Premium Carpet', priceRange: '$5.00/sqft', lines: [
-          { desc: 'Carpet Removal Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-          { desc: 'Carpet Replacement (sqft)', qty: 200, unitCost: 5.00, unitPrice: 7.99, unit: 'sqft', type: 'material' },
+        high: { label: 'Devon Oak LVP Alternative', priceRange: '$3.14/sqft + labor', lines: [
+          { desc: 'Devon Oak 6 in. x 36 in. Rigid Core Luxury Vinyl Plank Flooring', qty: 200, unitCost: 1.99, unitPrice: 3.14, unit: 'sqft', type: 'material' },
+          { desc: 'LVP Flooring Labor', qty: 200, unitCost: 5, unitPrice: 5.75, unit: 'sqft', type: 'labor' },
         ]},
       }
     },
@@ -9047,84 +9059,75 @@ const TIERED_BUNDLES = {
     {
       name: 'Paint Room',
       icon: '🎨',
-      desc: 'Walls + ceiling, 2 coats, includes prep and materials',
+      desc: '2 coats walls + ceiling, includes labor and materials',
       tiers: {
-        low:  { label: 'Small Room', priceRange: 'Up to 150 sqft', lines: [
-          { desc: 'Paint/sqft - 2 coats', qty: 400, unitCost: 0.06, unitPrice: 0.35, unit: 'sqft', type: 'material' },
-          { desc: 'Paint Labor for 1 coat per sq ft', qty: 400, unitCost: 3.00, unitPrice: 4.50, unit: 'sqft', type: 'labor' },
-          { desc: 'Patch Wall/Holes', qty: 1, unitCost: 25, unitPrice: 45, unit: 'ea', type: 'material' },
+        low: { label: '1 Coat per sqft', priceRange: '$3.45/sqft labor', lines: [
+          { desc: 'Mud/Tape per sqft', qty: 400, unitCost: 0.05, unitPrice: 0.06, unit: 'sqft', type: 'material' },
+          { desc: 'Paint Labor for 1 coat per sq ft', qty: 400, unitCost: 3.00, unitPrice: 3.45, unit: 'sqft', type: 'labor' },
+          { desc: 'Patch wall/holes', qty: 1, unitCost: 9.48, unitPrice: 11.85, unit: 'ea', type: 'material' },
+          { desc: '9 in. x 3/8 in. High-Density Polyester Knit Paint Roller Cover', qty: 1, unitCost: 8.48, unitPrice: 10.60, unit: 'ea', type: 'material' },
+          { desc: '3M ScotchBlue 1.88 in. x 60 yds. Original Multi-Surface Painter\'s Tape', qty: 1, unitCost: 39.48, unitPrice: 49.35, unit: 'ea', type: 'material' },
         ]},
-        med:  { label: 'Medium Room', priceRange: '150–300 sqft', lines: [
-          { desc: 'Paint/sqft - 2 coats', qty: 800, unitCost: 0.06, unitPrice: 0.35, unit: 'sqft', type: 'material' },
-          { desc: 'Paint Labor for 1 coat per sq ft', qty: 800, unitCost: 3.00, unitPrice: 4.50, unit: 'sqft', type: 'labor' },
-          { desc: 'Patch Wall/Holes', qty: 2, unitCost: 25, unitPrice: 45, unit: 'ea', type: 'material' },
+        med: { label: '2 Coats per sqft', priceRange: '$4.07/sqft labor', lines: [
+          { desc: 'Mud/Tape per sqft', qty: 400, unitCost: 0.05, unitPrice: 0.06, unit: 'sqft', type: 'material' },
+          { desc: 'Paint/sqft - 1 coat', qty: 400, unitCost: 0.10, unitPrice: 0.46, unit: 'sqft', type: 'material' },
+          { desc: 'Paint Labor for 2 coat per sq ft', qty: 400, unitCost: 3.00, unitPrice: 4.07, unit: 'sqft', type: 'labor' },
+          { desc: 'Patch wall/holes', qty: 2, unitCost: 9.48, unitPrice: 11.85, unit: 'ea', type: 'material' },
+          { desc: '9 in. x 3/8 in. High-Density Polyester Knit Paint Roller Cover', qty: 2, unitCost: 8.48, unitPrice: 10.60, unit: 'ea', type: 'material' },
+          { desc: '3M ScotchBlue 1.88 in. x 60 yds. Original Multi-Surface Painter\'s Tape', qty: 1, unitCost: 39.48, unitPrice: 49.35, unit: 'ea', type: 'material' },
         ]},
-        high: { label: 'Large Room', priceRange: '300+ sqft', lines: [
-          { desc: 'Paint/sqft - 2 coats', qty: 1400, unitCost: 0.06, unitPrice: 0.35, unit: 'sqft', type: 'material' },
-          { desc: 'Paint Labor for 1 coat per sq ft', qty: 1400, unitCost: 3.00, unitPrice: 4.50, unit: 'sqft', type: 'labor' },
-          { desc: 'Patch Wall/Holes', qty: 3, unitCost: 25, unitPrice: 45, unit: 'ea', type: 'material' },
+        high: { label: 'Full Room with Caulk', priceRange: '2 coats + caulk finish', lines: [
+          { desc: 'Mud/Tape per sqft', qty: 800, unitCost: 0.05, unitPrice: 0.06, unit: 'sqft', type: 'material' },
+          { desc: 'Paint/sqft - 1 coat', qty: 800, unitCost: 0.10, unitPrice: 0.46, unit: 'sqft', type: 'material' },
+          { desc: 'Paint Labor for 2 coat per sq ft', qty: 800, unitCost: 3.00, unitPrice: 4.07, unit: 'sqft', type: 'labor' },
+          { desc: 'Patch wall/holes', qty: 3, unitCost: 9.48, unitPrice: 11.85, unit: 'ea', type: 'material' },
+          { desc: 'GE Advanced Silicone 2 10.1 oz. White Kitchen and Bath Silicone', qty: 2, unitCost: 10.98, unitPrice: 13.73, unit: 'ea', type: 'material' },
+          { desc: 'Caulk Labor', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: '9 in. x 3/8 in. High-Density Polyester Knit Paint Roller Cover', qty: 2, unitCost: 8.48, unitPrice: 10.60, unit: 'ea', type: 'material' },
+          { desc: '3M ScotchBlue 1.88 in. x 60 yds. Original Multi-Surface Painter\'s Tape', qty: 2, unitCost: 39.48, unitPrice: 49.35, unit: 'ea', type: 'material' },
         ]},
       }
     },
     {
       name: 'Paint Exterior Door',
       icon: '🚪',
-      desc: 'Interior and exterior of one door, includes prep',
+      desc: 'Interior and exterior of doors, includes prep',
       tiers: {
-        low:  { label: '1 Door', priceRange: '1 door', lines: [
-          { desc: 'Paint Exterior Door (Inside & Out)', qty: 1, unitCost: 2.80, unitPrice: 49, unit: 'ea', type: 'material' },
-          { desc: 'Caulk Labor', qty: 0.5, unitCost: 25, unitPrice: 40, unit: 'hr', type: 'labor' },
+        low: { label: '1 Door', priceRange: '1 door', lines: [
+          { desc: 'Paint Exterior Door (Inside & Out)', qty: 1, unitCost: 2.80, unitPrice: 3.50, unit: 'ea', type: 'material' },
+          { desc: 'Caulk Labor', qty: 0.5, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '2 Doors', priceRange: '2 doors', lines: [
-          { desc: 'Paint Exterior Door (Inside & Out)', qty: 2, unitCost: 2.80, unitPrice: 49, unit: 'ea', type: 'material' },
-          { desc: 'Caulk Labor', qty: 1, unitCost: 25, unitPrice: 40, unit: 'hr', type: 'labor' },
+        med: { label: '2 Doors', priceRange: '2 doors', lines: [
+          { desc: 'Paint Exterior Door (Inside & Out)', qty: 2, unitCost: 2.80, unitPrice: 3.50, unit: 'ea', type: 'material' },
+          { desc: 'Caulk Labor', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
         ]},
         high: { label: '4 Doors', priceRange: '4 doors', lines: [
-          { desc: 'Paint Exterior Door (Inside & Out)', qty: 4, unitCost: 2.80, unitPrice: 49, unit: 'ea', type: 'material' },
-          { desc: 'Caulk Labor', qty: 2, unitCost: 25, unitPrice: 40, unit: 'hr', type: 'labor' },
+          { desc: 'Paint Exterior Door (Inside & Out)', qty: 4, unitCost: 2.80, unitPrice: 3.50, unit: 'ea', type: 'material' },
+          { desc: 'Caulk Labor', qty: 2, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
         ]},
       }
     },
   ],
   '1900 Cabinetry': [
     {
-      name: 'Cabinet Install',
-      icon: '🗄',
-      desc: 'Upper or base cabinet install (per cabinet)',
-      tiers: {
-        low:  { label: 'Base Cabinet', priceRange: 'Per base cabinet', lines: [
-          { desc: 'Base Cabinet Shaker White 24"x34.5"x24"', qty: 1, unitCost: 219, unitPrice: 319, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install base cabinet', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-        ]},
-        med:  { label: 'Wall Cabinet', priceRange: 'Per wall cabinet', lines: [
-          { desc: 'Wall Cabinet Shaker White 36"x42"x12"', qty: 1, unitCost: 280, unitPrice: 409, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install base cabinet', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-        ]},
-        high: { label: 'Pantry Cabinet', priceRange: 'Full pantry', lines: [
-          { desc: 'Pantry Cabinet Shaker White 24"x90"x24"', qty: 1, unitCost: 655, unitPrice: 949, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install base cabinet', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-        ]},
-      }
-    },
-    {
-      name: 'Bathroom Vanity',
+      name: 'Bathroom Vanity Install',
       icon: '🪞',
-      desc: 'Vanity with top, sink basin, and faucet rough-in',
+      desc: 'Vanity with top, mirror, and install labor',
       tiers: {
-        low:  { label: '24" Standard', priceRange: 'Under $299', lines: [
-          { desc: 'Vanity 24" White with Cultured Marble Top', qty: 1, unitCost: 149, unitPrice: 229, unit: 'ea', type: 'material' },
-          { desc: 'Labor for vanity install', qty: 1, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-          { desc: 'Faucet Installation Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '24.5" Glacier Bay Freestanding', priceRange: '~$186', lines: [
+          { desc: 'Glacier Bay 24.5 in. W x 18.6 in. D x 35.4 in. H Freestanding Bath Vanity in White', qty: 1, unitCost: 149, unitPrice: 186.25, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay 30 in. W x 36 in. H Frameless Rectangular Beveled Edge Bathroom Vanity Mirror', qty: 1, unitCost: 49.97, unitPrice: 62.46, unit: 'ea', type: 'material' },
+          { desc: 'Labor for vanity install', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '30" Mid-Grade', priceRange: '$300–$549', lines: [
-          { desc: 'Vanity 30" White with Cultured Marble Top', qty: 1, unitCost: 299, unitPrice: 449, unit: 'ea', type: 'material' },
-          { desc: 'Labor for vanity install', qty: 1.5, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-          { desc: 'Faucet Installation Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '31" Vanity with Cultured Marble Top', priceRange: '~$249', lines: [
+          { desc: '31 in. W Vanity in White with Cultured Marble Vanity Top in White by Glacier Bay', qty: 1, unitCost: 199, unitPrice: 248.75, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay 30 in. W x 36 in. H Frameless Rectangular Beveled Edge Bathroom Vanity Mirror', qty: 1, unitCost: 49.97, unitPrice: 62.46, unit: 'ea', type: 'material' },
+          { desc: 'Labor for vanity install', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '36" Premium', priceRange: '$550+', lines: [
-          { desc: 'Vanity 36" Premium with Stone Top', qty: 1, unitCost: 489, unitPrice: 729, unit: 'ea', type: 'material' },
-          { desc: 'Labor for vanity install', qty: 2, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-          { desc: 'Faucet Installation Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '30" Bannister Freestanding', priceRange: '~$424', lines: [
+          { desc: 'Glacier Bay Bannister 30 in. W x 19 in. D x 35 in. H single Sink Freestanding Bath Vanity', qty: 1, unitCost: 339, unitPrice: 423.75, unit: 'ea', type: 'material' },
+          { desc: 'Glacier Bay 30 in. W x 36 in. H Frameless Rectangular Beveled Edge Bathroom Vanity Mirror', qty: 1, unitCost: 49.97, unitPrice: 62.46, unit: 'ea', type: 'material' },
+          { desc: 'Labor for vanity install', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -9135,17 +9138,19 @@ const TIERED_BUNDLES = {
       icon: '🪨',
       desc: 'Kitchen or bath countertop supply and install',
       tiers: {
-        low:  { label: 'Laminate', priceRange: 'Laminate/post-form', lines: [
-          { desc: 'Laminate Countertop 6ft Typhoon Ice', qty: 1, unitCost: 139, unitPrice: 209, unit: 'ea', type: 'material' },
-          { desc: 'Countertop Install Labor', qty: 2, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Wilsonart 6ft Laminate', priceRange: '~$174', lines: [
+          { desc: 'Hampton Bay Wilsonart 6 ft. Straight Laminate Countertop in White Ice', qty: 1, unitCost: 139, unitPrice: 173.75, unit: 'ea', type: 'material' },
+          { desc: 'Hampton Bay 4-5/8 in. x 25-5/8 in. Laminate Endcap Kit', qty: 1, unitCost: 27.98, unitPrice: 34.98, unit: 'ea', type: 'material' },
+          { desc: 'Laminate End Cap Kit Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+          { desc: 'Countertop Install Labor', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Resurfaced', priceRange: 'Resurfacing Plus', lines: [
-          { desc: 'Resurfacing Plus: Kitchen Countertops', qty: 1, unitCost: 155, unitPrice: 249, unit: 'ea', type: 'material' },
-          { desc: 'Countertop Install Labor', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: 'Hampton Bay 4ft Gray Laminate Kit', priceRange: '~$202', lines: [
+          { desc: 'Hampton Bay 4 ft. Gray Laminate Countertop Kit with Eased Edge', qty: 1, unitCost: 161.85, unitPrice: 202.31, unit: 'ea', type: 'material' },
+          { desc: 'Countertop Install Labor', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Stone/Granite', priceRange: '$55/sqft installed', lines: [
-          { desc: 'Stone Countertop install per sqft', qty: 25, unitCost: 55, unitPrice: 89, unit: 'sqft', type: 'material' },
-          { desc: 'Countertop Install Labor', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Stone per sqft', priceRange: '$68.75/sqft', lines: [
+          { desc: 'Stone Countertop install per sqft', qty: 25, unitCost: 55, unitPrice: 68.75, unit: 'sqft', type: 'material' },
+          { desc: 'Countertop Install Labor', qty: 2, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -9154,22 +9159,23 @@ const TIERED_BUNDLES = {
     {
       name: 'Drywall Patch',
       icon: '🧱',
-      desc: 'Small hole or section repair, tape, mud, sand, prime',
+      desc: 'Hole or section repair, tape, mud, sand, prime',
       tiers: {
-        low:  { label: 'Small Patch', priceRange: 'Under 2sqft', lines: [
-          { desc: 'Drywall Patching Panel 24"x24"', qty: 1, unitCost: 7, unitPrice: 12, unit: 'ea', type: 'material' },
-          { desc: 'Joint Compound 4.5 Gal', qty: 1, unitCost: 22, unitPrice: 35, unit: 'ea', type: 'material' },
-          { desc: 'Patch Wall/Holes', qty: 1, unitCost: 25, unitPrice: 45, unit: 'hr', type: 'labor' },
+        low: { label: 'Small Patch (per sqft)', priceRange: '$1.18/sqft material', lines: [
+          { desc: '1/2" Drywall install per sqft', qty: 8, unitCost: 0.94, unitPrice: 1.18, unit: 'sqft', type: 'material' },
+          { desc: '4.5 gal. Plus 3 Ready-Mixed Joint Compound', qty: 1, unitCost: 21.78, unitPrice: 27.23, unit: 'ea', type: 'material' },
+          { desc: 'Drywall Labor/ Sq Ft', qty: 8, unitCost: 6.50, unitPrice: 7.48, unit: 'sqft', type: 'labor' },
         ]},
-        med:  { label: '2–8 sqft', priceRange: '2–8 sqft section', lines: [
-          { desc: '1/2" Drywall install per sqft', qty: 8, unitCost: 0.94, unitPrice: 2.50, unit: 'sqft', type: 'material' },
-          { desc: 'Joint Compound 4.5 Gal', qty: 1, unitCost: 22, unitPrice: 35, unit: 'ea', type: 'material' },
-          { desc: 'Drywall Labor/Sq Ft', qty: 8, unitCost: 6.50, unitPrice: 10, unit: 'sqft', type: 'labor' },
+        med: { label: '1/2 Sheet', priceRange: '~$20 material + labor', lines: [
+          { desc: '1/2" Drywall install per sqft', qty: 32, unitCost: 0.94, unitPrice: 1.18, unit: 'sqft', type: 'material' },
+          { desc: '4.5 gal. Plus 3 Ready-Mixed Joint Compound', qty: 1, unitCost: 21.78, unitPrice: 27.23, unit: 'ea', type: 'material' },
+          { desc: 'Wall/door patch: 4.5 Gal. Plus 3 Lightweight All-Purpose Pre-Mixed Joint Compound', qty: 1, unitCost: 0.88, unitPrice: 1.10, unit: 'ea', type: 'material' },
+          { desc: 'Drywall Labor/ Sq Ft', qty: 32, unitCost: 6.50, unitPrice: 7.48, unit: 'sqft', type: 'labor' },
         ]},
-        high: { label: 'Full Sheet', priceRange: 'Full 4x8 sheet', lines: [
-          { desc: '1/2" x 4ft x 8ft Drywall Sheet', qty: 2, unitCost: 15.94, unitPrice: 24, unit: 'ea', type: 'material' },
-          { desc: 'Joint Compound 4.5 Gal', qty: 1, unitCost: 22, unitPrice: 35, unit: 'ea', type: 'material' },
-          { desc: 'Drywall Labor/Sq Ft', qty: 64, unitCost: 6.50, unitPrice: 10, unit: 'sqft', type: 'labor' },
+        high: { label: 'Full Sheet 4x8', priceRange: '$19.93/sheet + labor', lines: [
+          { desc: '1/2 in. x 4 ft. x 8 ft. UltraLight Drywall', qty: 1, unitCost: 15.94, unitPrice: 19.93, unit: 'ea', type: 'material' },
+          { desc: '4.5 gal. Plus 3 Ready-Mixed Joint Compound', qty: 1, unitCost: 21.78, unitPrice: 27.23, unit: 'ea', type: 'material' },
+          { desc: 'Drywall Labor/ Sq Ft', qty: 64, unitCost: 6.50, unitPrice: 7.48, unit: 'sqft', type: 'labor' },
         ]},
       }
     },
@@ -9180,55 +9186,19 @@ const TIERED_BUNDLES = {
       icon: '🍳',
       desc: 'Freestanding range install, disconnect old unit',
       tiers: {
-        low:  { label: 'Electric Standard', priceRange: 'Electric range', lines: [
-          { desc: 'Range - Electric', qty: 1, unitCost: 600, unitPrice: 899, unit: 'ea', type: 'material' },
-          { desc: 'Range - Electric Install', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Electric Standard', priceRange: '~$625', lines: [
+          { desc: 'GE ENERGY STAR 30 In. 5.0 Cu. Ft. Coil Electric Freestanding Range in White', qty: 1, unitCost: 759, unitPrice: 948.75, unit: 'ea', type: 'material' },
+          { desc: 'Anti-Tip Bracket by Frigidaire', qty: 1, unitCost: 10.96, unitPrice: 13.70, unit: 'ea', type: 'material' },
+          { desc: 'Range - Electric Install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Gas Standard', priceRange: 'Gas range', lines: [
-          { desc: 'Range - Gas', qty: 1, unitCost: 600, unitPrice: 899, unit: 'ea', type: 'material' },
-          { desc: 'Range - Gas Install', qty: 1, unitCost: 100, unitPrice: 175, unit: 'hr', type: 'labor' },
+        med: { label: 'Over Range Microwave', priceRange: 'OTR Microwave ~$249', lines: [
+          { desc: '1.6 cu. ft. Over the Range Microwave in White', qty: 1, unitCost: 199, unitPrice: 248.75, unit: 'ea', type: 'material' },
+          { desc: 'Over the Range Microwave Install', qty: 1, unitCost: 200, unitPrice: 230, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'GE Electric Premium', priceRange: 'Premium electric', lines: [
-          { desc: 'GE 30" 5.0 cu ft Coil Electric Range', qty: 1, unitCost: 759, unitPrice: 1099, unit: 'ea', type: 'material' },
-          { desc: 'Range - Electric Install', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
-        ]},
-      }
-    },
-    {
-      name: 'Microwave Install',
-      icon: '📦',
-      desc: 'Over-the-range microwave install',
-      tiers: {
-        low:  { label: 'Standard OTR', priceRange: 'Standard unit', lines: [
-          { desc: 'Over the Range Microwave 1.6 cu ft White', qty: 1, unitCost: 199, unitPrice: 299, unit: 'ea', type: 'material' },
-          { desc: 'Over the Range Microwave Install', qty: 1, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-        ]},
-        med:  { label: 'Stainless OTR', priceRange: 'Stainless unit', lines: [
-          { desc: 'Over the Range Microwave Stainless 1.6 cu ft', qty: 1, unitCost: 249, unitPrice: 369, unit: 'ea', type: 'material' },
-          { desc: 'Over the Range Microwave Install', qty: 1, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-        ]},
-        high: { label: 'Premium OTR', priceRange: 'Premium unit', lines: [
-          { desc: 'Over the Range Microwave Premium 2.0 cu ft', qty: 1, unitCost: 349, unitPrice: 519, unit: 'ea', type: 'material' },
-          { desc: 'Over the Range Microwave Install', qty: 1, unitCost: 200, unitPrice: 300, unit: 'hr', type: 'labor' },
-        ]},
-      }
-    },
-    {
-      name: 'Dishwasher Install',
-      icon: '🍽',
-      desc: 'Dishwasher swap, disconnect old unit',
-      tiers: {
-        low:  { label: 'Standard', priceRange: 'Standard unit', lines: [
-          { desc: 'Dishwasher 24"', qty: 1, unitCost: 500, unitPrice: 749, unit: 'ea', type: 'material' },
-          { desc: 'Dishwasher Install', qty: 1, unitCost: 300, unitPrice: 450, unit: 'hr', type: 'labor' },
-        ]},
-        med:  { label: 'Mid-Grade', priceRange: 'Mid-grade unit', lines: [
-          { desc: 'Dishwasher Mid-Grade Stainless 24"', qty: 1, unitCost: 649, unitPrice: 949, unit: 'ea', type: 'material' },
-          { desc: 'Dishwasher Install', qty: 1, unitCost: 300, unitPrice: 450, unit: 'hr', type: 'labor' },
-        ]},
-        high: { label: 'Premium', priceRange: 'Premium unit', lines: [
-          { desc: 'Dishwasher Premium Stainless 24"', qty: 1, unitCost: 899, unitPrice: 1299, unit: 'ea', type: 'material' },
-          { desc: 'Dishwasher Install', qty: 1, unitCost: 300, unitPrice: 450, unit: 'hr', type: 'labor' },
+        high: { label: 'Dishwasher', priceRange: 'Dishwasher ~$625', lines: [
+          { desc: 'Dishwasher - 24"', qty: 1, unitCost: 500, unitPrice: 625, unit: 'ea', type: 'material' },
+          { desc: 'Dishwasher Install', qty: 1, unitCost: 300, unitPrice: 345, unit: 'hr', type: 'labor' },
+          { desc: 'Appliance Disposal', qty: 1, unitCost: 10, unitPrice: 12.50, unit: 'ea', type: 'other' },
         ]},
       }
     },
@@ -9237,21 +9207,25 @@ const TIERED_BUNDLES = {
     {
       name: 'Interior Door Replace',
       icon: '🚪',
-      desc: 'Pre-hung interior door, remove old, install new with hardware',
+      desc: 'Interior door install, remove old, install new with hardware',
       tiers: {
-        low:  { label: '30" Hollow Core', priceRange: 'Standard hollow core', lines: [
-          { desc: '30"x80" 6-Panel Hollow Core White Door', qty: 1, unitCost: 60, unitPrice: 95, unit: 'ea', type: 'material' },
-          { desc: 'Kwikset Passage Knob Satin Chrome', qty: 1, unitCost: 13, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install pre hung interior door', qty: 1, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: '30" Hollow Core Slab', priceRange: '~$42', lines: [
+          { desc: '30 in. x 80 in. Unfinished Flush Hardwood Interior Door Slab', qty: 1, unitCost: 33.86, unitPrice: 42.33, unit: 'ea', type: 'material' },
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob', qty: 1, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Passage Knob', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install pre hung interior door', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: '32" Pre-Hung', priceRange: 'Pre-hung with frame', lines: [
-          { desc: '32"x80" Pre-Hung 6-Panel White Door', qty: 1, unitCost: 126, unitPrice: 189, unit: 'ea', type: 'material' },
-          { desc: 'Kwikset Passage Knob Satin Chrome', qty: 1, unitCost: 13, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install pre hung interior door', qty: 1.5, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: '30" Steves 6-Panel Primed', priceRange: '~$75', lines: [
+          { desc: 'Steves & Sons 30 in. x 80 in. 6-Panel Textured Hollow Core White Primed Interior Door Slab', qty: 1, unitCost: 60, unitPrice: 75, unit: 'ea', type: 'material' },
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob', qty: 1, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Passage Knob', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install pre hung interior door', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Barn Door', priceRange: 'Sliding barn door', lines: [
-          { desc: '72"x84" Barn Door Double with Hardware Kit', qty: 1, unitCost: 518, unitPrice: 779, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install pre hung interior door', qty: 3, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: '32" Right-Hand Pre-Hung', priceRange: '~$158', lines: [
+          { desc: 'Steves & Sons 32 in. x 80 in. Right-Handed 6-Panel Textured Hollow Core Pre-Hung', qty: 1, unitCost: 126, unitPrice: 157.50, unit: 'ea', type: 'material' },
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob', qty: 1, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Passage Knob', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+          { desc: 'Labor to install pre hung interior door', qty: 1.5, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -9260,17 +9234,36 @@ const TIERED_BUNDLES = {
       icon: '🔐',
       desc: 'Deadbolt replacement on exterior door',
       tiers: {
-        low:  { label: 'Standard Deadbolt', priceRange: 'Basic keyed', lines: [
-          { desc: 'Defiant Single Cylinder Satin Nickel Deadbolt', qty: 1, unitCost: 12, unitPrice: 22, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install Deadbolt', qty: 0.5, unitCost: 25, unitPrice: 45, unit: 'hr', type: 'labor' },
+        low: { label: '1 Door', priceRange: '1 deadbolt', lines: [
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob Featuring SmartKey Security', qty: 1, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Deadbolt', qty: 1, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'SmartKey Deadbolt', priceRange: 'Kwikset SmartKey', lines: [
-          { desc: 'Kwikset 660 SmartKey Satin Chrome Deadbolt', qty: 1, unitCost: 35, unitPrice: 55, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install Deadbolt', qty: 0.5, unitCost: 25, unitPrice: 45, unit: 'hr', type: 'labor' },
+        med: { label: '2 Doors', priceRange: '2 deadbolts', lines: [
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob Featuring SmartKey Security', qty: 2, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Deadbolt', qty: 2, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: '2 Deadbolts', priceRange: 'Front + back door', lines: [
-          { desc: 'Kwikset 660 SmartKey Satin Chrome Deadbolt', qty: 2, unitCost: 35, unitPrice: 55, unit: 'ea', type: 'material' },
-          { desc: 'Labor to install Deadbolt', qty: 1, unitCost: 25, unitPrice: 45, unit: 'hr', type: 'labor' },
+        high: { label: '3 Doors', priceRange: '3 deadbolts', lines: [
+          { desc: 'Kwikset Tylo Satin Chrome Keyed Entry Door Knob Featuring SmartKey Security', qty: 3, unitCost: 25.45, unitPrice: 31.81, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Deadbolt', qty: 3, unitCost: 25, unitPrice: 28.75, unit: 'hr', type: 'labor' },
+        ]},
+      }
+    },
+    {
+      name: 'Mini Blind Install',
+      icon: '🪟',
+      desc: 'Window blind install per window',
+      tiers: {
+        low: { label: '1 Window', priceRange: '1 blind', lines: [
+          { desc: 'Hampton Bay White Cordless Room Darkening 1 in. Vinyl Mini Blind for Window or Door', qty: 1, unitCost: 26.48, unitPrice: 33.10, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Mini Blinds', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+        ]},
+        med: { label: '3 Windows', priceRange: '3 blinds', lines: [
+          { desc: 'Hampton Bay White Cordless Room Darkening 1 in. Vinyl Mini Blind for Window or Door', qty: 3, unitCost: 26.48, unitPrice: 33.10, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Mini Blinds', qty: 3, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
+        ]},
+        high: { label: '6 Windows', priceRange: '6 blinds', lines: [
+          { desc: 'Hampton Bay White Cordless Room Darkening 1 in. Vinyl Mini Blind for Window or Door', qty: 6, unitCost: 26.48, unitPrice: 33.10, unit: 'ea', type: 'material' },
+          { desc: 'Labor to install Mini Blinds', qty: 6, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
       }
     },
@@ -9281,17 +9274,33 @@ const TIERED_BUNDLES = {
       icon: '📏',
       desc: 'Baseboard trim install per linear foot',
       tiers: {
-        low:  { label: '50 Linear Ft', priceRange: 'One room', lines: [
-          { desc: 'MDF Primed Base Moulding (per lf)', qty: 50, unitCost: 0.62, unitPrice: 1.10, unit: 'lf', type: 'material' },
-          { desc: 'Labor to Install Baseboards per linear ft', qty: 50, unitCost: 3.30, unitPrice: 5.00, unit: 'lf', type: 'labor' },
+        low: { label: '50 Linear Ft', priceRange: '~1 room', lines: [
+          { desc: 'CMPC WM 356 11/16 in. x 2 1/4 in. x 168 in. Pine Primed Finger-Joint Base Moulding', qty: 50, unitCost: 0.99, unitPrice: 1.24, unit: 'lf', type: 'material' },
+          { desc: 'Labor to Install Baseboards per linear ft', qty: 50, unitCost: 3.30, unitPrice: 3.80, unit: 'lf', type: 'labor' },
         ]},
-        med:  { label: '100 Linear Ft', priceRange: '2–3 rooms', lines: [
-          { desc: 'MDF Primed Base Moulding (per lf)', qty: 100, unitCost: 0.62, unitPrice: 1.10, unit: 'lf', type: 'material' },
-          { desc: 'Labor to Install Baseboards per linear ft', qty: 100, unitCost: 3.30, unitPrice: 5.00, unit: 'lf', type: 'labor' },
+        med: { label: '100 Linear Ft', priceRange: '~2-3 rooms', lines: [
+          { desc: 'CMPC WM 356 11/16 in. x 2 1/4 in. x 168 in. Pine Primed Finger-Joint Base Moulding', qty: 100, unitCost: 0.99, unitPrice: 1.24, unit: 'lf', type: 'material' },
+          { desc: 'Labor to Install Baseboards per linear ft', qty: 100, unitCost: 3.30, unitPrice: 3.80, unit: 'lf', type: 'labor' },
         ]},
         high: { label: '200 Linear Ft', priceRange: 'Whole floor', lines: [
-          { desc: 'MDF Primed Base Moulding (per lf)', qty: 200, unitCost: 0.62, unitPrice: 1.10, unit: 'lf', type: 'material' },
-          { desc: 'Labor to Install Baseboards per linear ft', qty: 200, unitCost: 3.30, unitPrice: 5.00, unit: 'lf', type: 'labor' },
+          { desc: 'CMPC WM 356 11/16 in. x 2 1/4 in. x 168 in. Pine Primed Finger-Joint Base Moulding', qty: 200, unitCost: 0.99, unitPrice: 1.24, unit: 'lf', type: 'material' },
+          { desc: 'Labor to Install Baseboards per linear ft', qty: 200, unitCost: 3.30, unitPrice: 3.80, unit: 'lf', type: 'labor' },
+        ]},
+      }
+    },
+    {
+      name: 'Quarter Round Install',
+      icon: '📐',
+      desc: 'Quarter round paint and install per linear foot',
+      tiers: {
+        low: { label: '50 Linear Ft', priceRange: '~1 room', lines: [
+          { desc: 'Quarter round (paint & install) per linear foot', qty: 50, unitCost: 8, unitPrice: 9.20, unit: 'lf', type: 'labor' },
+        ]},
+        med: { label: '100 Linear Ft', priceRange: '~2-3 rooms', lines: [
+          { desc: 'Quarter round (paint & install) per linear foot', qty: 100, unitCost: 8, unitPrice: 9.20, unit: 'lf', type: 'labor' },
+        ]},
+        high: { label: '200 Linear Ft', priceRange: 'Whole floor', lines: [
+          { desc: 'Quarter round (paint & install) per linear foot', qty: 200, unitCost: 8, unitPrice: 9.20, unit: 'lf', type: 'labor' },
         ]},
       }
     },
@@ -9300,16 +9309,17 @@ const TIERED_BUNDLES = {
     {
       name: 'Demo / Trash Out',
       icon: '🗑',
-      desc: 'General demo and debris removal',
+      desc: 'Demo labor and debris removal',
       tiers: {
-        low:  { label: 'Half Day', priceRange: '4 hrs, 1 person', lines: [
-          { desc: 'Demo / Trash Removal Labor', qty: 4, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        low: { label: 'Half Day 1-Man', priceRange: '4 hrs', lines: [
+          { desc: 'Trash removal per hour', qty: 4, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        med:  { label: 'Full Day', priceRange: '8 hrs, 1 person', lines: [
-          { desc: 'Demo / Trash Removal Labor', qty: 8, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        med: { label: 'Full Day 1-Man', priceRange: '8 hrs', lines: [
+          { desc: 'Trash removal per hour', qty: 8, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Full Day 2-Man', priceRange: '8 hrs, 2 people', lines: [
-          { desc: 'Demo / Trash Removal Labor', qty: 16, unitCost: 100, unitPrice: 150, unit: 'hr', type: 'labor' },
+        high: { label: 'Full Day + Dumpster', priceRange: '8 hrs + dumpster', lines: [
+          { desc: 'Trash removal per hour', qty: 8, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Dumpster Rental', qty: 1, unitCost: 500, unitPrice: 625, unit: 'ea', type: 'other' },
         ]},
       }
     },
