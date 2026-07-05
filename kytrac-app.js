@@ -189,7 +189,7 @@ function renderJobsBoard() {
         ${job.client?`<div class="kt-job-meta">Customer: ${esc(job.client)}</div>`:''}
         ${job.statusDate||job.startDate?`<div class="kt-job-meta">Status Date: ${job.statusDate||job.startDate}</div>`:''}
         ${job.superintendent||job.pm?`<div class="kt-job-meta">Sales Rep: ${esc(job.superintendent||job.pm)}</div>`:''}
-        ${job.contractValue?`<div class="kt-job-value">$${Number(job.contractValue).toLocaleString()}</div>`:''}
+        ${getJobValue(job)?`<div class="kt-job-value">$${Math.round(getJobValue(job)).toLocaleString()}</div>`:''}
       `;
       card.onclick = () => openJobDetail(job.id);
       col.appendChild(card);
@@ -580,7 +580,7 @@ function conRenderBoard() {
         ${job.client ? `<div class="job-card-meta">Customer: ${job.client}</div>` : ''}
         ${statusDate ? `<div class="job-card-meta">Status Date: ${statusDate}</div>` : ''}
         ${salesRep ? `<div class="job-card-meta">Sales Rep: ${salesRep}</div>` : ''}
-        ${job.contractValue ? `<div class="job-card-value">$${Number(job.contractValue).toLocaleString()}</div>` : ''}
+        ${getJobValue(job) ? `<div class="job-card-value">$${Math.round(getJobValue(job)).toLocaleString()}</div>` : ''}
       `;
       card.onclick = () => openJobDetail(job.id);
       col.appendChild(card);
@@ -601,7 +601,7 @@ function conRenderList() {
   tbody.innerHTML = '';
   conJobs.forEach(job => {
     const tr = document.createElement('tr');
-    const val = job.contractValue ? '$' + Number(job.contractValue).toLocaleString() : '—';
+    const val = getJobValue(job) ? '$' + Math.round(getJobValue(job)).toLocaleString() : '—';
     tr.innerHTML = `
       <td style="color:var(--amber);font-weight:700">${job.jobNumber || '—'}</td>
       <td style="font-weight:600">${job.name}</td>
@@ -616,17 +616,20 @@ function conRenderList() {
   });
 }
 
+function getJobValue(job) {
+  return Number(job.contractValue || job.approvedOrders || job.pendingOrders || 0);
+}
+
 function conRenderStats() {
   const closedStatuses = ['Closed Won','Closed Lost','Closed Hipshot Sent'];
   const active = conJobs.filter(j => !closedStatuses.includes(j.status)).length;
   document.getElementById('statActiveJobs').textContent = active;
-  const totalContract = conJobs.reduce((s, j) => s + (j.contractValue || 0), 0);
-  document.getElementById('statContractTotal').textContent = '$' + totalContract.toLocaleString();
-  const margins = conJobs.filter(j => j.contractValue && j.estCost).map(j => (j.contractValue - j.estCost) / j.contractValue * 100);
+  const totalContract = conJobs.reduce((s, j) => s + getJobValue(j), 0);
+  document.getElementById('statContractTotal').textContent = '$' + Math.round(totalContract).toLocaleString();
+  const margins = conJobs.filter(j => getJobValue(j) && j.estCost).map(j => (getJobValue(j) - j.estCost) / getJobValue(j) * 100);
   const avgMargin = margins.length ? (margins.reduce((a,b) => a+b, 0) / margins.length).toFixed(1) : '0';
   document.getElementById('statAvgMargin').textContent = avgMargin + '%';
   const today = new Date().toISOString().split('T')[0];
-  // Log count today requires querying — skip for now, show placeholder
   document.getElementById('statLogsToday').textContent = '—';
 }
 
@@ -708,7 +711,7 @@ function openJobDetail(jobId) {
   }
 
   // Financials
-  const cv = job.contractValue || 0;
+  const cv = getJobValue(job);
   const ec = job.estCost || 0;
   const ac = job.actualCost || 0;
   const profit = cv - ec;
@@ -1218,20 +1221,20 @@ function renderJCDKpis() {
 
   const jobs = conJobs;
   const active = jobs.filter(j => ['In Progress','Contracted'].includes(j.status));
-  const totalContract = jobs.reduce((s,j) => s + (j.contractValue||0), 0);
+  const totalContract = jobs.reduce((s,j) => s + getJobValue(j), 0);
   const totalEst = jobs.reduce((s,j) => s + (j.estCost||0), 0);
   const totalActual = jobs.reduce((s,j) => s + getJobTotalActual(j.id), 0);
 
   // Weighted avg margin on jobs with contract value
-  const marginJobs = jobs.filter(j => j.contractValue && j.estCost);
+  const marginJobs = jobs.filter(j => getJobValue(j) && j.estCost);
   const avgEstMargin = marginJobs.length
-    ? marginJobs.reduce((s,j) => s + ((j.contractValue - j.estCost) / j.contractValue * 100), 0) / marginJobs.length
+    ? marginJobs.reduce((s,j) => s + ((getJobValue(j) - j.estCost) / getJobValue(j) * 100), 0) / marginJobs.length
     : 0;
 
   // Jobs with margin < 15% (threshold warning)
   const atRisk = jobs.filter(j => {
-    if (!j.contractValue || !j.estCost) return false;
-    const m = (j.contractValue - j.estCost) / j.contractValue * 100;
+    if (!getJobValue(j) || !j.estCost) return false;
+    const m = (getJobValue(j) - j.estCost) / getJobValue(j) * 100;
     return m < 15 && ['Work In Progress','Scheduled','Inspection Pending'].includes(j.status);
   }).length;
 
@@ -1267,7 +1270,7 @@ function renderJCDPipeline() {
 
   strip.innerHTML = KYTRAC_STATUSES.map(s => {
     const jobs = conJobs.filter(j => j.status === s.name);
-    const val = jobs.reduce((t,j) => t + (j.contractValue||0), 0);
+    const val = jobs.reduce((t,j) => t + getJobValue(j), 0);
     grandTotal += val;
     return `<div class="pipeline-stage" onclick="filterJCDByStatus('${s.name}')" style="cursor:pointer;border-top:3px solid ${s.color}" title="Filter to ${s.name}">
       <div class="pipeline-stage-label" style="color:${s.color}">${s.name}</div>
@@ -1293,7 +1296,7 @@ function renderJCDAlerts(containerId) {
 
   conJobs.forEach(j => {
     if (!['Work In Progress','Scheduled','Inspection Pending','Approved','Design Phase','Permitting'].includes(j.status)) return;
-    const cv = j.contractValue || 0;
+    const cv = getJobValue(j);
     const ec = j.estCost || 0;
     const ac = getJobTotalActual(j.id);
 
@@ -1338,7 +1341,7 @@ function renderJCDTable() {
 
   // Compute derived fields
   jobs = jobs.map(j => {
-    const cv = j.contractValue || 0;
+    const cv = getJobValue(j);
     const ec = j.estCost || 0;
     const ac = getJobTotalActual(j.id);
     const coTotal = _jcdCOTotals[j.id] || 0;
@@ -1434,7 +1437,7 @@ function renderJCDJobDetail(jobId) {
   const nameEl = document.getElementById('jcdDetailJobName');
   if (nameEl) nameEl.textContent = '💰 ' + job.name + ' — Cost Breakdown';
 
-  const cv = job.contractValue || 0;
+  const cv = getJobValue(job);
   const ec = job.estCost || 0;
   const ac = getJobTotalActual(jobId);
   const coTotal = _jcdCOTotals[jobId] || 0;
@@ -1737,7 +1740,7 @@ function renderEstimateList() {
 
   // Grand total row
   const job = conJobs.find(j => j.id === conCurrentJobId);
-  const contract = job ? Number(job.contractValue || 0) : 0;
+  const contract = job ? getJobValue(job) : 0;
   const margin = contract > 0 ? ((contract - grandTotal) / contract * 100).toFixed(1) : '—';
   if (tfoot) {
     tfoot.innerHTML = `
@@ -2296,7 +2299,7 @@ function renderHomeDashboard() {
           <td><div style="font-weight:700;font-size:.86rem">${esc(job.name)}</div><div style="font-size:.72rem;color:var(--amber)">${job.jobNumber||''}</div></td>
           <td style="font-size:.84rem">${esc(job.client||'—')}</td>
           <td><span style="background:${s.color}22;color:${s.color};padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap">${job.status}</span></td>
-          <td style="text-align:right;font-weight:700;color:#a3f2d2;font-size:.84rem">${job.contractValue?'$'+Number(job.contractValue).toLocaleString():'—'}</td>
+          <td style="text-align:right;font-weight:700;color:#a3f2d2;font-size:.84rem">${getJobValue(job)?'$'+Math.round(getJobValue(job)).toLocaleString():'—'}</td>
         </tr>`;
       }).join('');
     }
@@ -2314,7 +2317,7 @@ function renderHomeDashboard() {
     ];
     pipeline.innerHTML = groups.map(g => {
       const jobs = conJobs.filter(j => g.statuses.includes(j.status));
-      const val = jobs.reduce((s,j) => s + (j.contractValue||0), 0);
+      const val = jobs.reduce((s,j) => s + getJobValue(j), 0);
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(110,145,210,.07)">
         <div style="display:flex;align-items:center;gap:8px">
           <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0"></div>
@@ -6704,7 +6707,7 @@ function renderActiveReport() {
 
 // ── OVERVIEW REPORT ──
 function renderOverviewReport(el, jobs, f) {
-  const totalContract = jobs.reduce((s,j) => s+(j.contractValue||0), 0);
+  const totalContract = jobs.reduce((s,j) => s+getJobValue(j), 0);
   const totalEstCost = jobs.reduce((s,j) => s+(j.estCost||0), 0);
   const totalActual = jobs.reduce((s,j) => s+(j.actualCost||0), 0);
   const estMargin = totalContract - totalEstCost;
@@ -6728,7 +6731,7 @@ function renderOverviewReport(el, jobs, f) {
   }
   jobs.forEach(j => {
     const key = (j.startDate||'').slice(0,7);
-    if (key && monthlyRevenue[key] !== undefined) monthlyRevenue[key] += j.contractValue||0;
+    if (key && monthlyRevenue[key] !== undefined) monthlyRevenue[key] += getJobValue(j);
   });
 
   const maxRev = Math.max(...Object.values(monthlyRevenue), 1);
@@ -6770,7 +6773,7 @@ function renderOverviewReport(el, jobs, f) {
           ${KYTRAC_STATUSES.map(s => {
             const count = jobs.filter(j => j.status === s.name).length;
             if (!count) return '';
-            const val = jobs.filter(j => j.status === s.name).reduce((sum,j) => sum+(j.contractValue||0), 0);
+            const val = jobs.filter(j => j.status === s.name).reduce((sum,j) => sum+getJobValue(j), 0);
             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(110,145,210,.07)">
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
@@ -6818,7 +6821,7 @@ function renderJobsPnLReport(el, jobs) {
           </tr></thead>
           <tbody>
             ${sorted.map(j => {
-              const contract = j.contractValue||0;
+              const contract = getJobValue(j);
               const estCost = j.estCost||0;
               const actual = j.actualCost||0;
               const estMargin = contract - estCost;
@@ -6840,11 +6843,11 @@ function renderJobsPnLReport(el, jobs) {
           </tbody>
           <tfoot><tr style="background:rgba(217,119,6,.06);font-weight:800">
             <td colspan="2" style="padding:10px 12px">TOTALS (${sorted.length} jobs)</td>
-            <td style="text-align:right;padding:10px 12px">$${Math.round(sorted.reduce((s,j)=>s+(j.contractValue||0),0)).toLocaleString()}</td>
+            <td style="text-align:right;padding:10px 12px">$${Math.round(sorted.reduce((s,j)=>s+getJobValue(j),0)).toLocaleString()}</td>
             <td style="text-align:right;padding:10px 12px">$${Math.round(sorted.reduce((s,j)=>s+(j.estCost||0),0)).toLocaleString()}</td>
             <td style="text-align:right;padding:10px 12px">$${Math.round(sorted.reduce((s,j)=>s+(j.actualCost||0),0)).toLocaleString()}</td>
-            <td style="text-align:right;padding:10px 12px;color:#f59e0b">$${Math.round(sorted.reduce((s,j)=>s+(j.contractValue||0)-(j.estCost||0),0)).toLocaleString()}</td>
-            <td style="text-align:right;padding:10px 12px;color:#1dbb87">$${Math.round(sorted.reduce((s,j)=>s+(j.contractValue||0)-(j.actualCost||0),0)).toLocaleString()}</td>
+            <td style="text-align:right;padding:10px 12px;color:#f59e0b">$${Math.round(sorted.reduce((s,j)=>s+getJobValue(j)-(j.estCost||0),0)).toLocaleString()}</td>
+            <td style="text-align:right;padding:10px 12px;color:#1dbb87">$${Math.round(sorted.reduce((s,j)=>s+getJobValue(j)-(j.actualCost||0),0)).toLocaleString()}</td>
             <td style="text-align:right;padding:10px 12px"></td>
           </tr></tfoot>
         </table>
@@ -6856,7 +6859,7 @@ function renderJobsPnLReport(el, jobs) {
 function renderPipelineReport(el) {
   const stages = KYTRAC_STATUSES.map(s => {
     const stageJobs = conJobs.filter(j => j.status === s.name);
-    const value = stageJobs.reduce((sum,j) => sum+(j.contractValue||0), 0);
+    const value = stageJobs.reduce((sum,j) => sum+getJobValue(j), 0);
     return { ...s, count: stageJobs.length, value };
   }).filter(s => s.count > 0);
 
@@ -7089,7 +7092,7 @@ function exportReport() {
   if (_activeReport === 'overview' || _activeReport === 'jobs') {
     csv = 'Job Name,Job Number,Status,Type,Contract Value,Est Cost,Actual Cost,Est Margin,Act Margin,Margin %,Start Date\n';
     jobs.forEach(j => {
-      const c = j.contractValue||0, ec = j.estCost||0, a = j.actualCost||0;
+      const c = getJobValue(j), ec = j.estCost||0, a = j.actualCost||0;
       const actM = c-a, pct = c ? Math.round(actM/c*100) : 0;
       csv += csvRow(j.name,j.jobNumber,j.status,j.type,c,ec,a,c-ec,actM,pct+'%',j.startDate);
     });
@@ -8778,11 +8781,11 @@ const TIERED_BUNDLES = {
     {
       name: 'Faucet Replacement',
       icon: '🚿',
-      desc: 'Bath faucet swap with supply lines and shutoffs',
+      desc: 'Bath or kitchen faucet swap with supply lines and shutoffs',
       tiers: {
         low: { label: 'Standard', priceRange: 'Glacier Bay 2-Handle ~$37', lines: [
           { desc: 'Glacier Bay Constructor 4 in. Centerset 2-Handle Low-Arc Bathroom Faucet in Chrome', qty: 1, unitCost: 29.98, unitPrice: 37.48, unit: 'ea', type: 'material' },
-          { desc: 'Glacier Bay Constructor 4 in. Centerset 2-Handle Low-Arc Bathroom Faucet in Chrome', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Faucet Installation Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
           { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
           { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
           { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
@@ -8790,15 +8793,15 @@ const TIERED_BUNDLES = {
         ]},
         med: { label: 'Mid-Grade', priceRange: 'Glacier Bay Pull-Out ~$136', lines: [
           { desc: 'Glacier Bay Market Single-Handle Pull-Out Sprayer Kitchen Faucet in Chrome', qty: 1, unitCost: 109, unitPrice: 136.25, unit: 'ea', type: 'material' },
-          { desc: 'Glacier Bay Market Single-Handle Pull-Out Sprayer Kitchen Faucet - Install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+          { desc: 'Faucet Installation Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
           { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
           { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
           { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
           { desc: 'Sharkbite Shutoff Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
         ]},
-        high: { label: 'Premium', priceRange: 'Moen/Delta Premium ~$200+', lines: [
-          { desc: 'MOEN Adler Single-Handle 4-Spray Tub and Shower Faucet in Chrome', qty: 1, unitCost: 99, unitPrice: 123.75, unit: 'ea', type: 'material' },
-          { desc: 'MOEN Adler Faucet Install Labor', qty: 1, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
+        high: { label: 'Premium', priceRange: 'COOLWEST Commercial Wall Mount ~$109', lines: [
+          { desc: 'COOLWEST Commercial Wall Mount Faucet 8 Inch Center with 8" Gooseneck Spout', qty: 1, unitCost: 86.99, unitPrice: 108.74, unit: 'ea', type: 'material' },
+          { desc: 'Faucet Installation Labor', qty: 1.5, unitCost: 100, unitPrice: 115, unit: 'hr', type: 'labor' },
           { desc: 'Brass Craft 3/8 in. Compression x 1/2 in. FIP x 20 in. Braided Polymer Supply Line', qty: 2, unitCost: 8.97, unitPrice: 11.21, unit: 'ea', type: 'material' },
           { desc: 'Bathroom Supply Line Labor', qty: 1, unitCost: 50, unitPrice: 57.50, unit: 'hr', type: 'labor' },
           { desc: 'SharkBite 1/2 in. Push-to-Connect x 3/8 in. O.D. Compression Chrome Angle Stop', qty: 2, unitCost: 13.45, unitPrice: 16.81, unit: 'ea', type: 'material' },
