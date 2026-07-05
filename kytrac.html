@@ -920,7 +920,7 @@
     <div class="kt-logo">
       <div class="kt-logo-mark">⚡ KYTRAC</div>
       <div class="kt-logo-tag" id="ktCompanyTag">7 Pillars Contracting</div>
-      <div class="kt-logo-version" id="ktVersionTag">Version 1.9.8 · 05/Jul/2026</div>
+      <div class="kt-logo-version" id="ktVersionTag">Version 1.9.9 · 05/Jul/2026</div>
     </div>
 
     <nav class="kt-nav">
@@ -1365,6 +1365,24 @@
     <!-- ── PAGE: JOB COSTING ── -->
     <div class="kt-page" id="ktPageCosting">
       <div class="jcd-hero" id="jcdKpiStrip"></div>
+
+      <div class="jcd-section" id="jcdImportSection">
+        <div class="jcd-section-head">
+          <h3>📥 Import Financials from JobTread</h3>
+          <span class="small muted">Approved price, costs, labor & payments — matched by job number</span>
+        </div>
+        <div class="jcd-section-body" style="padding:14px 16px">
+          <div id="jcImportDrop" onclick="document.getElementById('jcImportFile').click()"
+               style="border:2px dashed rgba(217,119,6,.35);border-radius:12px;padding:22px;text-align:center;cursor:pointer">
+            <div style="font-size:1.5rem;margin-bottom:6px">📊</div>
+            <div style="font-weight:700;margin-bottom:4px">Tap to choose CSV file(s), or drag them here</div>
+            <div class="small muted">Customer Orders · Vendor Bills · Time Entries · Customer Payments · Customer Invoices</div>
+          </div>
+          <input type="file" id="jcImportFile" accept=".csv" multiple style="display:none" onchange="handleImportFiles(this.files,'jcImportResult')" />
+          <div id="jcImportResult" style="margin-top:14px"></div>
+        </div>
+      </div>
+
       <div class="jcd-section">
         <div class="jcd-section-head">
           <h3>📊 Revenue Pipeline</h3>
@@ -1877,7 +1895,7 @@
             <div style="font-weight:700;margin-bottom:4px">Tap to choose CSV file(s), or drag them here</div>
             <div class="small muted">Recognizes: Customer Payments, Customer Invoices, Invoice Cost Items</div>
           </div>
-          <input type="file" id="importFile" accept=".csv" multiple style="display:none" onchange="handleImportFiles(this.files)" />
+          <input type="file" id="importFile" accept=".csv" multiple style="display:none" onchange="handleImportFiles(this.files,'importResult')" />
           <div id="importResult" style="margin-top:14px"></div>
         </div>
       </div>
@@ -3608,6 +3626,6 @@
   </div>
 </div><!-- end jobDetailModal -->
 
-<script src="kytrac-app.js?v=20260705198"></script>
+<script src="kytrac-app.js?v=20260705199"></script>
 </body>
 </html>

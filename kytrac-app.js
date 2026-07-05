@@ -1,4 +1,4 @@
-// KYTRAC Application JavaScript v1.9.8 · 05/Jul/2026
+// KYTRAC Application JavaScript v1.9.9 · 05/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -793,9 +793,11 @@ function laborRateFor(user, type) {
 
 let _pendingImport = null;
 
-async function handleImportFiles(fileList) {
+let _importResultId = 'importResult';
+async function handleImportFiles(fileList, resultId) {
+  if (resultId) _importResultId = resultId;
   const files = Array.from(fileList || []);
-  const out = document.getElementById('importResult');
+  const out = document.getElementById(_importResultId);
   if (!files.length || !out) return;
   out.innerHTML = '<div class="small muted">Reading ' + files.length + ' file(s)…</div>';
 
@@ -928,7 +930,7 @@ async function handleImportFiles(fileList) {
     html += '</div>';
     html += '<div style="font-size:.68rem;color:var(--muted);margin-top:6px">~ = labor cost partially estimated (missing rate card)</div>';
     html += '<div style="margin-top:12px"><button class="btn-amber" onclick="commitImport()" style="padding:9px 18px;font-weight:700">✓ Apply to ' + updates.length + ' job(s)</button>'
-          + '<button class="btn" onclick="document.getElementById(\'importResult\').innerHTML=\'\';_pendingImport=null" style="margin-left:8px;padding:9px 18px">Cancel</button></div>';
+          + '<button class="btn" onclick="document.getElementById(_importResultId).innerHTML=\'\';_pendingImport=null" style="margin-left:8px;padding:9px 18px">Cancel</button></div>';
   } else {
     html += '<div class="small" style="color:#fca5a5">No matching jobs. Confirm job numbers in KYTRAC match JobTread\'s.</div>';
   }
@@ -938,7 +940,7 @@ async function handleImportFiles(fileList) {
 
 async function commitImport() {
   if (!_pendingImport || !_pendingImport.length || !conDb) return;
-  const out = document.getElementById('importResult');
+  const out = document.getElementById(_importResultId);
   const total = _pendingImport.length;
   let done = 0, failed = 0;
   if (out) out.innerHTML = '<div class="small muted">Applying… 0/' + total + '</div>';
@@ -2099,6 +2101,9 @@ let _jcdActualsCache = {}; // { jobId: { category: amount } }
 
 // ── Top-level render ──────────────────────────────────
 function renderJobCostDashboard() {
+  // Financial import is PM/Owner only
+  const impSec = document.getElementById('jcdImportSection');
+  if (impSec) impSec.style.display = isOwnerOrAdmin() ? 'block' : 'none';
   renderJCDKpis();
   renderJCDPipeline();
   renderJCDAlerts();
