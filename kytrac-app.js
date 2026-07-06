@@ -1,4 +1,4 @@
-// JobSpan Application JavaScript v1.9.13 · 06/Jul/2026
+// JobSpan Application JavaScript v1.9.14 · 06/Jul/2026 (diagnostic)
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -5033,12 +5033,20 @@ function loadUserRole(user, callback) {
         const roleElFirst = document.getElementById('ktUserRole');
         if (roleElFirst) { roleElFirst.textContent = 'Owner'; roleElFirst.style.color = KYTRAC_ROLES['Owner'].color; }
       } else {
-        const members = extractTeamMembers(doc.data());
+        const rawData = doc.data();
+        const members = extractTeamMembers(rawData);
         const key = email.replace(/\./g,'_');
+        console.log('[JobSpan role] login email:', email);
+        console.log('[JobSpan role] lookup key:', key);
+        console.log('[JobSpan role] raw team keys:', Object.keys(rawData));
+        console.log('[JobSpan role] extracted member keys:', Object.keys(members));
+        console.log('[JobSpan role] my entry:', members[key]);
         if (members[key]) {
           currentUserRole = members[key].role || 'Field Technician';
+          console.log('[JobSpan role] RESOLVED ROLE =>', currentUserRole);
           currentUserTeamData = members[key];
         } else {
+          console.warn('[JobSpan role] key not found in members — DENYING');
           // Email not in team — deny access
           conAuth.signOut();
           alert('Access denied. Contact your Owner to be added to the team.');
@@ -5056,8 +5064,9 @@ function loadUserRole(user, callback) {
       setTimeout(applyRolePermissions, 100);
       if (callback) callback();
     })
-    .catch(() => {
+    .catch((err) => {
       // Firestore not ready yet — allow as owner for initial setup
+      console.error('[JobSpan role] team read FAILED, falling back to Owner:', err);
       currentUserRole = 'Owner';
       if (callback) callback();
     });
