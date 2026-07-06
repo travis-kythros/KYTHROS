@@ -1,4 +1,4 @@
-// JobSpan Application JavaScript v1.9.15 · 06/Jul/2026 (diagnostic)
+// JobSpan Application JavaScript v1.9.16 · 06/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -414,6 +414,7 @@ const CON_APPROVED_EMAILS = [];
 let conApp = null, conDb = null, conAuth = null;
 let conCurrentUser = null;
 let currentCompanyId = null; // Set after login — all Firestore paths scoped under companies/{currentCompanyId}/
+let isCompanyOwnerByEmail = false; // true when login email matches the company's ownerEmail
 
 
 // Helper: add companyId to any subcollection document
@@ -4885,8 +4886,9 @@ function resolveCompany(user, callback) {
   conDb.collection('companies').where('ownerEmail', '==', email).limit(1).get()
     .then(snap => {
       if (!snap.empty) {
-        // Found their company
+        // Found their company — they are the ownerEmail, so definitionally Owner
         currentCompanyId = snap.docs[0].id;
+        isCompanyOwnerByEmail = true;
         console.log('JobSpan: Loaded company', currentCompanyId);
         if (callback) callback();
         return;
@@ -5033,26 +5035,25 @@ function loadUserRole(user, callback) {
         const roleElFirst = document.getElementById('ktUserRole');
         if (roleElFirst) { roleElFirst.textContent = 'Owner'; roleElFirst.style.color = KYTRAC_ROLES['Owner'].color; }
       } else {
-        const rawData = doc.data();
-        const members = extractTeamMembers(rawData);
+        const members = extractTeamMembers(doc.data());
         const key = email.replace(/\./g,'_');
-        console.log('[JobSpan role] ►► READING PATH: companies/' + currentCompanyId + '/settings/team');
-        console.log('[JobSpan role] currentCompanyId =', currentCompanyId);
-        console.log('[JobSpan role] login email:', email);
-        console.log('[JobSpan role] lookup key:', key);
-        console.log('[JobSpan role] raw team keys:', Object.keys(rawData));
-        console.log('[JobSpan role] extracted member keys:', Object.keys(members));
-        console.log('[JobSpan role] my entry:', members[key]);
         if (members[key]) {
           currentUserRole = members[key].role || 'Field Technician';
-          console.log('[JobSpan role] RESOLVED ROLE =>', currentUserRole);
           currentUserTeamData = members[key];
         } else {
-          console.warn('[JobSpan role] key not found in members — DENYING');
           // Email not in team — deny access
           conAuth.signOut();
           alert('Access denied. Contact your Owner to be added to the team.');
           return;
+        }
+        // The company's ownerEmail is always Owner. If a stale role says
+        // otherwise, correct it in memory and persist to the team doc.
+        if (isCompanyOwnerByEmail && currentUserRole !== 'Owner') {
+          currentUserRole = 'Owner';
+          coll('settings').doc('team').set(
+            { members: { [key]: { role: 'Owner', updatedAt: new Date().toISOString() } } },
+            { merge: true }
+          ).catch(() => {});
         }
       }
       // Update role display
@@ -5066,9 +5067,8 @@ function loadUserRole(user, callback) {
       setTimeout(applyRolePermissions, 100);
       if (callback) callback();
     })
-    .catch((err) => {
+    .catch(() => {
       // Firestore not ready yet — allow as owner for initial setup
-      console.error('[JobSpan role] team read FAILED, falling back to Owner:', err);
       currentUserRole = 'Owner';
       if (callback) callback();
     });
