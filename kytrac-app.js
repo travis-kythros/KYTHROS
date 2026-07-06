@@ -1,4 +1,4 @@
-// JobSpan Application JavaScript v1.9.16 · 06/Jul/2026
+// JobSpan Application JavaScript v1.9.17 · 06/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -12182,3 +12182,235 @@ conLoadFirebase();
 // Check for portal mode on every page load
 checkPortalMode();
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// JobSpan Schedule Redesign — Epic/Feature/Task/Sprint data-model layer
+// Added: 06/Jul/2026 · v1.9.17-prep
+//
+// STATUS: Additive only. Nothing in this file is called by existing UI yet.
+// It introduces the new hierarchy as a layer ON TOP of the existing
+// estimateGroups → subgroups → items tree, per the locked design:
+//   Epic    = estimateGroups doc      (+ sprintEnabled)
+//   Feature = subgroups doc           (+ status, sprintId, dependsOn,
+//                                        assignedTeamLead, requestedStatus)
+//   Task    = items doc                (+ taskStatus, assignedTo)
+//   Sprint  = NEW jobs/{id}/sprints subcollection
+//
+// Nothing here mutates estimateGroups/subgroups/items on its own. New
+// fields are only written by the explicit functions below, and only when
+// called from real UI. The old `phases` collection is untouched by this
+// file — see migrate-phases-to-features.js for that (separate, gated script).
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── Reads: walk the tree as Epic → Feature → Task ──────────────────────
+
+/**
+ * Load the full Epic→Feature→Task tree for a job, in the new vocabulary.
+ * Read-only. Returns a plain JS structure, does not touch conJobs/estGroups.
+ *
+ * Shape returned:
+ * [{ id, name, order, sprintEnabled, features: [
+ *      { id, name, order, status, sprintId, dependsOn, assignedTeamLead,
+ *        requestedStatus, tasks: [
+ *          { id, name, qty, cost, price, taskStatus, assignedTo }
+ *        ]
+ *      }
+ *  ]}]
+ */
+function loadEpicTree(jobId) {
+  const jobRef = coll('jobs').doc(jobId);
+  return jobRef.collection('estimateGroups').orderBy('order').get()
+    .then(async groupSnap => {
+      const epics = [];
+      for (const groupDoc of groupSnap.docs) {
+        const epicData = groupDoc.data();
+        const epic = {
+          id: groupDoc.id,
+          name: epicData.name,
+          order: epicData.order || 0,
+          sprintEnabled: !!epicData.sprintEnabled,
+          features: [],
+        };
+
+        const subSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id)
+          .collection('subgroups').orderBy('order').get();
+
+        for (const subDoc of subSnap.docs) {
+          const featData = subDoc.data();
+          const feature = {
+            id: subDoc.id,
+            name: featData.name,
+            order: featData.order || 0,
+            status: featData.status || 'not-started',
+            sprintId: featData.sprintId || null,
+            dependsOn: featData.dependsOn || [],
+            assignedTeamLead: featData.assignedTeamLead || null,
+            requestedStatus: featData.requestedStatus || null,
+            tasks: [],
+          };
+
+          const itemSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id)
+            .collection('subgroups').doc(subDoc.id).collection('items').get();
+
+          itemSnap.forEach(itemDoc => {
+            const t = itemDoc.data();
+            feature.tasks.push({
+              id: itemDoc.id,
+              name: t.name || t.description || '(unnamed task)',
+              qty: t.qty || 0,
+              cost: t.cost || 0,
+              price: t.price || 0,
+              taskStatus: t.taskStatus || 'todo',
+              assignedTo: t.assignedTo || null,
+            });
+          });
+
+          epic.features.push(feature);
+        }
+
+        epics.push(epic);
+      }
+      return epics;
+    });
+}
+window.loadEpicTree = loadEpicTree;
+
+/**
+ * Task-checklist progress for a single Feature, e.g. "6/9 tasks done".
+ * Pure function, no Firestore access — pass it a feature from loadEpicTree().
+ */
+function featureTaskProgress(feature) {
+  const total = feature.tasks.length;
+  const done = feature.tasks.filter(t => t.taskStatus === 'done').length;
+  return { done, total, label: `${done}/${total} tasks done` };
+}
+window.featureTaskProgress = featureTaskProgress;
+
+/**
+ * Auto-suggest logic: when all Tasks under a Feature are done, the system
+ * suggests a requestedStatus of 'complete' (per locked design — this does
+ * NOT commit status, only sets the suggestion field for PM review).
+ * Pure function — caller is responsible for writing the result to Firestore.
+ */
+function suggestedRequestedStatus(feature) {
+  if (!feature.tasks.length) return null;
+  const allDone = feature.tasks.every(t => t.taskStatus === 'done');
+  return allDone && feature.status !== 'complete' ? 'complete' : null;
+}
+window.suggestedRequestedStatus = suggestedRequestedStatus;
+
+// ── Writes: gated by the three-tier authority model ────────────────────
+// These are the ONLY functions that should ever write status/requestedStatus.
+// UI (board drag-drop) should call these, never write Firestore directly,
+// so the authority model stays enforced in one place.
+
+/**
+ * Team Lead drags a Feature card. Does NOT commit `status` — only sets
+ * `requestedStatus` for Owner/PM review, per the locked stage-authority model.
+ * Safe to call for both auto-suggest and manual Team Lead requests.
+ */
+function requestFeatureStatus(jobId, epicId, featureId, requestedStatus) {
+  if (!hasPermission('phases') && !isOwnerOrAdmin()) {
+    return Promise.reject(new Error('No permission to request status changes'));
+  }
+  return coll('jobs').doc(jobId)
+    .collection('estimateGroups').doc(epicId)
+    .collection('subgroups').doc(featureId)
+    .update({
+      requestedStatus,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      requestedBy: (conAuth.currentUser && conAuth.currentUser.email) || null,
+    });
+}
+window.requestFeatureStatus = requestFeatureStatus;
+
+/**
+ * Owner/PM commits a Feature's status. This is the ONLY path that writes
+ * the real `status` field — reused by both a direct Owner drag AND approving
+ * a Team Lead's pending request (per locked design: "Approving a Team Lead's
+ * request also just calls the same commit path").
+ */
+function commitFeatureStatus(jobId, epicId, featureId, newStatus) {
+  if (!isOwnerOrAdmin()) {
+    return Promise.reject(new Error('Only Owner/PM can commit status changes'));
+  }
+  return coll('jobs').doc(jobId)
+    .collection('estimateGroups').doc(epicId)
+    .collection('subgroups').doc(featureId)
+    .update({
+      status: newStatus,
+      requestedStatus: null, // clear the pending request once committed
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+}
+window.commitFeatureStatus = commitFeatureStatus;
+
+/**
+ * Field crew (any role) marks a Task done/in-progress. Task-level only —
+ * per locked design, non-leads get NO Feature-level stage-change UI at all.
+ */
+function updateTaskStatus(jobId, epicId, featureId, taskId, taskStatus) {
+  return coll('jobs').doc(jobId)
+    .collection('estimateGroups').doc(epicId)
+    .collection('subgroups').doc(featureId)
+    .collection('items').doc(taskId)
+    .update({
+      taskStatus,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+}
+window.updateTaskStatus = updateTaskStatus;
+
+// ── Sprints (new top-level subcollection) ──────────────────────────────
+
+function loadSprints(jobId) {
+  return coll('jobs').doc(jobId).collection('sprints').orderBy('startDate').get()
+    .then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })));
+}
+window.loadSprints = loadSprints;
+
+function createSprint(jobId, sprintFields) {
+  const name = sprintFields.name;
+  const startDate = sprintFields.startDate;
+  const endDate = sprintFields.endDate;
+  const status = sprintFields.status || 'planned';
+  if (!isOwnerOrAdmin()) {
+    return Promise.reject(new Error('Only Owner/PM can create sprints'));
+  }
+  return coll('jobs').doc(jobId).collection('sprints').add({
+    name: name, startDate: startDate, endDate: endDate, status: status,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+window.createSprint = createSprint;
+
+// ── Dependency check (for Gantt warnings) ──────────────────────────────
+
+/**
+ * Given a Feature and a featureId->feature lookup map, returns a warning
+ * string if any of its dependsOn Features are not yet complete, or null
+ * if clear. e.g. "Electrical can't start — Framing not done."
+ */
+function dependencyWarning(feature, allFeaturesById) {
+  if (!feature.dependsOn || !feature.dependsOn.length) return null;
+  const blockers = feature.dependsOn
+    .map(function(id) { return allFeaturesById[id]; })
+    .filter(function(f) { return f && f.status !== 'complete'; });
+  if (!blockers.length) return null;
+  const names = blockers.map(function(f) { return f.name; }).join(', ');
+  return feature.name + " can't start — " + names + ' not done.';
+}
+window.dependencyWarning = dependencyWarning;
+
+/**
+ * Flatten an epic tree into a featureId -> feature lookup map, needed by
+ * dependencyWarning() to resolve dependsOn references across Epics.
+ */
+function flattenFeaturesById(epics) {
+  const map = {};
+  epics.forEach(function(epic) {
+    epic.features.forEach(function(f) { map[f.id] = f; });
+  });
+  return map;
+}
+window.flattenFeaturesById = flattenFeaturesById;
