@@ -1,4 +1,4 @@
-// JobSpan Application JavaScript v1.9.22 · 06/Jul/2026
+// JobSpan Application JavaScript v1.9.24 · 06/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1626,7 +1626,7 @@ function openJobDetail(jobId) {
   document.getElementById('detailJobNum').textContent = '#' + (job.jobNumber || '');
   document.getElementById('detailJobName').textContent = job.name;
   document.getElementById('detailJobClient').textContent = '👤 ' + job.client + (job.phone ? ' · ' + job.phone : '') + (job.email ? ' · ' + job.email : '');
-  document.getElementById('detailStatusBadge').textContent = job.status || '';
+  document.getElementById('detailStatusBadge').value = job.status || 'New Lead';
 
   // Call/Text/Email buttons
   const callBtns = document.getElementById('detailCallBtns');
@@ -1767,7 +1767,7 @@ function updatePhaseHoursSummary() {
   el.innerHTML = '<span style="color:'+color+';font-weight:700">'+totalAct.toFixed(1)+'h actual</span> / '+totalEst.toFixed(1)+'h est · '+done+'/'+conPhases.length+' complete';
 }
 
-let _currentPhaseView = 'kanban';
+let _currentPhaseView = 'board';
 
 function switchPhaseView(view) {
   _currentPhaseView = view;
@@ -2573,6 +2573,39 @@ window.renderJCDTable = renderJCDTable;
 
 // conLoadJobs CO patch removed — consolidated into main function above
 
+function commitJobStatusChange(newStatus) {
+  const jobId = conCurrentJobId;
+  const job = conJobs.find(j => j.id === jobId);
+  if (!job || !jobId) return;
+  if (job.status === newStatus) return;
+
+  // Confirm on closing statuses — this is a meaningful, hard-to-undo action.
+  if ((newStatus === 'Closed Won' || newStatus === 'Closed Lost') &&
+      !confirm('Mark this job as "' + newStatus + '"? This updates the job\'s status for everyone.')) {
+    document.getElementById('detailStatusBadge').value = job.status || 'New Lead';
+    return;
+  }
+
+  const prevStatus = job.status;
+  job.status = newStatus; // optimistic local update
+  document.getElementById('detailStatusBadge').value = newStatus;
+
+  coll('jobs').doc(jobId).update({
+    status: newStatus,
+    statusDate: new Date().toISOString().split('T')[0],
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: conCurrentUser ? conCurrentUser.email : 'unknown'
+  }).then(() => {
+    if (typeof conRenderBoard === 'function') conRenderBoard();
+    if (typeof renderJobsBoard === 'function') renderJobsBoard();
+  }).catch(err => {
+    job.status = prevStatus; // revert on failure
+    document.getElementById('detailStatusBadge').value = prevStatus || 'New Lead';
+    alert('Could not update job status: ' + err.message);
+  });
+}
+window.commitJobStatusChange = commitJobStatusChange;
+
 function switchDetailTab(tab, btn) {
   const allTabs = ['dashboard','financials','estimate','changeorders','subs','phases','logs','invoices','documents','activity','retrospective','todos','selections','specifications','plans','messages','reports'];
   allTabs.forEach(t => {
@@ -2591,7 +2624,7 @@ function switchDetailTab(tab, btn) {
   if (tab === 'changeorders') renderCOList();
   if (tab === 'subs') { loadJobBidRequests(conCurrentJobId); renderSubList(); }
   if (tab === 'documents') { loadJobDocs(conCurrentJobId); loadJobPhotos(conCurrentJobId); }
-  if (tab === 'phases') renderPhaseList();
+  if (tab === 'phases') { renderEpicBoard(); renderPhaseList(); }
   if (tab === 'logs') renderLogList();
   if (tab === 'invoices') loadJobInvoices(conCurrentJobId);
   if (tab === 'activity') loadJobActivity(conCurrentJobId, 'full');
