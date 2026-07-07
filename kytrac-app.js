@@ -1,4 +1,4 @@
-// JobSpan Application JavaScript v1.9.17 · 06/Jul/2026
+// JobSpan Application JavaScript v1.9.20 · 06/Jul/2026
 
 
 const esc = s => ((s==null?'':s)).toString().replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -1771,8 +1771,8 @@ let _currentPhaseView = 'kanban';
 
 function switchPhaseView(view) {
   _currentPhaseView = view;
-  const views = {kanban:'phaseKanbanView',gantt:'phaseGanttView',list:'phaseListView'};
-  const btns = {kanban:'phaseViewKanban',gantt:'phaseViewGantt',list:'phaseViewList'};
+  const views = {kanban:'phaseKanbanView',board:'phaseBoardView',gantt:'phaseGanttView',list:'phaseListView'};
+  const btns = {kanban:'phaseViewKanban',board:'phaseViewBoard',gantt:'phaseViewGantt',list:'phaseViewList'};
   Object.entries(views).forEach(([k,id]) => { const el=document.getElementById(id); if(el) el.style.display=k===view?'block':'none'; });
   Object.entries(btns).forEach(([k,id]) => {
     const btn=document.getElementById(id); if(!btn) return;
@@ -1782,6 +1782,7 @@ function switchPhaseView(view) {
   if(view==='gantt') renderPhaseGantt();
   if(view==='kanban') renderPhaseKanban();
   if(view==='list') renderPhaseList();
+  if(view==='board') renderEpicBoard();
 }
 
 function renderPhaseKanban() {
@@ -1956,6 +1957,31 @@ function renderPhaseList() {
 }
 
 
+function populatePhaseAssigneeDropdown(currentValue) {
+  const sel = document.getElementById('phaseAssigned');
+  if (!sel) return;
+  const buildOptions = (members) => {
+    let html = '<option value="">Unassigned</option>';
+    let matched = false;
+    Object.values(members).forEach(m => {
+      const val = m.email || m.name || '';
+      if (val === currentValue) matched = true;
+      html += `<option value="${esc(val)}" ${val===currentValue?'selected':''}>${esc(m.name||m.email)}</option>`;
+    });
+    // Preserve legacy free-text values (e.g. names typed before this was a
+    // dropdown) that don't match any current team member, so editing an
+    // older phase never silently blanks out who it was assigned to.
+    if (currentValue && !matched) {
+      html += `<option value="${esc(currentValue)}" selected>${esc(currentValue)} (not on team)</option>`;
+    }
+    sel.innerHTML = html;
+  };
+  if (!conDb) { buildOptions({}); return; }
+  coll('settings').doc('team').get().then(doc => {
+    buildOptions(doc.exists ? extractTeamMembers(doc.data()) : {});
+  }).catch(() => buildOptions({}));
+}
+
 function openAddPhaseModal() {
   document.getElementById('addPhaseModalTitle').textContent='Add Phase';
   document.getElementById('editPhaseId').value='';
@@ -1963,7 +1989,7 @@ function openAddPhaseModal() {
   document.getElementById('phaseTrade').value='';
   document.getElementById('phaseStart').value='';
   document.getElementById('phaseEnd').value='';
-  document.getElementById('phaseAssigned').value='';
+  populatePhaseAssigneeDropdown('');
   document.getElementById('phaseEstHours').value='';
   document.getElementById('phaseStatus').value='not-started';
   document.getElementById('phaseNotes').value='';
@@ -1983,7 +2009,7 @@ function openEditPhaseModal(phaseId) {
   document.getElementById('phaseTrade').value=p.trade||'';
   document.getElementById('phaseStart').value=p.startDate||'';
   document.getElementById('phaseEnd').value=p.endDate||'';
-  document.getElementById('phaseAssigned').value=p.assigned||'';
+  populatePhaseAssigneeDropdown(p.assigned||'');
   document.getElementById('phaseEstHours').value=p.estHours||'';
   document.getElementById('phaseStatus').value=p.status||'not-started';
   document.getElementById('phaseNotes').value=p.notes||'';
@@ -12219,7 +12245,7 @@ checkPortalMode();
  */
 function loadEpicTree(jobId) {
   const jobRef = coll('jobs').doc(jobId);
-  return jobRef.collection('estimateGroups').orderBy('order').get()
+  return jobRef.collection('estimateGroups').get()
     .then(async groupSnap => {
       const epics = [];
       for (const groupDoc of groupSnap.docs) {
@@ -12233,7 +12259,7 @@ function loadEpicTree(jobId) {
         };
 
         const subSnap = await jobRef.collection('estimateGroups').doc(groupDoc.id)
-          .collection('subgroups').orderBy('order').get();
+          .collection('subgroups').get();
 
         for (const subDoc of subSnap.docs) {
           const featData = subDoc.data();
@@ -12267,9 +12293,10 @@ function loadEpicTree(jobId) {
 
           epic.features.push(feature);
         }
-
+        epic.features.sort((a, b) => a.order - b.order);
         epics.push(epic);
       }
+      epics.sort((a, b) => a.order - b.order);
       return epics;
     });
 }
@@ -12414,3 +12441,231 @@ function flattenFeaturesById(epics) {
   return map;
 }
 window.flattenFeaturesById = flattenFeaturesById;
+
+// ═══════════════════════════════════════════════════════════════════════
+// JobSpan Board View — Epic/Feature/Task Kanban
+// Added: 06/Jul/2026 · v1.9.19
+//
+// Renders the estimateGroups→subgroups tree as Epic/Feature cards in the
+// same 4-lane layout as the existing Phases Kanban. Uses tap-based
+// Request/Approve buttons instead of drag-and-drop (native HTML5 drag is
+// unreliable on iPad Safari) — functionally equivalent to the locked
+// three-tier authority model:
+//   Field crew    -> tap tasks done/in-progress only, no status UI
+//   Team Lead     -> "Request move" button -> sets requestedStatus only
+//   Owner/PM      -> "Move to..." buttons that commit status directly,
+//                    or "Approve" a pending Team Lead request
+// ═══════════════════════════════════════════════════════════════════════
+
+let _boardEpics = [];          // last-loaded epic tree for the open job
+let _boardFeaturesById = {};   // flattened lookup, for dependency warnings
+let _boardOpenFeature = null;  // {epicId, epicName, feature} currently in the modal
+
+const BOARD_LANES = {
+  'not-started': { el: 'boardLane0', count: 'boardCount0' },
+  'in-progress': { el: 'boardLane1', count: 'boardCount1' },
+  'complete':    { el: 'boardLane2', count: 'boardCount2' },
+  'blocked':     { el: 'boardLane3', count: 'boardCount3' },
+};
+
+function renderEpicBoard() {
+  if (!conCurrentJobId) return;
+  const lanes = {};
+  Object.entries(BOARD_LANES).forEach(([status, ids]) => {
+    lanes[status] = document.getElementById(ids.el);
+    if (lanes[status]) lanes[status].innerHTML = '<div class="small muted" style="padding:8px">Loading…</div>';
+  });
+
+  loadEpicTree(conCurrentJobId).then(epics => {
+    _boardEpics = epics;
+    _boardFeaturesById = flattenFeaturesById(epics);
+
+    const counts = { 'not-started':0, 'in-progress':0, 'complete':0, 'blocked':0 };
+    Object.values(lanes).forEach(l => { if (l) l.innerHTML = ''; });
+
+    if (!epics.length || !epics.some(e => e.features.length)) {
+      const emptyLane = lanes['not-started'];
+      if (emptyLane) emptyLane.innerHTML = '<div class="small muted" style="padding:8px">No Features yet. Add items to the Estimate tab — each estimate group becomes an Epic, each subgroup a Feature here.</div>';
+      Object.entries(BOARD_LANES).forEach(([status, ids]) => {
+        const el = document.getElementById(ids.count); if (el) el.textContent = '0';
+      });
+      return;
+    }
+
+    epics.forEach(epic => {
+      epic.features.forEach(feature => {
+        const status = feature.status || 'not-started';
+        counts[status] = (counts[status] || 0) + 1;
+        const lane = lanes[status];
+        if (!lane) return;
+
+        const progress = featureTaskProgress(feature);
+        const warning = dependencyWarning(feature, _boardFeaturesById);
+        const pendingBadge = feature.requestedStatus
+          ? `<span style="background:rgba(217,119,6,.2);color:var(--amber);padding:1px 7px;border-radius:999px;font-size:.68rem;font-weight:700">⏳ ${esc(feature.requestedStatus)} requested</span>`
+          : '';
+
+        const card = document.createElement('div');
+        card.className = 'phase-card';
+        card.onclick = () => openFeatureModal(epic.id, epic.name, feature);
+        card.innerHTML =
+          '<div class="phase-card-accent" style="background:' + (warning ? '#f87171' : '#d97706') + '"></div>' +
+          '<div class="phase-card-name">' + esc(feature.name) +
+            (warning ? ' <span style="color:#f87171;font-size:.7rem">⚠ blocked</span>' : '') + '</div>' +
+          '<div class="phase-card-meta">' +
+            '🗂️ ' + esc(epic.name) + '<br>' +
+            '✅ ' + progress.label +
+            (feature.assignedTeamLead ? '<br>👤 ' + esc(feature.assignedTeamLead) : '') +
+          '</div>' +
+          (pendingBadge ? '<div style="padding:6px 0 0 8px">' + pendingBadge + '</div>' : '');
+        lane.appendChild(card);
+      });
+    });
+
+    Object.entries(BOARD_LANES).forEach(([status, ids]) => {
+      const el = document.getElementById(ids.count);
+      if (el) el.textContent = counts[status] || 0;
+    });
+  }).catch(err => {
+    Object.values(lanes).forEach(l => { if (l) l.innerHTML = ''; });
+    const first = lanes['not-started'];
+    if (first) first.innerHTML = '<div class="small" style="padding:8px;color:#f87171">Error loading board: ' + esc(err.message) + '</div>';
+  });
+}
+window.renderEpicBoard = renderEpicBoard;
+
+function openFeatureModal(epicId, epicName, feature) {
+  _boardOpenFeature = { epicId, epicName, feature };
+  document.getElementById('featureEpicName').textContent = '🗂️ ' + epicName;
+  document.getElementById('featureModalTitle').textContent = feature.name;
+
+  const metaEl = document.getElementById('featureMeta');
+  metaEl.innerHTML =
+    'Status: <b>' + esc(feature.status || 'not-started') + '</b>' +
+    (feature.assignedTeamLead ? ' · Team Lead: ' + esc(feature.assignedTeamLead) : '') +
+    (feature.dependsOn && feature.dependsOn.length ? '<br>Depends on: ' + feature.dependsOn.map(id => esc((_boardFeaturesById[id]||{}).name || id)).join(', ') : '');
+
+  const warning = dependencyWarning(feature, _boardFeaturesById);
+  const banner = document.getElementById('featureRequestBanner');
+  if (warning) {
+    banner.style.display = 'block';
+    banner.innerHTML = '<div style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:8px 12px;color:#f87171;font-size:.82rem">⚠ ' + esc(warning) + '</div>';
+  } else if (feature.requestedStatus) {
+    banner.style.display = 'block';
+    banner.innerHTML = '<div style="background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.3);border-radius:8px;padding:8px 12px;color:var(--amber);font-size:.82rem">⏳ ' + esc(feature.assignedTeamLead || 'A Team Lead') + ' requested moving this to <b>' + esc(feature.requestedStatus) + '</b>.</div>';
+  } else {
+    banner.style.display = 'none';
+    banner.innerHTML = '';
+  }
+
+  renderFeatureTaskList(feature);
+  renderFeatureStatusActions(feature);
+  kOpen('featureDetailModal');
+}
+window.openFeatureModal = openFeatureModal;
+
+function renderFeatureTaskList(feature) {
+  const listEl = document.getElementById('featureTaskList');
+  if (!feature.tasks.length) {
+    listEl.innerHTML = '<div class="small muted">No tasks yet. Add line items to this Feature in the Estimate tab.</div>';
+    return;
+  }
+  listEl.innerHTML = feature.tasks.map(t => {
+    const done = t.taskStatus === 'done';
+    return '<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(8,18,36,.6);border:1px solid rgba(110,145,210,.12);border-radius:8px;cursor:pointer">' +
+      '<input type="checkbox" ' + (done ? 'checked' : '') + ' onchange="toggleBoardTask(\'' + t.id + '\', this.checked)" style="width:16px;height:16px;flex-shrink:0">' +
+      '<span style="' + (done ? 'text-decoration:line-through;color:var(--muted)' : '') + ';font-size:.85rem">' + esc(t.name) + '</span>' +
+      (t.assignedTo ? '<span class="small muted" style="margin-left:auto">' + esc(t.assignedTo) + '</span>' : '') +
+    '</label>';
+  }).join('');
+}
+
+function toggleBoardTask(taskId, checked) {
+  if (!_boardOpenFeature) return;
+  const { epicId, feature } = _boardOpenFeature;
+  updateTaskStatus(conCurrentJobId, epicId, feature.id, taskId, checked ? 'done' : 'todo')
+    .then(() => {
+      // Reflect locally so the checklist + auto-suggest banner update
+      // without a full board reload.
+      const t = feature.tasks.find(x => x.id === taskId);
+      if (t) t.taskStatus = checked ? 'done' : 'todo';
+      renderFeatureTaskList(feature);
+      const suggestion = suggestedRequestedStatus(feature);
+      if (suggestion && isOwnerOrAdmin()) {
+        // Owner viewing it themselves — just show the option, don't auto-write.
+      }
+      if (suggestion && !isOwnerOrAdmin()) {
+        requestFeatureStatus(conCurrentJobId, epicId, feature.id, suggestion).then(() => {
+          feature.requestedStatus = suggestion;
+          openFeatureModal(epicId, _boardOpenFeature.epicName, feature);
+        }).catch(() => {});
+      }
+    })
+    .catch(err => alert('Error updating task: ' + err.message));
+}
+window.toggleBoardTask = toggleBoardTask;
+
+function renderFeatureStatusActions(feature) {
+  const el = document.getElementById('featureStatusActions');
+  const epicId = _boardOpenFeature.epicId;
+  const owner = isOwnerOrAdmin();
+  const statuses = ['not-started', 'in-progress', 'complete', 'blocked'];
+  let html = '';
+
+  if (owner) {
+    if (feature.requestedStatus) {
+      html += '<button class="btn-amber" onclick="approveBoardRequest()">✓ Approve → ' + esc(feature.requestedStatus) + '</button>' +
+              '<button class="btn" onclick="dismissBoardRequest()">Dismiss request</button>';
+    }
+    html += '<div style="width:100%;font-size:.72rem;color:var(--muted);margin:8px 0 4px">Move to:</div>';
+    statuses.filter(s => s !== (feature.status||'not-started')).forEach(s => {
+      html += '<button class="btn" onclick="commitBoardStatus(\'' + s + '\')">' + esc(s) + '</button>';
+    });
+  } else {
+    if (feature.requestedStatus) {
+      html += '<div class="small muted">Request pending Owner/PM approval.</div>';
+    } else {
+      html += '<div style="width:100%;font-size:.72rem;color:var(--muted);margin-bottom:4px">Request move to:</div>';
+      statuses.filter(s => s !== (feature.status||'not-started')).forEach(s => {
+        html += '<button class="btn" onclick="requestBoardStatus(\'' + s + '\')">' + esc(s) + '</button>';
+      });
+    }
+  }
+  el.innerHTML = html;
+}
+
+function requestBoardStatus(newStatus) {
+  if (!_boardOpenFeature) return;
+  const { epicId, feature } = _boardOpenFeature;
+  requestFeatureStatus(conCurrentJobId, epicId, feature.id, newStatus)
+    .then(() => { feature.requestedStatus = newStatus; openFeatureModal(epicId, _boardOpenFeature.epicName, feature); renderEpicBoard(); })
+    .catch(err => alert('Error: ' + err.message));
+}
+window.requestBoardStatus = requestBoardStatus;
+
+function commitBoardStatus(newStatus) {
+  if (!_boardOpenFeature) return;
+  const { epicId, feature } = _boardOpenFeature;
+  commitFeatureStatus(conCurrentJobId, epicId, feature.id, newStatus)
+    .then(() => { feature.status = newStatus; feature.requestedStatus = null; kClose('featureDetailModal'); renderEpicBoard(); })
+    .catch(err => alert('Error: ' + err.message));
+}
+window.commitBoardStatus = commitBoardStatus;
+
+function approveBoardRequest() {
+  if (!_boardOpenFeature) return;
+  const { epicId, feature } = _boardOpenFeature;
+  commitFeatureStatus(conCurrentJobId, epicId, feature.id, feature.requestedStatus)
+    .then(() => { feature.status = feature.requestedStatus; feature.requestedStatus = null; kClose('featureDetailModal'); renderEpicBoard(); })
+    .catch(err => alert('Error: ' + err.message));
+}
+window.approveBoardRequest = approveBoardRequest;
+
+function dismissBoardRequest() {
+  if (!_boardOpenFeature) return;
+  const { epicId, feature } = _boardOpenFeature;
+  requestFeatureStatus(conCurrentJobId, epicId, feature.id, null)
+    .then(() => { feature.requestedStatus = null; openFeatureModal(epicId, _boardOpenFeature.epicName, feature); renderEpicBoard(); })
+    .catch(err => alert('Error: ' + err.message));
+}
+window.dismissBoardRequest = dismissBoardRequest;
