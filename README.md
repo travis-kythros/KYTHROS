@@ -1,2 +1,0 @@
-# KYTHROS
-Project Management App 
